@@ -1,9 +1,12 @@
 #pragma once
-#include "GameObject.h"
+#include "Creature.h"
 
-#define GOOMBA_GRAVITY 0.002f
-#define GOOMBA_WALKING_SPEED 0.05f
-
+#define GOOMBA_VX 0.05f
+#define GOOMBA_VY 0.0f
+#define GOOMBA_AX 0.0f
+#define GOOMBA_AY 0.002f
+#define GOOMBA_SHARP true
+#define GOOMBA_LIFE 1.0f
 
 #define GOOMBA_BBOX_WIDTH 16
 #define GOOMBA_BBOX_HEIGHT 14
@@ -17,12 +20,9 @@
 #define ID_ANI_GOOMBA_WALKING 5000
 #define ID_ANI_GOOMBA_DIE 5001
 
-class CGoomba : public CGameObject
+class CGoomba : public CCreature
 {
 protected:
-	float ax;				
-	float ay; 
-
 	ULONGLONG die_start;
 
 	virtual void GetBoundingBox(float &left, float &top, float &right, float &bottom);

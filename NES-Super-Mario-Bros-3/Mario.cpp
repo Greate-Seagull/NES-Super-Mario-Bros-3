@@ -10,6 +10,18 @@
 
 #include "Collision.h"
 
+CMario::CMario(float x, float y):
+	CCreature(x, y, MARIO_VX, MARIO_VY, MARIO_AX, MARIO_AY, MARIO_SHARP, MARIO_LEVEL_SMALL)
+{
+	isSitting = false;
+	maxVx = 0.0f;
+
+	untouchable = 0;
+	untouchable_start = -1;
+	isOnPlatform = false;
+	coin = 0;
+}
+
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {
 	vy += ay * dt;
@@ -74,9 +86,9 @@ void CMario::OnCollisionWithGoomba(LPCOLLISIONEVENT e)
 		{
 			if (goomba->GetState() != GOOMBA_STATE_DIE)
 			{
-				if (level > MARIO_LEVEL_SMALL)
+				if (life > MARIO_LEVEL_SMALL)
 				{
-					level = MARIO_LEVEL_SMALL;
+					life = MARIO_LEVEL_SMALL;
 					StartUntouchable();
 				}
 				else
@@ -231,9 +243,9 @@ void CMario::Render()
 
 	if (state == MARIO_STATE_DIE)
 		aniId = ID_ANI_MARIO_DIE;
-	else if (level == MARIO_LEVEL_BIG)
+	else if (life == MARIO_LEVEL_BIG)
 		aniId = GetAniIdBig();
-	else if (level == MARIO_LEVEL_SMALL)
+	else if (life == MARIO_LEVEL_SMALL)
 		aniId = GetAniIdSmall();
 
 	animations->Get(aniId)->Render(x, y);
@@ -290,7 +302,7 @@ void CMario::SetState(int state)
 		break;
 
 	case MARIO_STATE_SIT:
-		if (isOnPlatform && level != MARIO_LEVEL_SMALL)
+		if (isOnPlatform && life != MARIO_LEVEL_SMALL)
 		{
 			state = MARIO_STATE_IDLE;
 			isSitting = true;
@@ -325,7 +337,7 @@ void CMario::SetState(int state)
 
 void CMario::GetBoundingBox(float &left, float &top, float &right, float &bottom)
 {
-	if (level==MARIO_LEVEL_BIG)
+	if (life==MARIO_LEVEL_BIG)
 	{
 		if (isSitting)
 		{
@@ -354,10 +366,10 @@ void CMario::GetBoundingBox(float &left, float &top, float &right, float &bottom
 void CMario::SetLevel(int l)
 {
 	// Adjust position to avoid falling off platform
-	if (this->level == MARIO_LEVEL_SMALL)
+	if (this->life == MARIO_LEVEL_SMALL)
 	{
 		y -= (MARIO_BIG_BBOX_HEIGHT - MARIO_SMALL_BBOX_HEIGHT) / 2;
 	}
-	level = l;
+	life = l;
 }
 

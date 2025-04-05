@@ -1,9 +1,8 @@
 #include "Goomba.h"
 
-CGoomba::CGoomba(float x, float y):CGameObject(x, y)
+CGoomba::CGoomba(float x, float y):
+	CCreature(x, y, GOOMBA_VX, GOOMBA_VY, GOOMBA_AX, GOOMBA_AY, GOOMBA_SHARP, GOOMBA_LIFE)
 {
-	this->ax = 0;
-	this->ay = GOOMBA_GRAVITY;
 	die_start = -1;
 	SetState(GOOMBA_STATE_WALKING);
 }
@@ -88,7 +87,7 @@ void CGoomba::SetState(int state)
 			ay = 0; 
 			break;
 		case GOOMBA_STATE_WALKING: 
-			vx = -GOOMBA_WALKING_SPEED;
+			vx = -GOOMBA_VX;
 			break;
 	}
 }

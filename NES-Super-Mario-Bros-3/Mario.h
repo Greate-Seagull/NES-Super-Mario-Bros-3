@@ -1,10 +1,21 @@
 #pragma once
-#include "GameObject.h"
+#include "Creature.h"
 
 #include "Animation.h"
 #include "Animations.h"
 
 #include "debug.h"
+
+#define MARIO_VX 0.0f
+#define MARIO_VY 0.0f
+#define MARIO_AX 0.0f
+#define MARIO_AY 0.002f
+#define MARIO_SHARP false
+
+//life
+#define	MARIO_LEVEL_SMALL	1.0f
+#define	MARIO_LEVEL_BIG		2.0f
+#define MARIO_LEVEL_RACOON	3.0f
 
 #define MARIO_WALKING_SPEED		0.1f
 #define MARIO_RUNNING_SPEED		0.2f
@@ -82,12 +93,6 @@
 
 #define GROUND_Y 160.0f
 
-
-
-
-#define	MARIO_LEVEL_SMALL	1
-#define	MARIO_LEVEL_BIG		2
-
 #define MARIO_BIG_BBOX_WIDTH  14
 #define MARIO_BIG_BBOX_HEIGHT 24
 #define MARIO_BIG_SITTING_BBOX_WIDTH  14
@@ -101,14 +106,11 @@
 
 #define MARIO_UNTOUCHABLE_TIME 2500
 
-class CMario : public CGameObject
+class CMario : public CCreature
 {
 	BOOLEAN isSitting;
 	float maxVx;
-	float ax;				// acceleration on x 
-	float ay;				// acceleration on y 
 
-	int level; 
 	int untouchable; 
 	ULONGLONG untouchable_start;
 	BOOLEAN isOnPlatform;
@@ -122,19 +124,7 @@ class CMario : public CGameObject
 	int GetAniIdSmall();
 
 public:
-	CMario(float x, float y) : CGameObject(x, y)
-	{
-		isSitting = false;
-		maxVx = 0.0f;
-		ax = 0.0f;
-		ay = MARIO_GRAVITY; 
-
-		level = MARIO_LEVEL_BIG;
-		untouchable = 0;
-		untouchable_start = -1;
-		isOnPlatform = false;
-		coin = 0;
-	}
+	CMario(float x, float y);
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 	void Render();
 	void SetState(int state);
