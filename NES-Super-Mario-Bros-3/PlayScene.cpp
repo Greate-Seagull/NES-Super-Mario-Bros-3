@@ -6,6 +6,7 @@
 #include "Utils.h"
 #include "Textures.h"
 #include "Sprites.h"
+#include "Background.h"
 #include "Portal.h"
 #include "Coin.h"
 #include "Platform.h"
@@ -105,6 +106,11 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 
 	switch (object_type)
 	{
+	case -1:
+	{
+		obj = new CBackground(x, y);
+		break;
+	}
 	case OBJECT_TYPE_MARIO:
 		if (player!=NULL) 
 		{
