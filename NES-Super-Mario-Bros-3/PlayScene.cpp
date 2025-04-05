@@ -18,7 +18,7 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 	CScene(id, filePath)
 {
 	player = NULL;
-	key_handler = new CSampleKeyHandler(this);
+	//key_handler = new CSampleKeyHandler(this);
 }
 
 

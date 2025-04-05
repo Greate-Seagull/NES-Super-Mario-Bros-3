@@ -173,7 +173,7 @@ int Run()
 		{
 			frameStart = now;
 
-			CGame::GetInstance()->ProcessKeyboard();			
+			CGame::GetInstance()->GetKeyboard()->Update();
 			Update(dt);
 			Render();
 
