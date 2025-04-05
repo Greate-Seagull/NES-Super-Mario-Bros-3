@@ -1,7 +1,7 @@
 #include "HarmfulObject.h"
 
-CHarmfulObject::CHarmfulObject(float x, float y, float vx, float vy, float ax, float ay, bool isSharp):
-	CMovableObject(x, y, vx, vy, ax, ay)
+CHarmfulObject::CHarmfulObject(float x, float y, bool isSharp):
+	CMovableObject(x, y)
 {
 	this->isSharp = isSharp;
 }

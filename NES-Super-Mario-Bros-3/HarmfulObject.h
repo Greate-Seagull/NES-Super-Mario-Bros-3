@@ -7,9 +7,6 @@ class CHarmfulObject : public CMovableObject
 protected:
 	bool isSharp;
 public:
-	CHarmfulObject(float x, float y,
-		float vx, float vy,
-		float ax, float ay,
-		bool isSharp);
+	CHarmfulObject(float x, float y, bool isSharp);
 	virtual void Attack();
 };

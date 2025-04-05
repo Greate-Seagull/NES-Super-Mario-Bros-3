@@ -1,16 +1,14 @@
 #include "MovableObject.h"
 
-CMovableObject::CMovableObject(float x, float y, float vx, float vy, float ax, float ay):
+CMovableObject::CMovableObject(float x, float y):
 	CGameObject(x, y)
 {
-	this->vx = vx;
-	this->vy = vy;
-	this->ax = ax;
-	this->ay = ay;
-	this->nx = 1;
+	this->vx = 0.0f;
+	this->vy = 0.0f;
+	this->nx = 0;
 }
 
-void CMovableObject::Move(DWORD t)
+void CMovableObject::Move(DWORD t, float ax, float ay)
 {
 	x += vx * t + ax / 2 * t * t;
 	vx += ax * t;
