@@ -322,9 +322,6 @@ void CGame::Update(DWORD dt)
 {
 	keyState->Update();
 	GetCurrentScene()->Update(dt);
-	DebugOutTitle(L"VK_LEFT Hold: %d | Pressed: %d",
-		keyState->IsHold(VK_LEFT),
-		keyState->IsPressed(VK_LEFT));
 }
 
 void CGame::Render()

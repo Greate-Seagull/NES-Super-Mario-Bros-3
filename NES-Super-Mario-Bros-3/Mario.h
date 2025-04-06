@@ -8,12 +8,13 @@
 
 #define MARIO_VX 0.0f
 #define MARIO_VY 0.0f
-#define MARIO_WALKING_AX 0.0005f
+#define MARIO_WALKING_AX 0.0001f
 #define MARIO_RUNNING_AX 0.001f
 #define MARIO_JUMPING_AY -0.002f
 #define MARIO_SHARP false
 
-#define FRICTION_VX 0.95f
+#define TICK_DECELERATE 500
+#define TICK_FREEFALL 500
 
 //life
 #define	MARIO_LEVEL_SMALL	1.0f
@@ -21,7 +22,9 @@
 #define MARIO_LEVEL_RACOON	3.0f
 
 //state
-#define MARIO_STATE_DIE				-1
+//appear on both state
+#define MARIO_STATE_DIE				-2
+#define MARIO_STATE_RELEASE			-1
 #define MARIO_STATE_STANDING		0
 //On land state
 #define MARIO_STATE_SITTING			1
@@ -69,23 +72,36 @@
 #define ID_ANI_MARIO_DIE 999
 
 // SMALL MARIO
-#define ID_ANI_MARIO_SMALL_IDLE_RIGHT 1100
-#define ID_ANI_MARIO_SMALL_IDLE_LEFT 1102
+//Standing
+#define ID_ANI_MARIO_SMALL_IDLE_LEFT 1100
+#define ID_ANI_MARIO_SMALL_IDLE_RIGHT 1101
+//Jumping
+#define ID_ANI_MARIO_SMALL_JUMP_LEFT 1200
+#define ID_ANI_MARIO_SMALL_JUMP_RIGHT 1201
+//Running stage
+#define ID_ANI_MARIO_SMALL_RUN_1_FRAME_LEFT 1300
+#define ID_ANI_MARIO_SMALL_RUN_1_FRAME_RIGHT 1301
 
-#define ID_ANI_MARIO_SMALL_WALKING_RIGHT 1200
-#define ID_ANI_MARIO_SMALL_WALKING_LEFT 1201
+#define ID_ANI_MARIO_SMALL_RUN_2_FRAMES_LEFT 1310
+#define ID_ANI_MARIO_SMALL_RUN_2_FRAMES_RIGHT 1311
 
-#define ID_ANI_MARIO_SMALL_RUNNING_RIGHT 1300
-#define ID_ANI_MARIO_SMALL_RUNNING_LEFT 1301
+#define ID_ANI_MARIO_SMALL_RUN_3_FRAMES_LEFT 1320
+#define ID_ANI_MARIO_SMALL_RUN_3_FRAMES_RIGHT 1321
 
-#define ID_ANI_MARIO_SMALL_BRACE_RIGHT 1400
-#define ID_ANI_MARIO_SMALL_BRACE_LEFT 1401
+#define ID_ANI_MARIO_SMALL_RUN_4_FRAMES_LEFT 1330
+#define ID_ANI_MARIO_SMALL_RUN_4_FRAMES_RIGHT 1331
 
-#define ID_ANI_MARIO_SMALL_JUMP_WALK_RIGHT 1500
-#define ID_ANI_MARIO_SMALL_JUMP_WALK_LEFT 1501
+#define ID_ANI_MARIO_SMALL_RUN_5_FRAMES_LEFT 1340
+#define ID_ANI_MARIO_SMALL_RUN_5_FRAMES_RIGHT 1341
 
-#define ID_ANI_MARIO_SMALL_JUMP_RUN_RIGHT 1600
-#define ID_ANI_MARIO_SMALL_JUMP_RUN_LEFT 1601
+#define ID_ANI_MARIO_SMALL_RUN_6_FRAMES_LEFT 1350
+#define ID_ANI_MARIO_SMALL_RUN_6_FRAMES_RIGHT 1351
+//#define ID_ANI_MARIO_SMALL_BRACE_RIGHT 1400
+//#define ID_ANI_MARIO_SMALL_BRACE_LEFT 1401
+//
+//#define ID_ANI_MARIO_SMALL_JUMP_WALK_RIGHT 1500
+//#define ID_ANI_MARIO_SMALL_JUMP_WALK_LEFT 1501
+
 
 #pragma endregion
 
@@ -111,6 +127,9 @@ class CMario : public CCreature
 
 	int OnLandState;
 	int OnSkyState;
+
+	DWORD decelerateTick;
+	DWORD freefallTick;
 
 	int untouchable; 
 	ULONGLONG untouchable_start;
@@ -148,5 +167,7 @@ public:
 	void PrepareState();
 	void DetermineState();
 	void ApplyState(float &ax, float &ay);
-	void DetermineAccelerator(float& ax, float& ay);
+	void DetermineAccelerator(float& ax, float& ay, DWORD& t);
+
+	void ChangeAnimation(int& ani);
 };

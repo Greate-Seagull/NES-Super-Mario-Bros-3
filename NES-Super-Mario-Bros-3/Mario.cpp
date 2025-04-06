@@ -16,6 +16,9 @@ CMario::CMario(float x, float y):
 	isSitting = false;
 	maxVx = 0.0f;
 
+	decelerateTick = TICK_DECELERATE;
+	freefallTick = TICK_FREEFALL;
+
 	untouchable = 0;
 	untouchable_start = -1;
 	isOnPlatform = false;
@@ -28,9 +31,10 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	DetermineState();	
 	float ax, ay;	
 	ApplyState(ax, ay);
-	DetermineAccelerator(ax, ay);
+	DetermineAccelerator(ax, ay, dt);
 	Move(dt, ax, ay);
-	vx *= FRICTION_VX;
+
+	DebugOutTitle(L"vx: %f", vx);
 
 	//if (abs(vx) > abs(maxVx)) vx = maxVx;
 
@@ -249,14 +253,9 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 void CMario::Render()
 {
 	CAnimations* animations = CAnimations::GetInstance();
-	int aniId = ID_ANI_MARIO_SMALL_IDLE_RIGHT;
+	int aniId = ID_ANI_MARIO_SMALL_RUN_6_FRAMES_RIGHT;
 
-	//if (state == MARIO_STATE_DIE)
-	//	aniId = ID_ANI_MARIO_DIE;
-	/*else if (life == MARIO_LEVEL_BIG)
-		aniId = GetAniIdBig();
-	else if (life == MARIO_LEVEL_SMALL)
-		aniId = GetAniIdSmall();*/
+	//ChangeAnimation(aniId);
 
 	animations->Get(aniId)->Render(x, y);
 
@@ -429,36 +428,95 @@ void CMario::ApplyState(float &ax, float &ay)
 	}
 }
 
-void CMario::DetermineAccelerator(float& applied_ax, float& applied_ay)
+void CMario::DetermineAccelerator(float& applied_ax, float& applied_ay, DWORD& t)
 {
 	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
 
 	float ax = 0.0f;
-	float ay = MARIO_GRAVITY;
-
-	//Test
-	if (y >= 150)
-	{
-		ay = -vy / 60;
-	}
-	//------------
+	float ay = 0.0f;
+	int nx = 0;
 
 	if (keyState->IsHold(VK_LEFT))
 	{
 		ax += -applied_ax;
+		nx--;
 	}
 	if (keyState->IsHold(VK_RIGHT))
 	{
 		ax += applied_ax;
+		nx++;
+	}
+	//Decelerate if not pressing any moving key
+	if (ax == 0.0f)
+	{
+		if (decelerateTick)
+		{
+			ax = -vx / decelerateTick; // calculate decelerate ax		
+			t = min(decelerateTick, t); // get exact time to stop
+			decelerateTick -= t; // calculate remaining time to stop
+		}
+	}
+	else
+	{
+		decelerateTick = TICK_DECELERATE;
 	}
 
 	if (keyState->IsHold(VK_S))
 	{
-		ay += applied_ay;
+		ay = applied_ay;
+		freefallTick = TICK_FREEFALL;
+	}
+	else
+	{
+		if (freefallTick)
+		{
+			ay = -vy / freefallTick; //decelerate ay
+			t = min(freefallTick, t); 
+			freefallTick -= t;
+		}
+	}
+	
+
+	if (nx)
+	{
+		this->nx = nx;
 	}
 
 	applied_ax = ax;
 	applied_ay = ay;
+}
+
+void CMario::ChangeAnimation(int& ani)
+{
+	switch (OnLandState)
+	{
+		default:
+		{
+			if (nx == DIRECTION_LEFT)
+			{
+				ani = ID_ANI_MARIO_SMALL_IDLE_LEFT;
+			}
+			else
+			{
+				ani = ID_ANI_MARIO_SMALL_IDLE_RIGHT;
+			}
+		}
+	}
+
+	switch (OnSkyState)
+	{
+		case MARIO_STATE_JUMPING:
+		{
+			if (nx == DIRECTION_LEFT)
+			{
+				ani = ID_ANI_MARIO_SMALL_JUMP_LEFT;
+			}
+			else
+			{
+				ani = ID_ANI_MARIO_SMALL_JUMP_RIGHT;
+			}
+		}
+	}
 }
 
 void CMario::PrepareState()
