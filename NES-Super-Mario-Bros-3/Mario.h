@@ -8,8 +8,10 @@
 
 #define MARIO_VX 0.0f
 #define MARIO_VY 0.0f
-#define MARIO_WALKING_AX 0.0001f
-#define MARIO_RUNNING_AX 0.001f
+#define MARIO_WALKING_MAX_VX 0.1f
+#define MARIO_RUNNING_MAX_VX 0.4f
+#define MARIO_WALKING_AX 0.0002f
+#define MARIO_RUNNING_AX 0.00024f
 #define MARIO_JUMPING_AY -0.002f
 #define MARIO_SHARP false
 
@@ -170,4 +172,5 @@ public:
 	void DetermineAccelerator(float& ax, float& ay, DWORD& t);
 
 	void ChangeAnimation(int& ani);
+	void Accelerate(DWORD t, float ax, float ay);
 };

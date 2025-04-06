@@ -14,7 +14,7 @@ CMario::CMario(float x, float y):
 	CCreature(x, y, MARIO_SHARP, MARIO_LEVEL_SMALL)
 {
 	isSitting = false;
-	maxVx = 0.0f;
+	maxVx = MARIO_WALKING_MAX_VX;
 
 	decelerateTick = TICK_DECELERATE;
 	freefallTick = TICK_FREEFALL;
@@ -28,11 +28,13 @@ CMario::CMario(float x, float y):
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {
 	PrepareState();
-	DetermineState();	
+	DetermineState();
+
 	float ax, ay;	
 	ApplyState(ax, ay);
 	DetermineAccelerator(ax, ay, dt);
-	Move(dt, ax, ay);
+	Accelerate(dt, ax, ay);
+	Move(dt);
 
 	DebugOutTitle(L"vx: %f", vx);
 
@@ -253,9 +255,9 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 void CMario::Render()
 {
 	CAnimations* animations = CAnimations::GetInstance();
-	int aniId = ID_ANI_MARIO_SMALL_RUN_6_FRAMES_RIGHT;
+	int aniId = -1;
 
-	//ChangeAnimation(aniId);
+	ChangeAnimation(aniId);
 
 	animations->Get(aniId)->Render(x, y);
 
@@ -410,12 +412,15 @@ void CMario::ApplyState(float &ax, float &ay)
 	{
 		case MARIO_STATE_WALKING:
 			ax = MARIO_WALKING_AX;
+			maxVx = MARIO_WALKING_MAX_VX;
 			break;
 		case MARIO_STATE_RUNNING:
 			ax = MARIO_RUNNING_AX;
+			maxVx = MARIO_RUNNING_MAX_VX;
 			break;
 		default:
 			ax = 0.0f;
+			maxVx = MARIO_WALKING_MAX_VX;
 	}
 
 	switch (OnSkyState)
@@ -488,18 +493,83 @@ void CMario::DetermineAccelerator(float& applied_ax, float& applied_ay, DWORD& t
 
 void CMario::ChangeAnimation(int& ani)
 {
-	switch (OnLandState)
+	float abs_vx = abs(vx);
+
+	if (abs_vx == 0.0f)
 	{
-		default:
+		if (nx == DIRECTION_LEFT)
 		{
-			if (nx == DIRECTION_LEFT)
-			{
-				ani = ID_ANI_MARIO_SMALL_IDLE_LEFT;
-			}
-			else
-			{
-				ani = ID_ANI_MARIO_SMALL_IDLE_RIGHT;
-			}
+			ani = ID_ANI_MARIO_SMALL_IDLE_LEFT;
+		}
+		else
+		{
+			ani = ID_ANI_MARIO_SMALL_IDLE_RIGHT;
+		}
+	}
+	else if (abs_vx <= 0.04f)
+	{
+		if (nx == DIRECTION_LEFT)
+		{
+			ani = ID_ANI_MARIO_SMALL_RUN_6_FRAMES_LEFT;
+		}
+		else
+		{
+			ani = ID_ANI_MARIO_SMALL_RUN_6_FRAMES_RIGHT;
+		}
+	}
+	else if (abs_vx <= 0.08f)
+	{
+		if (nx == DIRECTION_LEFT)
+		{
+			ani = ID_ANI_MARIO_SMALL_RUN_5_FRAMES_LEFT;
+		}
+		else
+		{
+			ani = ID_ANI_MARIO_SMALL_RUN_5_FRAMES_RIGHT;
+		}
+	}
+	else if (abs_vx <= 0.12f)
+	{
+		if (nx == DIRECTION_LEFT)
+		{
+			ani = ID_ANI_MARIO_SMALL_RUN_4_FRAMES_LEFT;
+		}
+		else
+		{
+			ani = ID_ANI_MARIO_SMALL_RUN_4_FRAMES_RIGHT;
+		}
+	}
+	else if (abs_vx <= 0.16f)
+	{
+		if (nx == DIRECTION_LEFT)
+		{
+			ani = ID_ANI_MARIO_SMALL_RUN_3_FRAMES_LEFT;
+		}
+		else
+		{
+			ani = ID_ANI_MARIO_SMALL_RUN_3_FRAMES_RIGHT;
+		}
+	}
+	else if (abs_vx <= 0.2f)
+	{
+		if (nx == DIRECTION_LEFT)
+		{
+			ani = ID_ANI_MARIO_SMALL_RUN_2_FRAMES_LEFT;
+		}
+		else
+		{
+			ani = ID_ANI_MARIO_SMALL_RUN_2_FRAMES_RIGHT;
+		}
+	}
+	else 
+	{
+		if (nx == DIRECTION_LEFT)
+		{
+			ani = ID_ANI_MARIO_SMALL_RUN_1_FRAME_LEFT;
+		}
+		else
+		{
+			ani = ID_ANI_MARIO_SMALL_RUN_1_FRAME_RIGHT;
 		}
 	}
 
@@ -516,6 +586,20 @@ void CMario::ChangeAnimation(int& ani)
 				ani = ID_ANI_MARIO_SMALL_JUMP_RIGHT;
 			}
 		}
+	}
+}
+
+void CMario::Accelerate(DWORD t, float ax, float ay)
+{
+	CMovableObject::Accelerate(t, ax, ay);
+
+	if (vx > maxVx)
+	{
+		vx = maxVx;
+	}
+	else if (vx < -maxVx)
+	{
+		vx = -maxVx;
 	}
 }
 

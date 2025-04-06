@@ -8,11 +8,14 @@ CMovableObject::CMovableObject(float x, float y):
 	this->nx = 0;
 }
 
-void CMovableObject::Move(DWORD t, float ax, float ay)
+void CMovableObject::Move(DWORD t)
 {
-	x += vx * t + ax / 2 * t * t;
-	vx += ax * t;
+	x += vx * t;
+	y += vy * t;
+}
 
-	y += vy * t + ay / 2 * t * t;
+void CMovableObject::Accelerate(DWORD t, float ax, float ay)
+{
+	vx += ax * t;
 	vy += ay * t;
 }

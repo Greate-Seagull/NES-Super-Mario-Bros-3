@@ -48,7 +48,7 @@ void CGoomba::OnCollisionWith(LPCOLLISIONEVENT e)
 
 void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {
-	Move(dt, GOOMBA_AX, GOOMBA_AY);
+	Move(dt);
 
 	if ( (state==GOOMBA_STATE_DIE) && (GetTickCount64() - die_start > GOOMBA_DIE_TIMEOUT) )
 	{
