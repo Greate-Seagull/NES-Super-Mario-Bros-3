@@ -8,14 +8,27 @@
 
 #define MARIO_VX 0.0f
 #define MARIO_VY 0.0f
-#define MARIO_AX 0.0f
-#define MARIO_AY 0.002f
+#define MARIO_WALKING_AX 0.0005f
+#define MARIO_RUNNING_AX 0.001f
+#define MARIO_JUMPING_AY -0.002f
 #define MARIO_SHARP false
+
+#define FRICTION_VX 0.95f
 
 //life
 #define	MARIO_LEVEL_SMALL	1.0f
 #define	MARIO_LEVEL_BIG		2.0f
 #define MARIO_LEVEL_RACOON	3.0f
+
+//state
+#define MARIO_STATE_DIE				-1
+#define MARIO_STATE_STANDING		0
+//On land state
+#define MARIO_STATE_SITTING			1
+#define MARIO_STATE_WALKING			2
+#define MARIO_STATE_RUNNING			3
+//On sky state
+#define MARIO_STATE_JUMPING			1
 
 #define MARIO_WALKING_SPEED		0.1f
 #define MARIO_RUNNING_SPEED		0.2f
@@ -29,21 +42,6 @@
 #define MARIO_GRAVITY			0.002f
 
 #define MARIO_JUMP_DEFLECT_SPEED  0.4f
-
-#define MARIO_STATE_DIE				-10
-#define MARIO_STATE_IDLE			0
-#define MARIO_STATE_WALKING_RIGHT	100
-#define MARIO_STATE_WALKING_LEFT	200
-
-#define MARIO_STATE_JUMP			300
-#define MARIO_STATE_RELEASE_JUMP    301
-
-#define MARIO_STATE_RUNNING_RIGHT	400
-#define MARIO_STATE_RUNNING_LEFT	500
-
-#define MARIO_STATE_SIT				600
-#define MARIO_STATE_SIT_RELEASE		601
-
 
 #pragma region ANIMATION_ID
 
@@ -111,23 +109,26 @@ class CMario : public CCreature
 	BOOLEAN isSitting;
 	float maxVx;
 
+	int OnLandState;
+	int OnSkyState;
+
 	int untouchable; 
 	ULONGLONG untouchable_start;
 	BOOLEAN isOnPlatform;
 	int coin; 
 
-	void OnCollisionWithGoomba(LPCOLLISIONEVENT e);
+	/*void OnCollisionWithGoomba(LPCOLLISIONEVENT e);
 	void OnCollisionWithCoin(LPCOLLISIONEVENT e);
 	void OnCollisionWithPortal(LPCOLLISIONEVENT e);
 
 	int GetAniIdBig();
-	int GetAniIdSmall();
+	int GetAniIdSmall();*/
 
 public:
 	CMario(float x, float y);
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 	void Render();
-	void SetState(int state);
+	/*void SetState(int state);
 
 	int IsCollidable()
 	{ 
@@ -140,7 +141,12 @@ public:
 	void OnCollisionWith(LPCOLLISIONEVENT e);
 
 	void SetLevel(int l);
-	void StartUntouchable() { untouchable = 1; untouchable_start = GetTickCount64(); }
+	void StartUntouchable() { untouchable = 1; untouchable_start = GetTickCount64(); }*/
 
 	void GetBoundingBox(float& left, float& top, float& right, float& bottom);
+
+	void PrepareState();
+	void DetermineState();
+	void ApplyState(float &ax, float &ay);
+	void DetermineAccelerator(float& ax, float& ay);
 };

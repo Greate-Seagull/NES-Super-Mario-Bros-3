@@ -4,16 +4,20 @@
 
 #define KEYBOARD_STATE_SIZE 256
 
+#define VK_S 0x53
+#define VK_A 0x41
+
 class KeyStateManager
 {
 private:
 	bool newKeyState[KEYBOARD_STATE_SIZE];
 	bool oldKeyState[KEYBOARD_STATE_SIZE];
 public:
-	KeyStateManager() {};
+	KeyStateManager();
 
 	void Update();
 
-	bool IsHold(char key);
-	bool IsPressed(char key);
+	bool IsHold(int key);
+	bool IsPressed(int key);
+	bool IsReleased(int key);
 };

@@ -318,6 +318,20 @@ LPTEXTURE CGame::LoadTexture(LPCWSTR texturePath)
 	return new CTexture(tex, gSpriteTextureRV);
 }
 
+void CGame::Update(DWORD dt)
+{
+	keyState->Update();
+	GetCurrentScene()->Update(dt);
+	DebugOutTitle(L"VK_LEFT Hold: %d | Pressed: %d",
+		keyState->IsHold(VK_LEFT),
+		keyState->IsPressed(VK_LEFT));
+}
+
+void CGame::Render()
+{
+	GetCurrentScene()->Render();
+}
+
 void CGame::InitKeyboard()
 {
 	keyState = new KeyStateManager();

@@ -71,7 +71,7 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 */
 void Update(DWORD dt)
 {
-	CGame::GetInstance()->GetCurrentScene()->Update(dt);
+	CGame::GetInstance()->Update(dt);
 }
 
 /*
@@ -93,7 +93,7 @@ void Render()
 	FLOAT NewBlendFactor[4] = { 0,0,0,0 };
 	pD3DDevice->OMSetBlendState(g->GetAlphaBlending(), NewBlendFactor, 0xffffffff);
 
-	CGame::GetInstance()->GetCurrentScene()->Render();
+	CGame::GetInstance()->Render();
 
 	spriteHandler->End();
 	pSwapChain->Present(0, 0);
@@ -173,7 +173,6 @@ int Run()
 		{
 			frameStart = now;
 
-			CGame::GetInstance()->GetKeyboard()->Update();
 			Update(dt);
 			Render();
 

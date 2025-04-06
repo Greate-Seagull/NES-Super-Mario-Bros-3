@@ -2,6 +2,10 @@
 
 #include "GameObject.h"
 
+#define DIRECTION_LEFT -1
+#define DIRECTION_RIGHT 1
+#define DIRECTION_REMAIN 0
+
 class CMovableObject : public CGameObject
 {
 protected:

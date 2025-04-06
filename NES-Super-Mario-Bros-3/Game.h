@@ -85,6 +85,10 @@ public:
 
 	LPTEXTURE LoadTexture(LPCWSTR texturePath);
 
+	//main
+	void Update(DWORD dt);
+	void Render();
+
 	// Keyboard related functions 
 	void InitKeyboard();
 	KeyStateManager* GetKeyboard();
