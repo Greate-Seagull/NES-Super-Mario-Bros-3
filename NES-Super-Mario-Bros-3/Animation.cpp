@@ -37,3 +37,11 @@ void CAnimation::Render(float x, float y)
 	frames[currentFrame]->GetSprite()->Draw(x, y);
 }
 
+void CAnimation::ChangeTimePerFrame(DWORD time)
+{
+	for (LPANIMATION_FRAME frame : frames)
+	{
+		frame->SetTime(time);
+	}
+}
+

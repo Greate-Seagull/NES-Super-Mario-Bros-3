@@ -32,15 +32,6 @@
 //state
 #define MARIO_STATE_DIE				-2
 
-//velocity division
-#define SPEED_1_FRAME	0.4f
-#define SPEED_2_FRAMES	0.2f
-#define SPEED_3_FRAMES	0.16f
-#define SPEED_4_FRAMES	0.12f
-#define SPEED_5_FRAMES	0.08f
-#define SPEED_6_FRAMES	0.04f
-#define SPEED_IDLE		0.0f
-
 #define MARIO_ACCEL_WALK_X	0.0005f
 #define MARIO_ACCEL_RUN_X	0.0007f
 
@@ -61,16 +52,11 @@
 #define ID_ANI_RACOON 2000
 // 100
 #define ID_ANI_IDLE 0
-#define ID_ANI_RUN_6_FRAMES 160
-#define ID_ANI_RUN_5_FRAMES 150
-#define ID_ANI_RUN_4_FRAMES 140
-#define ID_ANI_RUN_3_FRAMES 130
-#define ID_ANI_RUN_2_FRAMES 120
-#define ID_ANI_RUN_1_FRAMES 110
-#define ID_ANI_FLY			100
 #define ID_ANI_JUMP 10
 #define ID_ANI_FALL 20
 #define ID_ANI_SIT 30
+#define ID_ANI_RUN 40
+#define ID_ANI_BRACE 50
 // 1
 #define ID_ANI_LEFT 0
 #define ID_ANI_RIGHT 1
@@ -130,7 +116,7 @@ public:
 	//int IsBlocking() { return (state != MARIO_STATE_DIE && untouchable==0); }
 
 	//void OnNoCollision(DWORD dt);
-	void OnCollisionWith(LPCOLLISIONEVENT e);
+	//void OnCollisionWith(LPCOLLISIONEVENT e);
 
 	//void SetLevel(int l);
 	//void StartUntouchable() { untouchable = 1; untouchable_start = GetTickCount64(); }
@@ -141,6 +127,7 @@ public:
 	void ApplyState(float &ax, float &ay);
 	void ApplySmallState(float &ax, float &ay);
 	void ApplyBigState(float& ax, float& ay);
+	void ApplyRacoonState(float& ax, float& ay);
 	void DetermineAccelerator(float& ax, float& ay, DWORD& t);
 
 	void ChangeAnimation();

@@ -36,7 +36,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	Accelerate(dt, ax, ay);
 	Move(dt);
 
-	DebugOutTitle(L"y: %f", y);
+	//DebugOutTitle(L"y: %f", y);
 
 	//if (abs(vx) > abs(maxVx)) vx = maxVx;
 
@@ -392,7 +392,7 @@ void CMario::ApplyState(float& ax, float& ay)
 {
 	if (life == MARIO_LEVEL_RACOON)
 	{
-
+		ApplyRacoonState(ax, ay);
 	}
 	else if (life == MARIO_LEVEL_BIG)
 	{
@@ -421,6 +421,22 @@ void CMario::ApplySmallState(float &ax, float &ay)
 }
 
 void CMario::ApplyBigState(float& ax, float& ay)
+{
+	if (isBoost)
+	{
+		ax = MARIO_BIG_RUNNING_AX;
+		maxVx = MARIO_SMALL_RUNNING_MAX_VX;
+	}
+	else
+	{
+		ax = MARIO_BIG_WALKING_AX;
+		maxVx = MARIO_SMALL_WALKING_MAX_VX;
+	}
+
+	ay = MARIO_JUMPING_AY;
+}
+
+void CMario::ApplyRacoonState(float& ax, float& ay)
 {
 	if (isBoost)
 	{
@@ -506,54 +522,46 @@ void CMario::ChangeAnimation()
 		level = ID_ANI_BIG;
 	}
 
-	float abs_vx = abs(vx);
-	int action = ID_ANI_IDLE;
-	if (isSitting)
-	{
-		action = ID_ANI_SIT;
-	}
-	else if (abs_vx == SPEED_IDLE)
-	{
-		action = ID_ANI_IDLE;
-	}
-	else if (abs_vx <= SPEED_6_FRAMES)
-	{
-		action = ID_ANI_RUN_6_FRAMES;
-	}
-	else if (abs_vx <= SPEED_5_FRAMES)
-	{
-		action = ID_ANI_RUN_5_FRAMES;
-	}
-	else if (abs_vx <= SPEED_4_FRAMES)
-	{
-		action = ID_ANI_RUN_4_FRAMES;
-	}
-	else if (abs_vx <= SPEED_3_FRAMES)
-	{
-		action = ID_ANI_RUN_3_FRAMES;
-	}
-	else if (abs_vx <= SPEED_2_FRAMES)
-	{
-		action = ID_ANI_RUN_2_FRAMES;
-	}
-	else if (abs_vx <= SPEED_1_FRAME)
-	{
-		action = ID_ANI_RUN_1_FRAMES;
-	}
-
-	if (vy < 0)
-	{
-		if(action != ID_ANI_SIT)
-			action = ID_ANI_JUMP;
-	}
-
 	int direction = ID_ANI_LEFT;
 	if (nx == DIRECTION_RIGHT)
 	{
 		direction = ID_ANI_RIGHT;
 	}
+	
+	int action = ID_ANI_IDLE;
+	if (isSitting)
+	{
+		action = ID_ANI_SIT;
+	}
+	else if (vy < 0)
+	{
+		action = ID_ANI_JUMP;
+	}
+	else if (vx == 0)
+	{
+		action = ID_ANI_IDLE;
+	}
+	else if (vx > 0 && nx == DIRECTION_LEFT)
+	{
+		action = ID_ANI_BRACE;
+	}
+	else if (vx < 0 && nx == DIRECTION_RIGHT)
+	{
+		action = ID_ANI_BRACE;
+	}
+	else
+	{
+		action = ID_ANI_RUN;
+		
+		aniID = ID_ANI_MARIO + level + action + direction;		
+		CAnimations* animations = CAnimations::GetInstance();
+		DWORD time = (MARIO_SMALL_RUNNING_MAX_VX - abs(vx)) / MARIO_SMALL_RUNNING_MAX_VX * TIME_FRAME;
 
-	aniID = ID_ANI_MARIO + level + action + direction;
+		animations->Get(aniID)->ChangeTimePerFrame(time);
+		DebugOutTitle(L"time: %d", time);
+	}
+
+	aniID = ID_ANI_MARIO + level + action + direction;	
 }
 
 void CMario::Accelerate(DWORD t, float ax, float ay)
