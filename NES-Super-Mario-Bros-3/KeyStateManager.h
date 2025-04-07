@@ -6,6 +6,9 @@
 
 #define VK_S 0x53
 #define VK_A 0x41
+#define VK_1 0x31
+#define VK_2 0x32
+#define VK_3 0x33
 
 class KeyStateManager
 {

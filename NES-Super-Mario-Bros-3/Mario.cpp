@@ -14,7 +14,8 @@ CMario::CMario(float x, float y):
 	CCreature(x, y, MARIO_SHARP, MARIO_LEVEL_SMALL)
 {
 	isSitting = false;
-	maxVx = MARIO_WALKING_MAX_VX;
+	isBoost = false;
+	maxVx = MARIO_SMALL_WALKING_MAX_VX;
 
 	decelerateTick = TICK_DECELERATE;
 	freefallTick = TICK_FREEFALL;
@@ -27,7 +28,6 @@ CMario::CMario(float x, float y):
 
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {
-	PrepareState();
 	DetermineState();
 
 	float ax, ay;	
@@ -36,7 +36,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	Accelerate(dt, ax, ay);
 	Move(dt);
 
-	DebugOutTitle(L"vx: %f", vx);
+	DebugOutTitle(L"y: %f", y);
 
 	//if (abs(vx) > abs(maxVx)) vx = maxVx;
 
@@ -255,11 +255,10 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 void CMario::Render()
 {
 	CAnimations* animations = CAnimations::GetInstance();
-	int aniId = -1;
 
-	ChangeAnimation(aniId);
+	ChangeAnimation();
 
-	animations->Get(aniId)->Render(x, y);
+	animations->Get(aniID)->Render(x, y);
 
 	//RenderBoundingBox();
 	
@@ -372,65 +371,69 @@ void CMario::DetermineState()
 {
 	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
 
-	//only standing can start sitting
-	if (keyState->IsHold(VK_DOWN))
+	if (keyState->IsPressed(VK_1))
 	{
-		if (OnLandState == MARIO_STATE_STANDING && OnSkyState == MARIO_STATE_STANDING)
-		{
-			OnLandState = MARIO_STATE_SITTING;
-		}
+		life = MARIO_LEVEL_SMALL;
+	}
+	else if (keyState->IsPressed(VK_2))
+	{
+		life = MARIO_LEVEL_BIG;
+	}
+	else if (keyState->IsPressed(VK_3))
+	{
+		life = MARIO_LEVEL_RACOON;
 	}
 
-	//walk anyway even though sit / stand / walk / run
-	if (keyState->IsHold(VK_LEFT))
-	{
-		OnLandState = MARIO_STATE_WALKING;
-	}
-	if (keyState->IsHold(VK_RIGHT))
-	{
-		OnLandState = MARIO_STATE_WALKING;
-	}
+	isSitting = keyState->IsHold(VK_DOWN) && !keyState->IsHold(VK_LEFT) && !keyState->IsHold(VK_RIGHT);
+	isBoost = keyState->IsHold(VK_A);
+}
 
-	//only walking can start running
-	if (keyState->IsHold(VK_A))
+void CMario::ApplyState(float& ax, float& ay)
+{
+	if (life == MARIO_LEVEL_RACOON)
 	{
-		if (OnLandState == MARIO_STATE_WALKING)
-		{
-			OnLandState = MARIO_STATE_RUNNING;
-		}
-	}
 
-	if (keyState->IsHold(VK_S))
+	}
+	else if (life == MARIO_LEVEL_BIG)
 	{
-		OnSkyState = MARIO_STATE_JUMPING;
+		ApplyBigState(ax, ay);
+	}
+	else
+	{
+		ApplySmallState(ax, ay);
 	}
 }
 
-void CMario::ApplyState(float &ax, float &ay)
+void CMario::ApplySmallState(float &ax, float &ay)
 {
-	switch (OnLandState)
+	if (isBoost)
 	{
-		case MARIO_STATE_WALKING:
-			ax = MARIO_WALKING_AX;
-			maxVx = MARIO_WALKING_MAX_VX;
-			break;
-		case MARIO_STATE_RUNNING:
-			ax = MARIO_RUNNING_AX;
-			maxVx = MARIO_RUNNING_MAX_VX;
-			break;
-		default:
-			ax = 0.0f;
-			maxVx = MARIO_WALKING_MAX_VX;
+		ax = MARIO_SMALL_RUNNING_AX;
+		maxVx = MARIO_SMALL_RUNNING_MAX_VX;
+	}
+	else
+	{
+		ax = MARIO_SMALL_WALKING_AX;
+		maxVx = MARIO_SMALL_WALKING_MAX_VX;
 	}
 
-	switch (OnSkyState)
+	ay = MARIO_JUMPING_AY;
+}
+
+void CMario::ApplyBigState(float& ax, float& ay)
+{
+	if (isBoost)
 	{
-		case MARIO_STATE_JUMPING:
-			ay = MARIO_JUMPING_AY;
-			break;
-		default:
-			ay = 0.0f;
+		ax = MARIO_BIG_RUNNING_AX;
+		maxVx = MARIO_SMALL_RUNNING_MAX_VX;
 	}
+	else
+	{
+		ax = MARIO_BIG_WALKING_AX;
+		maxVx = MARIO_SMALL_WALKING_MAX_VX;
+	}
+
+	ay = MARIO_JUMPING_AY;
 }
 
 void CMario::DetermineAccelerator(float& applied_ax, float& applied_ay, DWORD& t)
@@ -468,7 +471,7 @@ void CMario::DetermineAccelerator(float& applied_ax, float& applied_ay, DWORD& t
 
 	if (keyState->IsHold(VK_S))
 	{
-		ay = applied_ay;
+		ay += applied_ay;
 		freefallTick = TICK_FREEFALL;
 	}
 	else
@@ -491,102 +494,66 @@ void CMario::DetermineAccelerator(float& applied_ax, float& applied_ay, DWORD& t
 	applied_ay = ay;
 }
 
-void CMario::ChangeAnimation(int& ani)
+void CMario::ChangeAnimation()
 {
+	int level = ID_ANI_SMALL;
+	if (life == MARIO_LEVEL_RACOON)
+	{
+		level = ID_ANI_RACOON;
+	}
+	else if (life == MARIO_LEVEL_BIG)
+	{
+		level = ID_ANI_BIG;
+	}
+
 	float abs_vx = abs(vx);
-
-	if (abs_vx == 0.0f)
+	int action = ID_ANI_IDLE;
+	if (isSitting)
 	{
-		if (nx == DIRECTION_LEFT)
-		{
-			ani = ID_ANI_MARIO_SMALL_IDLE_LEFT;
-		}
-		else
-		{
-			ani = ID_ANI_MARIO_SMALL_IDLE_RIGHT;
-		}
+		action = ID_ANI_SIT;
 	}
-	else if (abs_vx <= 0.04f)
+	else if (abs_vx == SPEED_IDLE)
 	{
-		if (nx == DIRECTION_LEFT)
-		{
-			ani = ID_ANI_MARIO_SMALL_RUN_6_FRAMES_LEFT;
-		}
-		else
-		{
-			ani = ID_ANI_MARIO_SMALL_RUN_6_FRAMES_RIGHT;
-		}
+		action = ID_ANI_IDLE;
 	}
-	else if (abs_vx <= 0.08f)
+	else if (abs_vx <= SPEED_6_FRAMES)
 	{
-		if (nx == DIRECTION_LEFT)
-		{
-			ani = ID_ANI_MARIO_SMALL_RUN_5_FRAMES_LEFT;
-		}
-		else
-		{
-			ani = ID_ANI_MARIO_SMALL_RUN_5_FRAMES_RIGHT;
-		}
+		action = ID_ANI_RUN_6_FRAMES;
 	}
-	else if (abs_vx <= 0.12f)
+	else if (abs_vx <= SPEED_5_FRAMES)
 	{
-		if (nx == DIRECTION_LEFT)
-		{
-			ani = ID_ANI_MARIO_SMALL_RUN_4_FRAMES_LEFT;
-		}
-		else
-		{
-			ani = ID_ANI_MARIO_SMALL_RUN_4_FRAMES_RIGHT;
-		}
+		action = ID_ANI_RUN_5_FRAMES;
 	}
-	else if (abs_vx <= 0.16f)
+	else if (abs_vx <= SPEED_4_FRAMES)
 	{
-		if (nx == DIRECTION_LEFT)
-		{
-			ani = ID_ANI_MARIO_SMALL_RUN_3_FRAMES_LEFT;
-		}
-		else
-		{
-			ani = ID_ANI_MARIO_SMALL_RUN_3_FRAMES_RIGHT;
-		}
+		action = ID_ANI_RUN_4_FRAMES;
 	}
-	else if (abs_vx <= 0.2f)
+	else if (abs_vx <= SPEED_3_FRAMES)
 	{
-		if (nx == DIRECTION_LEFT)
-		{
-			ani = ID_ANI_MARIO_SMALL_RUN_2_FRAMES_LEFT;
-		}
-		else
-		{
-			ani = ID_ANI_MARIO_SMALL_RUN_2_FRAMES_RIGHT;
-		}
+		action = ID_ANI_RUN_3_FRAMES;
 	}
-	else 
+	else if (abs_vx <= SPEED_2_FRAMES)
 	{
-		if (nx == DIRECTION_LEFT)
-		{
-			ani = ID_ANI_MARIO_SMALL_RUN_1_FRAME_LEFT;
-		}
-		else
-		{
-			ani = ID_ANI_MARIO_SMALL_RUN_1_FRAME_RIGHT;
-		}
+		action = ID_ANI_RUN_2_FRAMES;
+	}
+	else if (abs_vx <= SPEED_1_FRAME)
+	{
+		action = ID_ANI_RUN_1_FRAMES;
 	}
 
-	switch (OnSkyState)
+	if (vy < 0)
 	{
-		case MARIO_STATE_JUMPING:
-		{
-			if (nx == DIRECTION_LEFT)
-			{
-				ani = ID_ANI_MARIO_SMALL_JUMP_LEFT;
-			}
-			else
-			{
-				ani = ID_ANI_MARIO_SMALL_JUMP_RIGHT;
-			}
-		}
+		if(action != ID_ANI_SIT)
+			action = ID_ANI_JUMP;
 	}
+
+	int direction = ID_ANI_LEFT;
+	if (nx == DIRECTION_RIGHT)
+	{
+		direction = ID_ANI_RIGHT;
+	}
+
+	aniID = ID_ANI_MARIO + level + action + direction;
 }
 
 void CMario::Accelerate(DWORD t, float ax, float ay)
@@ -600,15 +567,6 @@ void CMario::Accelerate(DWORD t, float ax, float ay)
 	else if (vx < -maxVx)
 	{
 		vx = -maxVx;
-	}
-}
-
-void CMario::PrepareState()
-{
-	if (vx == 0 && vy == 0)
-	{
-		OnLandState = MARIO_STATE_STANDING;
-		OnSkyState = MARIO_STATE_STANDING;
 	}
 }
 

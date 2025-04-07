@@ -8,11 +8,17 @@
 
 #define MARIO_VX 0.0f
 #define MARIO_VY 0.0f
-#define MARIO_WALKING_MAX_VX 0.1f
-#define MARIO_RUNNING_MAX_VX 0.4f
-#define MARIO_WALKING_AX 0.0002f
-#define MARIO_RUNNING_AX 0.00024f
-#define MARIO_JUMPING_AY -0.002f
+#define MARIO_SMALL_WALKING_MAX_VX 0.1f
+#define MARIO_SMALL_RUNNING_MAX_VX 0.4f
+
+
+#define MARIO_SMALL_WALKING_AX 0.0002f
+#define MARIO_SMALL_RUNNING_AX 0.00024f
+
+#define MARIO_BIG_WALKING_AX 0.00016f
+#define MARIO_BIG_RUNNING_AX 0.0002f
+
+#define MARIO_JUMPING_AY -0.0002f
 #define MARIO_SHARP false
 
 #define TICK_DECELERATE 500
@@ -24,19 +30,16 @@
 #define MARIO_LEVEL_RACOON	3.0f
 
 //state
-//appear on both state
 #define MARIO_STATE_DIE				-2
-#define MARIO_STATE_RELEASE			-1
-#define MARIO_STATE_STANDING		0
-//On land state
-#define MARIO_STATE_SITTING			1
-#define MARIO_STATE_WALKING			2
-#define MARIO_STATE_RUNNING			3
-//On sky state
-#define MARIO_STATE_JUMPING			1
 
-#define MARIO_WALKING_SPEED		0.1f
-#define MARIO_RUNNING_SPEED		0.2f
+//velocity division
+#define SPEED_1_FRAME	0.4f
+#define SPEED_2_FRAMES	0.2f
+#define SPEED_3_FRAMES	0.16f
+#define SPEED_4_FRAMES	0.12f
+#define SPEED_5_FRAMES	0.08f
+#define SPEED_6_FRAMES	0.04f
+#define SPEED_IDLE		0.0f
 
 #define MARIO_ACCEL_WALK_X	0.0005f
 #define MARIO_ACCEL_RUN_X	0.0007f
@@ -50,60 +53,27 @@
 
 #pragma region ANIMATION_ID
 
-#define ID_ANI_MARIO_IDLE_RIGHT 400
-#define ID_ANI_MARIO_IDLE_LEFT 401
-
-#define ID_ANI_MARIO_WALKING_RIGHT 500
-#define ID_ANI_MARIO_WALKING_LEFT 501
-
-#define ID_ANI_MARIO_RUNNING_RIGHT 600
-#define ID_ANI_MARIO_RUNNING_LEFT 601
-
-#define ID_ANI_MARIO_JUMP_WALK_RIGHT 700
-#define ID_ANI_MARIO_JUMP_WALK_LEFT 701
-
-#define ID_ANI_MARIO_JUMP_RUN_RIGHT 800
-#define ID_ANI_MARIO_JUMP_RUN_LEFT 801
-
-#define ID_ANI_MARIO_SIT_RIGHT 900
-#define ID_ANI_MARIO_SIT_LEFT 901
-
-#define ID_ANI_MARIO_BRACE_RIGHT 1000
-#define ID_ANI_MARIO_BRACE_LEFT 1001
-
-#define ID_ANI_MARIO_DIE 999
-
-// SMALL MARIO
-//Standing
-#define ID_ANI_MARIO_SMALL_IDLE_LEFT 1100
-#define ID_ANI_MARIO_SMALL_IDLE_RIGHT 1101
-//Jumping
-#define ID_ANI_MARIO_SMALL_JUMP_LEFT 1200
-#define ID_ANI_MARIO_SMALL_JUMP_RIGHT 1201
-//Running stage
-#define ID_ANI_MARIO_SMALL_RUN_1_FRAME_LEFT 1300
-#define ID_ANI_MARIO_SMALL_RUN_1_FRAME_RIGHT 1301
-
-#define ID_ANI_MARIO_SMALL_RUN_2_FRAMES_LEFT 1310
-#define ID_ANI_MARIO_SMALL_RUN_2_FRAMES_RIGHT 1311
-
-#define ID_ANI_MARIO_SMALL_RUN_3_FRAMES_LEFT 1320
-#define ID_ANI_MARIO_SMALL_RUN_3_FRAMES_RIGHT 1321
-
-#define ID_ANI_MARIO_SMALL_RUN_4_FRAMES_LEFT 1330
-#define ID_ANI_MARIO_SMALL_RUN_4_FRAMES_RIGHT 1331
-
-#define ID_ANI_MARIO_SMALL_RUN_5_FRAMES_LEFT 1340
-#define ID_ANI_MARIO_SMALL_RUN_5_FRAMES_RIGHT 1341
-
-#define ID_ANI_MARIO_SMALL_RUN_6_FRAMES_LEFT 1350
-#define ID_ANI_MARIO_SMALL_RUN_6_FRAMES_RIGHT 1351
-//#define ID_ANI_MARIO_SMALL_BRACE_RIGHT 1400
-//#define ID_ANI_MARIO_SMALL_BRACE_LEFT 1401
-//
-//#define ID_ANI_MARIO_SMALL_JUMP_WALK_RIGHT 1500
-//#define ID_ANI_MARIO_SMALL_JUMP_WALK_LEFT 1501
-
+// 10000
+#define ID_ANI_MARIO 10000
+// 1000
+#define ID_ANI_SMALL 0
+#define ID_ANI_BIG 1000
+#define ID_ANI_RACOON 2000
+// 100
+#define ID_ANI_IDLE 0
+#define ID_ANI_RUN_6_FRAMES 160
+#define ID_ANI_RUN_5_FRAMES 150
+#define ID_ANI_RUN_4_FRAMES 140
+#define ID_ANI_RUN_3_FRAMES 130
+#define ID_ANI_RUN_2_FRAMES 120
+#define ID_ANI_RUN_1_FRAMES 110
+#define ID_ANI_FLY			100
+#define ID_ANI_JUMP 10
+#define ID_ANI_FALL 20
+#define ID_ANI_SIT 30
+// 1
+#define ID_ANI_LEFT 0
+#define ID_ANI_RIGHT 1
 
 #pragma endregion
 
@@ -124,11 +94,12 @@
 
 class CMario : public CCreature
 {
-	BOOLEAN isSitting;
 	float maxVx;
 
-	int OnLandState;
-	int OnSkyState;
+	bool isSitting;
+	bool isBoost;
+
+	int aniID;
 
 	DWORD decelerateTick;
 	DWORD freefallTick;
@@ -149,28 +120,29 @@ public:
 	CMario(float x, float y);
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 	void Render();
-	/*void SetState(int state);
+	//void SetState(int state);
 
-	int IsCollidable()
+	/*int IsCollidable()
 	{ 
 		return (state != MARIO_STATE_DIE); 
-	}
+	}*/
 
-	int IsBlocking() { return (state != MARIO_STATE_DIE && untouchable==0); }
+	//int IsBlocking() { return (state != MARIO_STATE_DIE && untouchable==0); }
 
-	void OnNoCollision(DWORD dt);
+	//void OnNoCollision(DWORD dt);
 	void OnCollisionWith(LPCOLLISIONEVENT e);
 
-	void SetLevel(int l);
-	void StartUntouchable() { untouchable = 1; untouchable_start = GetTickCount64(); }*/
+	//void SetLevel(int l);
+	//void StartUntouchable() { untouchable = 1; untouchable_start = GetTickCount64(); }
 
 	void GetBoundingBox(float& left, float& top, float& right, float& bottom);
 
-	void PrepareState();
 	void DetermineState();
 	void ApplyState(float &ax, float &ay);
+	void ApplySmallState(float &ax, float &ay);
+	void ApplyBigState(float& ax, float& ay);
 	void DetermineAccelerator(float& ax, float& ay, DWORD& t);
 
-	void ChangeAnimation(int& ani);
+	void ChangeAnimation();
 	void Accelerate(DWORD t, float ax, float ay);
 };

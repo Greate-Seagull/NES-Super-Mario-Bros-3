@@ -21,8 +21,6 @@ protected:
 	float x; 
 	float y;
 
-	int nx;	 
-
 	int state;
 
 	bool isDeleted; 
