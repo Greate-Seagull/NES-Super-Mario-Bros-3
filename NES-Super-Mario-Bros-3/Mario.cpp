@@ -16,6 +16,7 @@ CMario::CMario(float x, float y):
 {
 	isSitting = false;
 	isBoost = false;
+	isFalling = false;
 	maxVx = MARIO_SMALL_WALKING_MAX_VX;
 
 	decelerateTick = TICK_DECELERATE;
@@ -29,6 +30,7 @@ CMario::CMario(float x, float y):
 
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {
+	dt = min(18, dt);
 	ProcessLifeState();	
 	DetermineState();
 
@@ -39,7 +41,8 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	CCollision::GetInstance()->Process(this, dt, coObjects);
 	Move(dt);
 
-	//DebugOutTitle(L"y: %f", y);
+	if(dt > 30)
+		DebugOutTitle(L"times: %d", dt);
 
 	//// reset untouchable timer if untouchable time has passed
 	//if ( GetTickCount64() - untouchable_start > MARIO_UNTOUCHABLE_TIME) 
@@ -56,8 +59,6 @@ void CMario::OnNoCollision(DWORD dt)
 
 void CMario::OnCollisionWith(LPCOLLISIONEVENT e)
 {	
-	DebugOutTitle(L"object: ", e->obj->ToString());
-
 	if (dynamic_cast<CCreature*>(e->obj))
 		OnCollisionWithCreature(e);
 	else if (dynamic_cast<CCoin*>(e->obj))
@@ -103,6 +104,7 @@ void CMario::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 	if (e->ny)
 	{
 		vy = 0;
+		isFalling = false;
 	}	
 }
 
@@ -270,8 +272,6 @@ void CMario::ApplySmallState(float &ax, float &ay)
 		ax = MARIO_SMALL_WALKING_AX;
 		maxVx = MARIO_SMALL_WALKING_MAX_VX;
 	}
-
-	ay = MARIO_JUMPING_AY;
 }
 
 void CMario::ApplyBigState(float& ax, float& ay)
@@ -286,8 +286,6 @@ void CMario::ApplyBigState(float& ax, float& ay)
 		ax = MARIO_BIG_WALKING_AX;
 		maxVx = MARIO_SMALL_WALKING_MAX_VX;
 	}
-
-	ay = MARIO_JUMPING_AY;
 }
 
 void CMario::ApplyRacoonState(float& ax, float& ay)
@@ -302,8 +300,6 @@ void CMario::ApplyRacoonState(float& ax, float& ay)
 		ax = MARIO_BIG_WALKING_AX;
 		maxVx = MARIO_SMALL_WALKING_MAX_VX;
 	}
-
-	ay = MARIO_JUMPING_AY;
 }
 
 void CMario::DetermineAccelerator(float& applied_ax, float& applied_ay, DWORD& t)
@@ -339,11 +335,20 @@ void CMario::DetermineAccelerator(float& applied_ax, float& applied_ay, DWORD& t
 		decelerateTick = TICK_DECELERATE;
 	}
 
-	if (keyState->IsHold(VK_S))
+	if (keyState->IsPressed(VK_S) && !isFalling)
 	{
-		ay += applied_ay;
-		freefallTick = TICK_FREEFALL;
+		ay += MARIO_START_JUMPING_AY;
 	}
+	if (keyState->IsHold(VK_S) && !isFalling)
+	{
+		if(abs(vy) <= MARIO_SMALL_JUMPING_MAX_VY)
+			ay += -MARIO_GRAVITY;
+	}
+	else if (keyState->IsReleased(VK_S))
+	{
+		isFalling = true;
+	}
+	//DebugOutTitle(L"hold S: %d", keyState->IsPressed(VK_S));
 	
 
 	if (nx)

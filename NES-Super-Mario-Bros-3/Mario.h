@@ -12,6 +12,7 @@
 #define MARIO_VY 0.0f
 #define MARIO_SMALL_WALKING_MAX_VX 0.1f
 #define MARIO_SMALL_RUNNING_MAX_VX 0.4f
+#define MARIO_SMALL_JUMPING_MAX_VY 0.15f
 
 #define MARIO_SMALL_WALKING_AX 0.0002f
 #define MARIO_SMALL_RUNNING_AX 0.00024f
@@ -19,11 +20,13 @@
 #define MARIO_BIG_WALKING_AX 0.00016f
 #define MARIO_BIG_RUNNING_AX 0.0002f
 
-#define MARIO_JUMPING_AY -0.0002f
+#define MARIO_START_JUMPING_AY -0.015f - MARIO_GRAVITY
 #define MARIO_SHARP false
 
 #define TICK_DECELERATE 500
 #define TICK_FREEFALL 500
+
+#define MARIO_MAX_JUMP_HEIGHT 85.0f
 
 //life
 #define	MARIO_LEVEL_SMALL	1.0f
@@ -39,7 +42,7 @@
 #define MARIO_JUMP_SPEED_Y		0.5f
 #define MARIO_JUMP_RUN_SPEED_Y	0.6f
 
-#define MARIO_GRAVITY			0.002f
+#define MARIO_GRAVITY			0.001f
 
 #define MARIO_JUMP_DEFLECT_SPEED  0.4f
 
@@ -83,8 +86,10 @@ class CMario : public CCreature
 {
 	float maxVx;
 
+	bool isOnSky;
 	bool isSitting;
 	bool isBoost;
+	bool isFalling;
 
 	int aniID;
 
