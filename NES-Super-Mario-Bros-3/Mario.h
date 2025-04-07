@@ -6,11 +6,12 @@
 
 #include "debug.h"
 
+#define MARIO_BIG_TRANSFORMATION_OFFSET -7
+
 #define MARIO_VX 0.0f
 #define MARIO_VY 0.0f
 #define MARIO_SMALL_WALKING_MAX_VX 0.1f
 #define MARIO_SMALL_RUNNING_MAX_VX 0.4f
-
 
 #define MARIO_SMALL_WALKING_AX 0.0002f
 #define MARIO_SMALL_RUNNING_AX 0.00024f
@@ -95,12 +96,10 @@ class CMario : public CCreature
 	BOOLEAN isOnPlatform;
 	int coin; 
 
-	/*void OnCollisionWithGoomba(LPCOLLISIONEVENT e);
+	void OnCollisionWithCreature(LPCOLLISIONEVENT e);
 	void OnCollisionWithCoin(LPCOLLISIONEVENT e);
 	void OnCollisionWithPortal(LPCOLLISIONEVENT e);
-
-	int GetAniIdBig();
-	int GetAniIdSmall();*/
+	void OnCollisionWithPlatform(LPCOLLISIONEVENT e);
 
 public:
 	CMario(float x, float y);
@@ -108,17 +107,17 @@ public:
 	void Render();
 	//void SetState(int state);
 
-	/*int IsCollidable()
+	int IsCollidable()
 	{ 
-		return (state != MARIO_STATE_DIE); 
-	}*/
+		return (state != STATE_DIE); 
+	}
 
-	//int IsBlocking() { return (state != MARIO_STATE_DIE && untouchable==0); }
+	int IsBlocking() { return (state != STATE_DIE && untouchable==0); }
 
-	//void OnNoCollision(DWORD dt);
-	//void OnCollisionWith(LPCOLLISIONEVENT e);
+	void OnNoCollision(DWORD dt);
+	void OnCollisionWith(LPCOLLISIONEVENT e);
 
-	//void SetLevel(int l);
+	void SetLevel(int l);
 	//void StartUntouchable() { untouchable = 1; untouchable_start = GetTickCount64(); }
 
 	void GetBoundingBox(float& left, float& top, float& right, float& bottom);

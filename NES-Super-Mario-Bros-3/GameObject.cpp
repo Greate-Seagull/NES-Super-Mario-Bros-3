@@ -40,3 +40,8 @@ CGameObject::~CGameObject()
 {
 
 }
+
+string CGameObject::ToString()
+{
+	return "Game Object";
+}

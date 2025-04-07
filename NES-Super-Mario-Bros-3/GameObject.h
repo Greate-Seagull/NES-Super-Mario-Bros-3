@@ -3,6 +3,7 @@
 #include <Windows.h>
 #include <d3dx10.h>
 #include <vector>
+#include <string>
 
 #include "Animation.h"
 #include "Animations.h"
@@ -13,6 +14,8 @@ using namespace std;
 
 #define ID_TEX_BBOX -100		// special texture to draw object bounding box
 #define BBOX_ALPHA 0.25f		// Bounding box transparency
+
+#define STATE_DIE 0
 
 class CGameObject
 {
@@ -43,7 +46,7 @@ public:
 	virtual void GetBoundingBox(float &left, float &top, float &right, float &bottom) = 0;
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects = NULL) {};
 	virtual void Render() = 0;
-	virtual void SetState(int state) { this->state = state; }
+	virtual void SetState(int state) { this->state = state; }	
 
 	//
 	// Collision ON or OFF ? This can change depending on object's state. For example: die
@@ -65,4 +68,6 @@ public:
 	~CGameObject();
 
 	static bool IsDeleted(const LPGAMEOBJECT &o) { return o->isDeleted; }
+
+	virtual string ToString();
 };

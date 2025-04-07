@@ -7,6 +7,7 @@
 #include "Goomba.h"
 #include "Coin.h"
 #include "Portal.h"
+#include "Platform.h"
 
 #include "Collision.h"
 
@@ -28,17 +29,17 @@ CMario::CMario(float x, float y):
 
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {
+	ProcessLifeState();	
 	DetermineState();
 
 	float ax, ay;	
 	ApplyState(ax, ay);
 	DetermineAccelerator(ax, ay, dt);
 	Accelerate(dt, ax, ay);
+	CCollision::GetInstance()->Process(this, dt, coObjects);
 	Move(dt);
 
 	//DebugOutTitle(L"y: %f", y);
-
-	//if (abs(vx) > abs(maxVx)) vx = maxVx;
 
 	//// reset untouchable timer if untouchable time has passed
 	//if ( GetTickCount64() - untouchable_start > MARIO_UNTOUCHABLE_TIME) 
@@ -46,211 +47,64 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	//	untouchable_start = 0;
 	//	untouchable = 0;
 	//}
-
-	//CCollision::GetInstance()->Process(this, dt, coObjects);
 }
 
-//void CMario::OnNoCollision(DWORD dt)
-//{
-//	x += vx * dt;
-//	y += vy * dt;
-//	isOnPlatform = false;
-//}
-//
-//void CMario::OnCollisionWith(LPCOLLISIONEVENT e)
-//{
-//	if (e->ny != 0 && e->obj->IsBlocking())
-//	{
-//		vy = 0;
-//		if (e->ny < 0) isOnPlatform = true;
-//	}
-//	else 
-//	if (e->nx != 0 && e->obj->IsBlocking())
-//	{
-//		vx = 0;
-//	}
-//
-//	if (dynamic_cast<CGoomba*>(e->obj))
-//		OnCollisionWithGoomba(e);
-//	else if (dynamic_cast<CCoin*>(e->obj))
-//		OnCollisionWithCoin(e);
-//	else if (dynamic_cast<CPortal*>(e->obj))
-//		OnCollisionWithPortal(e);
-//}
+void CMario::OnNoCollision(DWORD dt)
+{
+	isOnPlatform = false;
+}
 
-//void CMario::OnCollisionWithGoomba(LPCOLLISIONEVENT e)
-//{
-//	CGoomba* goomba = dynamic_cast<CGoomba*>(e->obj);
-//
-//	// jump on top >> kill Goomba and deflect a bit 
-//	if (e->ny < 0)
-//	{
-//		if (goomba->GetState() != GOOMBA_STATE_DIE)
-//		{
-//			goomba->SetState(GOOMBA_STATE_DIE);
-//			vy = -MARIO_JUMP_DEFLECT_SPEED;
-//		}
-//	}
-//	else // hit by Goomba
-//	{
-//		if (untouchable == 0)
-//		{
-//			if (goomba->GetState() != GOOMBA_STATE_DIE)
-//			{
-//				if (life > MARIO_LEVEL_SMALL)
-//				{
-//					life = MARIO_LEVEL_SMALL;
-//					StartUntouchable();
-//				}
-//				else
-//				{
-//					DebugOut(L">>> Mario DIE >>> \n");
-//					SetState(MARIO_STATE_DIE);
-//				}
-//			}
-//		}
-//	}
-//}
+void CMario::OnCollisionWith(LPCOLLISIONEVENT e)
+{	
+	DebugOutTitle(L"object: ", e->obj->ToString());
 
-//void CMario::OnCollisionWithCoin(LPCOLLISIONEVENT e)
-//{
-//	e->obj->Delete();
-//	coin++;
-//}
-//
-//void CMario::OnCollisionWithPortal(LPCOLLISIONEVENT e)
-//{
-//	CPortal* p = (CPortal*)e->obj;
-//	CGame::GetInstance()->InitiateSwitchScene(p->GetSceneId());
-//}
+	if (dynamic_cast<CCreature*>(e->obj))
+		OnCollisionWithCreature(e);
+	else if (dynamic_cast<CCoin*>(e->obj))
+		OnCollisionWithCoin(e);
+	else if (dynamic_cast<CPortal*>(e->obj))
+		OnCollisionWithPortal(e);
+	else if (dynamic_cast<CPlatform*>(e->obj))
+		OnCollisionWithPlatform(e);
+}
 
-//
-// Get animation ID for small Mario
-//
-//int CMario::GetAniIdSmall()
-//{
-//	int aniId = -1;
-//	if (!isOnPlatform)
-//	{
-//		if (vy < 0)
-//		{
-//			if (nx > 0) aniId = ID_ANI_MARIO_SMALL_JUMP_RUN_RIGHT;
-//			else aniId = ID_ANI_MARIO_SMALL_JUMP_RUN_LEFT;
-//		}
-//		//else
-//		//{
-//		//	if (nx >= 0)
-//		//		aniId = ID_ANI_MARIO_SMALL_JUMP_WALK_RIGHT;
-//		//	else
-//		//		aniId = ID_ANI_MARIO_SMALL_JUMP_WALK_LEFT;
-//		//}
-//	}
-//	else
-//		if (isSitting)
-//		{
-//			if (nx > 0)
-//				aniId = ID_ANI_MARIO_SIT_RIGHT;
-//			else
-//				aniId = ID_ANI_MARIO_SIT_LEFT;
-//		}
-//		else
-//			if (vx == 0)
-//			{
-//				if (nx > 0) aniId = ID_ANI_MARIO_SMALL_IDLE_RIGHT;
-//				else aniId = ID_ANI_MARIO_SMALL_IDLE_LEFT;
-//			}
-//			//else if (vx > 0)
-//			//{
-//			//	if (ax < 0)
-//			//		aniId = ID_ANI_MARIO_SMALL_BRACE_RIGHT;
-//			//	else if (ax == MARIO_ACCEL_RUN_X)
-//			//		aniId = ID_ANI_MARIO_SMALL_RUNNING_RIGHT;
-//			//	else if (ax == MARIO_ACCEL_WALK_X)
-//			//		aniId = ID_ANI_MARIO_SMALL_WALKING_RIGHT;
-//			//}
-//			//else // vx < 0
-//			//{
-//			//	if (ax > 0)
-//			//		aniId = ID_ANI_MARIO_SMALL_BRACE_LEFT;
-//			//	else if (ax == -MARIO_ACCEL_RUN_X)
-//			//		aniId = ID_ANI_MARIO_SMALL_RUNNING_LEFT;
-//			//	else if (ax == -MARIO_ACCEL_WALK_X)
-//			//		aniId = ID_ANI_MARIO_SMALL_WALKING_LEFT;
-//			//}
-//
-//	if (aniId == -1) aniId = ID_ANI_MARIO_SMALL_IDLE_RIGHT;
-//
-//	return aniId;
-//}
-//
-//
-////
-//// Get animdation ID for big Mario
-////
-//int CMario::GetAniIdBig()
-//{
-//	int aniId = -1;
-//	if (!isOnPlatform)
-//	{
-//		if (vy < 0)
-//		{
-//			if (nx >= 0)
-//				aniId = ID_ANI_MARIO_JUMP_RUN_RIGHT;
-//			else
-//				aniId = ID_ANI_MARIO_JUMP_RUN_LEFT;
-//		}
-//		/*if (abs(ax) == MARIO_ACCEL_RUN_X)
-//		{
-//			if (nx >= 0)
-//				aniId = ID_ANI_MARIO_JUMP_RUN_RIGHT;
-//			else
-//				aniId = ID_ANI_MARIO_JUMP_RUN_LEFT;
-//		}
-//		else
-//		{
-//			if (nx >= 0)
-//				aniId = ID_ANI_MARIO_JUMP_WALK_RIGHT;
-//			else
-//				aniId = ID_ANI_MARIO_JUMP_WALK_LEFT;
-//		}*/
-//	}
-//	else
-//		if (isSitting)
-//		{
-//			if (nx > 0)
-//				aniId = ID_ANI_MARIO_SIT_RIGHT;
-//			else
-//				aniId = ID_ANI_MARIO_SIT_LEFT;
-//		}
-//		else
-//			if (vx == 0)
-//			{
-//				if (nx > 0) aniId = ID_ANI_MARIO_IDLE_RIGHT;
-//				else aniId = ID_ANI_MARIO_IDLE_LEFT;
-//			}
-//			//else if (vx > 0)
-//			//{
-//			//	if (ax < 0)
-//			//		aniId = ID_ANI_MARIO_BRACE_RIGHT;
-//			//	else if (ax == MARIO_ACCEL_RUN_X)
-//			//		aniId = ID_ANI_MARIO_RUNNING_RIGHT;
-//			//	else if (ax == MARIO_ACCEL_WALK_X)
-//			//		aniId = ID_ANI_MARIO_WALKING_RIGHT;
-//			//}
-//			//else // vx < 0
-//			//{
-//			//	if (ax > 0)
-//			//		aniId = ID_ANI_MARIO_BRACE_LEFT;
-//			//	else if (ax == -MARIO_ACCEL_RUN_X)
-//			//		aniId = ID_ANI_MARIO_RUNNING_LEFT;
-//			//	else if (ax == -MARIO_ACCEL_WALK_X)
-//			//		aniId = ID_ANI_MARIO_WALKING_LEFT;
-//			//}
-//
-//	if (aniId == -1) aniId = ID_ANI_MARIO_IDLE_RIGHT;
-//
-//	return aniId;
-//}
+void CMario::OnCollisionWithCreature(LPCOLLISIONEVENT e)
+{
+	CCreature* enemy = dynamic_cast<CCreature*>(e->obj);
+
+	// jump on top >> kill Goomba and deflect a bit 
+	if (e->ny < 0)
+	{
+		vy = -MARIO_JUMP_DEFLECT_SPEED;
+	}
+	else // hit by Goomba
+	{
+		if (enemy->GetState() != STATE_DIE)
+		{
+			life -= 1.0f;
+		}
+	}
+}
+
+void CMario::OnCollisionWithCoin(LPCOLLISIONEVENT e)
+{
+	e->obj->Delete();
+	coin++;
+}
+
+void CMario::OnCollisionWithPortal(LPCOLLISIONEVENT e)
+{
+	CPortal* p = (CPortal*)e->obj;
+	CGame::GetInstance()->InitiateSwitchScene(p->GetSceneId());
+}
+
+void CMario::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
+{
+	if (e->ny)
+	{
+		vy = 0;
+	}	
+}
 
 void CMario::Render()
 {
@@ -260,7 +114,7 @@ void CMario::Render()
 
 	animations->Get(aniID)->Render(x, y);
 
-	//RenderBoundingBox();
+	RenderBoundingBox();
 	
 	//DebugOutTitle(L"Coins: %d", coin);
 }
@@ -373,15 +227,15 @@ void CMario::DetermineState()
 
 	if (keyState->IsPressed(VK_1))
 	{
-		life = MARIO_LEVEL_SMALL;
+		SetLevel(MARIO_LEVEL_SMALL);
 	}
 	else if (keyState->IsPressed(VK_2))
 	{
-		life = MARIO_LEVEL_BIG;
+		SetLevel(MARIO_LEVEL_BIG);
 	}
 	else if (keyState->IsPressed(VK_3))
 	{
-		life = MARIO_LEVEL_RACOON;
+		SetLevel(MARIO_LEVEL_RACOON);
 	}
 
 	isSitting = keyState->IsHold(VK_DOWN) && !keyState->IsHold(VK_LEFT) && !keyState->IsHold(VK_RIGHT);
@@ -457,7 +311,7 @@ void CMario::DetermineAccelerator(float& applied_ax, float& applied_ay, DWORD& t
 	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
 
 	float ax = 0.0f;
-	float ay = 0.0f;
+	float ay = MARIO_GRAVITY;
 	int nx = 0;
 
 	if (keyState->IsHold(VK_LEFT))
@@ -489,15 +343,6 @@ void CMario::DetermineAccelerator(float& applied_ax, float& applied_ay, DWORD& t
 	{
 		ay += applied_ay;
 		freefallTick = TICK_FREEFALL;
-	}
-	else
-	{
-		if (freefallTick)
-		{
-			ay = -vy / freefallTick; //decelerate ay
-			t = min(freefallTick, t); 
-			freefallTick -= t;
-		}
 	}
 	
 
@@ -533,7 +378,7 @@ void CMario::ChangeAnimation()
 	{
 		action = ID_ANI_SIT;
 	}
-	else if (vy < 0)
+	else if (vy)
 	{
 		action = ID_ANI_JUMP;
 	}
@@ -557,8 +402,7 @@ void CMario::ChangeAnimation()
 		CAnimations* animations = CAnimations::GetInstance();
 		DWORD time = (MARIO_SMALL_RUNNING_MAX_VX - abs(vx)) / MARIO_SMALL_RUNNING_MAX_VX * TIME_FRAME;
 
-		animations->Get(aniID)->ChangeTimePerFrame(time);
-		DebugOutTitle(L"time: %d", time);
+		animations->Get(aniID)->ChangeTimePerFrame(time);		
 	}
 
 	aniID = ID_ANI_MARIO + level + action + direction;	
@@ -578,13 +422,25 @@ void CMario::Accelerate(DWORD t, float ax, float ay)
 	}
 }
 
-//void CMario::SetLevel(int l)
-//{
-//	// Adjust position to avoid falling off platform
-//	if (this->life == MARIO_LEVEL_SMALL)
-//	{
-//		y -= (MARIO_BIG_BBOX_HEIGHT - MARIO_SMALL_BBOX_HEIGHT) / 2;
-//	}
-//	life = l;
-//}
+void CMario::SetLevel(int l)
+{
+	// Adjust position to avoid falling off platform
+	if (life == l)
+		return;
+
+	if (l == MARIO_LEVEL_RACOON)
+	{
+		life = MARIO_LEVEL_RACOON;
+		y += MARIO_BIG_TRANSFORMATION_OFFSET;
+	}
+	else if (l == MARIO_LEVEL_BIG)
+	{
+		life = MARIO_LEVEL_BIG;
+		y += MARIO_BIG_TRANSFORMATION_OFFSET;
+	}
+	else
+	{
+		life = MARIO_LEVEL_SMALL;
+	}
+}
 
