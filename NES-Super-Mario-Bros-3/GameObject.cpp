@@ -15,6 +15,14 @@ CGameObject::CGameObject()
 	isDeleted = false;
 }
 
+void CGameObject::GetBoundingBox(float& left, float& top, float& right, float& bottom)
+{
+	left = x - bbox_width / 2;
+	top = y - bbox_height / 2;
+	right = left + bbox_width;
+	bottom = top + bbox_height;
+}
+
 void CGameObject::RenderBoundingBox()
 {
 	D3DXVECTOR3 p(x, y, 0);

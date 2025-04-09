@@ -17,12 +17,17 @@ using namespace std;
 
 #define STATE_DIE 0
 
+#define GAME_GRAVITY			0.001f
+
 class CGameObject
 {
 protected:
 
 	float x; 
 	float y;
+
+	float bbox_height;
+	float bbox_width;
 
 	int state;
 
@@ -43,7 +48,7 @@ public:
 	CGameObject(float x, float y) :CGameObject() { this->x = x; this->y = y; }
 
 
-	virtual void GetBoundingBox(float &left, float &top, float &right, float &bottom) = 0;
+	virtual void GetBoundingBox(float &left, float &top, float &right, float &bottom);
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects = NULL) {};
 	virtual void Render() = 0;
 	virtual void SetState(int state) { this->state = state; }	

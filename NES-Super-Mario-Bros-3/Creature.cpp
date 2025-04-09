@@ -6,12 +6,18 @@ CCreature::CCreature(float x, float y, bool isSharp, float life):
 	this->life = life;
 }
 
-void CCreature::ProcessLifeState()
+void CCreature::ProcessLife()
 {
 	if (this->life == 0.0f)
 	{
 		state = STATE_DIE;
 	}
+}
+
+void CCreature::UnderAttack()
+{
+	this->life -= 1;
+	this->SetState(STATE_DIE);
 }
 
 string CCreature::ToString()

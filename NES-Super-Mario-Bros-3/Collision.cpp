@@ -260,6 +260,7 @@ void CCollision::Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* co
 
 				objSrc->OnCollisionWith(colY);
 
+
 				//
 				// see if after correction on Y, is there still a collision on X ? 
 				//

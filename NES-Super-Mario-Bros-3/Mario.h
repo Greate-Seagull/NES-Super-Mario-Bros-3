@@ -23,11 +23,8 @@
 #define MARIO_DECELERATE_AX 0.00016f
 #define MARIO_BRAKE_AX 0.0004f
 
-#define MARIO_START_JUMPING_AY -0.015f - MARIO_GRAVITY
+#define MARIO_START_JUMPING_AY -0.015f - GAME_GRAVITY
 #define MARIO_SHARP false
-
-#define TICK_DECELERATE 500
-#define TICK_FREEFALL 500
 
 #define MARIO_MAX_JUMP_HEIGHT 60.0f
 
@@ -45,9 +42,7 @@
 #define MARIO_JUMP_SPEED_Y		0.5f
 #define MARIO_JUMP_RUN_SPEED_Y	0.6f
 
-#define MARIO_GRAVITY			0.001f
-
-#define MARIO_JUMP_DEFLECT_SPEED  0.4f
+#define MARIO_JUMP_DEFLECT_VX  -0.2f
 
 #pragma region ANIMATION_ID
 
@@ -97,9 +92,6 @@ class CMario : public CCreature
 	float startJumpingPosition;
 
 	int aniID;
-
-	DWORD decelerateTick;
-	DWORD freefallTick;
 
 	int untouchable; 
 	ULONGLONG untouchable_start;

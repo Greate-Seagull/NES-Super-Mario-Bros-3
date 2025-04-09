@@ -19,9 +19,6 @@ CMario::CMario(float x, float y):
 	isFalling = false;
 	maxVx = MARIO_SMALL_WALKING_MAX_VX;
 
-	decelerateTick = TICK_DECELERATE;
-	freefallTick = TICK_FREEFALL;
-
 	untouchable = 0;
 	untouchable_start = -1;
 	isOnPlatform = false;
@@ -30,19 +27,18 @@ CMario::CMario(float x, float y):
 
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {
-	dt = min(18, dt);
+	dt = min(17, dt);
+	dt = max(15, dt);
 
-	ProcessLifeState();	
+	ProcessLife();	
 	DetermineState();
 
 	float ax, ay;	
 	ApplyState(ax, ay);
 	DetermineAccelerator(ax, ay, dt);
-	this->Accelerate(ax, ay, dt);
+	Accelerate(ax, ay, dt);
 	CCollision::GetInstance()->Process(this, dt, coObjects);
 	Move(dt);
-
-	DebugOutTitle(L"vx: %f", vx);
 
 	//// reset untouchable timer if untouchable time has passed
 	//if ( GetTickCount64() - untouchable_start > MARIO_UNTOUCHABLE_TIME) 
@@ -76,7 +72,8 @@ void CMario::OnCollisionWithCreature(LPCOLLISIONEVENT e)
 	// jump on top >> kill Goomba and deflect a bit 
 	if (e->ny < 0)
 	{
-		vy = -MARIO_JUMP_DEFLECT_SPEED;
+		vy = MARIO_JUMP_DEFLECT_VX;
+		enemy->UnderAttack();
 	}
 	else // hit by Goomba
 	{
@@ -307,7 +304,7 @@ void CMario::DetermineAccelerator(float& applied_ax, float& applied_ay, DWORD& t
 	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
 
 	float ax = 0.0f;
-	float ay = MARIO_GRAVITY;
+	float ay = GAME_GRAVITY;
 	int nx = 0;
 
 	if (keyState->IsHold(VK_LEFT))
@@ -321,6 +318,7 @@ void CMario::DetermineAccelerator(float& applied_ax, float& applied_ay, DWORD& t
 		{		
 			ax += -applied_ax;
 		}
+
 		nx--;
 	}
 	if (keyState->IsHold(VK_RIGHT))
@@ -353,14 +351,14 @@ void CMario::DetermineAccelerator(float& applied_ax, float& applied_ay, DWORD& t
 		ay += MARIO_START_JUMPING_AY;
 		startJumpingPosition = y;
 	}
-	if (keyState->IsHold(VK_S) && !isFalling)
+	if (keyState->IsReleased(VK_S) || abs(y - startJumpingPosition) >= MARIO_MAX_JUMP_HEIGHT)
 	{
-		if(abs(vy) <= MARIO_SMALL_JUMPING_MAX_VY && abs(y - startJumpingPosition) < MARIO_MAX_JUMP_HEIGHT)
-			ay += -MARIO_GRAVITY;
+		isFalling = true;		
 	}
-	else if (keyState->IsReleased(VK_S))
+	else if (keyState->IsHold(VK_S) && !isFalling)
 	{
-		isFalling = true;
+		if(abs(vy) <= MARIO_SMALL_JUMPING_MAX_VY)
+			ay += -GAME_GRAVITY;
 	}
 	//------------------------------------------
 
