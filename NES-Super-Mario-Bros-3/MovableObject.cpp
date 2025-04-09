@@ -14,7 +14,7 @@ void CMovableObject::Move(DWORD t)
 	y += vy * t;
 }
 
-void CMovableObject::Accelerate(DWORD t, float ax, float ay)
+void CMovableObject::Accelerate(float ax, float ay, DWORD t)
 {
 	vx += ax * t;
 	vy += ay * t;

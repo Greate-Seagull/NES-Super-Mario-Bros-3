@@ -20,13 +20,16 @@
 #define MARIO_BIG_WALKING_AX 0.00016f
 #define MARIO_BIG_RUNNING_AX 0.0002f
 
+#define MARIO_DECELERATE_AX 0.00016f
+#define MARIO_BRAKE_AX 0.0004f
+
 #define MARIO_START_JUMPING_AY -0.015f - MARIO_GRAVITY
 #define MARIO_SHARP false
 
 #define TICK_DECELERATE 500
 #define TICK_FREEFALL 500
 
-#define MARIO_MAX_JUMP_HEIGHT 85.0f
+#define MARIO_MAX_JUMP_HEIGHT 60.0f
 
 //life
 #define	MARIO_LEVEL_SMALL	1.0f
@@ -91,6 +94,8 @@ class CMario : public CCreature
 	bool isBoost;
 	bool isFalling;
 
+	float startJumpingPosition;
+
 	int aniID;
 
 	DWORD decelerateTick;
@@ -135,5 +140,5 @@ public:
 	void DetermineAccelerator(float& ax, float& ay, DWORD& t);
 
 	void ChangeAnimation();
-	void Accelerate(DWORD t, float ax, float ay);
+	void Accelerate(float ax, float ay, DWORD t);
 };

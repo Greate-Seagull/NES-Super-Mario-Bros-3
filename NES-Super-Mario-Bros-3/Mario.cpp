@@ -31,18 +31,18 @@ CMario::CMario(float x, float y):
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {
 	dt = min(18, dt);
+
 	ProcessLifeState();	
 	DetermineState();
 
 	float ax, ay;	
 	ApplyState(ax, ay);
 	DetermineAccelerator(ax, ay, dt);
-	Accelerate(dt, ax, ay);
+	this->Accelerate(ax, ay, dt);
 	CCollision::GetInstance()->Process(this, dt, coObjects);
 	Move(dt);
 
-	if(dt > 30)
-		DebugOutTitle(L"times: %d", dt);
+	DebugOutTitle(L"vx: %f", vx);
 
 	//// reset untouchable timer if untouchable time has passed
 	//if ( GetTickCount64() - untouchable_start > MARIO_UNTOUCHABLE_TIME) 
@@ -312,44 +312,57 @@ void CMario::DetermineAccelerator(float& applied_ax, float& applied_ay, DWORD& t
 
 	if (keyState->IsHold(VK_LEFT))
 	{
-		ax += -applied_ax;
+		if (vx > 0)
+		{
+			float temp_ax = min(MARIO_BRAKE_AX, fabs(vx / t));
+			ax += -temp_ax;
+		}
+		else
+		{		
+			ax += -applied_ax;
+		}
 		nx--;
 	}
 	if (keyState->IsHold(VK_RIGHT))
 	{
-		ax += applied_ax;
+		if (vx < 0)
+		{
+			float temp_ax = min(MARIO_BRAKE_AX, fabs(vx / t));
+			ax += temp_ax;
+		}
+		else
+		{
+			ax += applied_ax;
+		}
+
 		nx++;
 	}
-	//Decelerate if not pressing any moving key
 	if (ax == 0.0f)
 	{
-		if (decelerateTick)
+		ax = min(MARIO_DECELERATE_AX, fabs(vx) / t);
+
+		if (vx > 0)
 		{
-			ax = -vx / decelerateTick; // calculate decelerate ax		
-			t = min(decelerateTick, t); // get exact time to stop
-			decelerateTick -= t; // calculate remaining time to stop
+			ax = -ax;
 		}
 	}
-	else
-	{
-		decelerateTick = TICK_DECELERATE;
-	}
 
+	//Jump
 	if (keyState->IsPressed(VK_S) && !isFalling)
 	{
 		ay += MARIO_START_JUMPING_AY;
+		startJumpingPosition = y;
 	}
 	if (keyState->IsHold(VK_S) && !isFalling)
 	{
-		if(abs(vy) <= MARIO_SMALL_JUMPING_MAX_VY)
+		if(abs(vy) <= MARIO_SMALL_JUMPING_MAX_VY && abs(y - startJumpingPosition) < MARIO_MAX_JUMP_HEIGHT)
 			ay += -MARIO_GRAVITY;
 	}
 	else if (keyState->IsReleased(VK_S))
 	{
 		isFalling = true;
 	}
-	//DebugOutTitle(L"hold S: %d", keyState->IsPressed(VK_S));
-	
+	//------------------------------------------
 
 	if (nx)
 	{
@@ -413,9 +426,9 @@ void CMario::ChangeAnimation()
 	aniID = ID_ANI_MARIO + level + action + direction;	
 }
 
-void CMario::Accelerate(DWORD t, float ax, float ay)
+void CMario::Accelerate(float ax, float ay, DWORD t)
 {
-	CMovableObject::Accelerate(t, ax, ay);
+	CMovableObject::Accelerate(ax, ay, t);
 
 	if (vx > maxVx)
 	{
