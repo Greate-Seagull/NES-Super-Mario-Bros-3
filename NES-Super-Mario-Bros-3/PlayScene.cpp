@@ -33,6 +33,7 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 #define ASSETS_SECTION_ANIMATIONS 2
 
 #define MAX_SCENE_LINE 1024
+#define SCREEN_WIDTH 320
 
 void CPlayScene::_ParseSection_SPRITES(string line)
 {
@@ -277,7 +278,26 @@ void CPlayScene::Update(DWORD dt)
 void CPlayScene::Render()
 {
 	for (int i = 0; i < objects.size(); i++)
+	{
+		if (dynamic_cast<CMario*>(objects[i]) ||
+			dynamic_cast<CPlatform*>(objects[i]))
+			objects[i]->Render();
+		else
+		{
+			float posX, posY;
+			objects[i]->GetPosition(posX, posY);
+			if (player)
+			{
+				float playerPosX, playerPosY;
+				player->GetPosition(playerPosX, playerPosY);
+				if (posX > playerPosX - SCREEN_WIDTH && posX < playerPosX + SCREEN_WIDTH)
+				{
+					objects[i]->Render();
+				}
+			}
+		}
 		objects[i]->Render();
+	}
 }
 
 /*
