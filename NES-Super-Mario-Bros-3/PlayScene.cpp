@@ -9,6 +9,9 @@
 #include "Portal.h"
 #include "Coin.h"
 #include "Platform.h"
+#include "QuestionBlock.h"
+#include "Pipe.h"
+#include "Background.h"
 
 #include "SampleKeyEventHandler.h"
 
@@ -31,6 +34,7 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 #define ASSETS_SECTION_ANIMATIONS 2
 
 #define MAX_SCENE_LINE 1024
+#define SCREEN_WIDTH 320
 
 void CPlayScene::_ParseSection_SPRITES(string line)
 {
@@ -105,6 +109,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 
 	switch (object_type)
 	{
+	case NON_OBJECT_TYPE_BACKGROUND: obj = new CBackground(x, y); break;
 	case OBJECT_TYPE_MARIO:
 		if (player!=NULL) 
 		{
@@ -136,6 +141,13 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 			sprite_begin, sprite_middle, sprite_end
 		);
 
+		break;
+	}
+	case OBJECT_TYPE_QUESTION_BLOCK: obj = new CQuestionBlock(x, y); break;
+	case OBJECT_TYPE_PIPE:
+	{
+		int ani_id = atoi(tokens[3].c_str());
+		obj = new CPipe(x, y, ani_id);
 		break;
 	}
 
@@ -268,7 +280,26 @@ void CPlayScene::Update(DWORD dt)
 void CPlayScene::Render()
 {
 	for (int i = 0; i < objects.size(); i++)
+	{
+		if (dynamic_cast<CMario*>(objects[i]) ||
+			dynamic_cast<CPlatform*>(objects[i]))
+			objects[i]->Render();
+		else
+		{
+			float posX, posY;
+			objects[i]->GetPosition(posX, posY);
+			if (player)
+			{
+				float playerPosX, playerPosY;
+				player->GetPosition(playerPosX, playerPosY);
+				if (posX > playerPosX - SCREEN_WIDTH && posX < playerPosX + SCREEN_WIDTH)
+				{
+					objects[i]->Render();
+				}
+			}
+		}
 		objects[i]->Render();
+	}
 }
 
 /*
