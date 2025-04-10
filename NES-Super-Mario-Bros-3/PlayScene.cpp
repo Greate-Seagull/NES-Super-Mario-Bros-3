@@ -9,6 +9,10 @@
 #include "Portal.h"
 #include "Coin.h"
 #include "Platform.h"
+#include "QuestionBlock.h"
+#include "Pipe.h"
+#include "Container.h"
+#include "Background.h"
 
 #include "SampleKeyEventHandler.h"
 
@@ -31,6 +35,7 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 #define ASSETS_SECTION_ANIMATIONS 2
 
 #define MAX_SCENE_LINE 1024
+#define SCREEN_WIDTH 320
 
 void CPlayScene::_ParseSection_SPRITES(string line)
 {
@@ -105,6 +110,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 
 	switch (object_type)
 	{
+	case NON_OBJECT_TYPE_BACKGROUND: obj = new CBackground(x, y); break;
 	case OBJECT_TYPE_MARIO:
 		if (player!=NULL) 
 		{
@@ -122,7 +128,6 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 
 	case OBJECT_TYPE_PLATFORM:
 	{
-
 		float cell_width = (float)atof(tokens[3].c_str());
 		float cell_height = (float)atof(tokens[4].c_str());
 		int length = atoi(tokens[5].c_str());
@@ -138,6 +143,13 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 
 		break;
 	}
+	case OBJECT_TYPE_QUESTION_BLOCK: obj = new CQuestionBlock(x, y); break;
+	case OBJECT_TYPE_PIPE:
+	{
+		int ani_id = atoi(tokens[3].c_str());
+		obj = new CPipe(x, y, ani_id);
+		break;
+	}
 
 	case OBJECT_TYPE_PORTAL:
 	{
@@ -147,7 +159,34 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		obj = new CPortal(x, y, r, b, scene_id);
 	}
 	break;
+	case OBJECT_TYPE_CONTAINER:
+	{
+		float cell_width = (float)atof(tokens[3].c_str());
+		float cell_height = (float)atof(tokens[4].c_str());
+		int length = atoi(tokens[5].c_str());
+		int height = atoi(tokens[6].c_str());
 
+		int sprite_begin_begin = atoi(tokens[7].c_str());
+		int sprite_middle_begin = atoi(tokens[8].c_str());
+		int sprite_end_begin = atoi(tokens[9].c_str());
+		int sprite_begin_middle = atoi(tokens[10].c_str());
+		int sprite_middle_middle = atoi(tokens[11].c_str());
+		int sprite_end_middle = atoi(tokens[12].c_str());
+		int sprite_begin_end = atoi(tokens[13].c_str());
+		int sprite_middle_end = atoi(tokens[14].c_str());
+		int sprite_end_end = atoi(tokens[15].c_str());
+
+		obj = new CContainer(
+			x, y,
+			cell_width, cell_height,
+			length, height,
+			sprite_begin_begin, sprite_middle_begin, sprite_end_begin,
+			sprite_begin_middle, sprite_middle_middle, sprite_end_middle,
+			sprite_begin_end, sprite_middle_end, sprite_end_end
+		);
+
+		break;
+	}
 
 	default:
 		DebugOut(L"[ERROR] Invalid object type: %d\n", object_type);
@@ -268,7 +307,26 @@ void CPlayScene::Update(DWORD dt)
 void CPlayScene::Render()
 {
 	for (int i = 0; i < objects.size(); i++)
+	{
+		if (dynamic_cast<CMario*>(objects[i]) ||
+			dynamic_cast<CPlatform*>(objects[i]))
+			objects[i]->Render();
+		else
+		{
+			float posX, posY;
+			objects[i]->GetPosition(posX, posY);
+			if (player)
+			{
+				float playerPosX, playerPosY;
+				player->GetPosition(playerPosX, playerPosY);
+				if (posX > playerPosX - SCREEN_WIDTH && posX < playerPosX + SCREEN_WIDTH)
+				{
+					objects[i]->Render();
+				}
+			}
+		}
 		objects[i]->Render();
+	}
 }
 
 /*
