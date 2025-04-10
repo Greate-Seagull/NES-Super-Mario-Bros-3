@@ -42,7 +42,7 @@
 #define MARIO_JUMP_SPEED_Y		0.5f
 #define MARIO_JUMP_RUN_SPEED_Y	0.6f
 
-#define MARIO_JUMP_DEFLECT_VX  -0.2f
+#define MARIO_JUMP_DEFLECT_VX  -0.25f
 
 #pragma region ANIMATION_ID
 

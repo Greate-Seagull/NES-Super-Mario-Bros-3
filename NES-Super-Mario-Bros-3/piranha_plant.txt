@@ -1,0 +1,5 @@
+# id	left	top	right	bottom	texture_id
+[SPRITES]
+#WALK
+30001	1	1	16	16	10
+30002	18	1	33	16	10

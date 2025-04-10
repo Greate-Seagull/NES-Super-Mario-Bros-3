@@ -15,13 +15,15 @@
 #define OBJECT_TYPE_KOOPAS	3
 #define OBJECT_TYPE_COIN 4
 #define OBJECT_TYPE_PLATFORM 5
+#define OBJECT_TYPE_VENUS_FIRE_TRAP 6
 
 #define OBJECT_TYPE_PORTAL	50
 
 
 #pragma region MARIO 
-
+//ID FOR OBJECT
 #define ID_SPRITE_MARIO 10000
+#define ID_SPRITE_ENEMY 20000
 //#define ID_SPRITE_MARIO_BIG (ID_SPRITE_MARIO + 1000)
 //#define ID_SPRITE_MARIO_BIG_IDLE (ID_SPRITE_MARIO_BIG + 100)
 //#define ID_SPRITE_MARIO_BIG_IDLE_LEFT (ID_SPRITE_MARIO_BIG_IDLE + 10)
@@ -99,14 +101,21 @@
 
 #pragma endregion 
 
-#define ID_SPRITE_BRICK 20000
+#define ID_SPRITE_BRICK 30000
 
-#define ID_SPRITE_GOOMBA 30000
+#pragma region ENEMY
+//-------------------------------------------------GOOMBA--------------------------------------------------
+#define ID_SPRITE_GOOMBA (ID_SPRITE_ENEMY + 0)
+//Walking
 #define ID_SPRITE_GOOMBA_WALK (ID_SPRITE_GOOMBA + 0)
 #define ID_SPRITE_GOOMBA_WALK_LEFT_FOOT (ID_SPRITE_GOOMBA_WALK + 1)
 #define ID_SPRITE_GOOMBA_WALK_RIGHT_FOOT (ID_SPRITE_GOOMBA_WALK + 2)
-
+//Dying
 #define ID_SPRITE_GOOMBA_DIE (ID_SPRITE_GOOMBA + 10)
+//-------------------------------------------------VENUS FIRE TRAP--------------------------------------------------
+#define ID_SPRITE_VENUS (ID_SPRITE_ENEMY + 1000)
+#define ID_SPRITE_VENUS_
+#pragma endregion 
 
 #define ID_SPRITE_COIN 40000
 
