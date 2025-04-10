@@ -11,6 +11,7 @@
 #include "Platform.h"
 #include "QuestionBlock.h"
 #include "Pipe.h"
+#include "Container.h"
 #include "Background.h"
 
 #include "SampleKeyEventHandler.h"
@@ -127,7 +128,6 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 
 	case OBJECT_TYPE_PLATFORM:
 	{
-
 		float cell_width = (float)atof(tokens[3].c_str());
 		float cell_height = (float)atof(tokens[4].c_str());
 		int length = atoi(tokens[5].c_str());
@@ -159,7 +159,34 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		obj = new CPortal(x, y, r, b, scene_id);
 	}
 	break;
+	case OBJECT_TYPE_CONTAINER:
+	{
+		float cell_width = (float)atof(tokens[3].c_str());
+		float cell_height = (float)atof(tokens[4].c_str());
+		int length = atoi(tokens[5].c_str());
+		int height = atoi(tokens[6].c_str());
 
+		int sprite_begin_begin = atoi(tokens[7].c_str());
+		int sprite_middle_begin = atoi(tokens[8].c_str());
+		int sprite_end_begin = atoi(tokens[9].c_str());
+		int sprite_begin_middle = atoi(tokens[10].c_str());
+		int sprite_middle_middle = atoi(tokens[11].c_str());
+		int sprite_end_middle = atoi(tokens[12].c_str());
+		int sprite_begin_end = atoi(tokens[13].c_str());
+		int sprite_middle_end = atoi(tokens[14].c_str());
+		int sprite_end_end = atoi(tokens[15].c_str());
+
+		obj = new CContainer(
+			x, y,
+			cell_width, cell_height,
+			length, height,
+			sprite_begin_begin, sprite_middle_begin, sprite_end_begin,
+			sprite_begin_middle, sprite_middle_middle, sprite_end_middle,
+			sprite_begin_end, sprite_middle_end, sprite_end_end
+		);
+
+		break;
+	}
 
 	default:
 		DebugOut(L"[ERROR] Invalid object type: %d\n", object_type);
