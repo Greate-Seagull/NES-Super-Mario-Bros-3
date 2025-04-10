@@ -5,8 +5,7 @@
 class CHarmfulObject : public CMovableObject
 {
 protected:
-	bool isSharp;
 public:
-	CHarmfulObject(float x, float y, bool isSharp);
-	virtual void Attack();
+	CHarmfulObject(float x, float y);
+	virtual void MeleeAttack(CHarmfulObject* another) = 0;
 };

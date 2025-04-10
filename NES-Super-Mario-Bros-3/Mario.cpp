@@ -12,7 +12,7 @@
 #include "Collision.h"
 
 CMario::CMario(float x, float y):
-	CCreature(x, y, MARIO_SHARP, MARIO_LEVEL_SMALL)
+	CCreature(x, y, MARIO_LEVEL_SMALL)
 {
 	isSitting = false;
 	isBoost = false;
@@ -26,12 +26,20 @@ CMario::CMario(float x, float y):
 }
 
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
-{
-	dt = min(17, dt);
-	dt = max(15, dt);
+{	
 
-	ProcessLife();	
+	dt = min(17, dt);
+	dt = max(15, dt);	
+
+	ProcessLife();
+
+	if (state == STATE_DIE)
+	{
+		return;
+	}
+
 	DetermineState();
+	DebugOutTitle(L"Life: %f", life);
 
 	float ax, ay;	
 	ApplyState(ax, ay);
@@ -55,8 +63,8 @@ void CMario::OnNoCollision(DWORD dt)
 
 void CMario::OnCollisionWith(LPCOLLISIONEVENT e)
 {	
-	if (dynamic_cast<CCreature*>(e->obj))
-		OnCollisionWithCreature(e);
+	if (dynamic_cast<CHarmfulObject*>(e->obj))
+		OnCollisionWithHarmfulObject(e);
 	else if (dynamic_cast<CCoin*>(e->obj))
 		OnCollisionWithCoin(e);
 	else if (dynamic_cast<CPortal*>(e->obj))
@@ -65,22 +73,22 @@ void CMario::OnCollisionWith(LPCOLLISIONEVENT e)
 		OnCollisionWithPlatform(e);
 }
 
-void CMario::OnCollisionWithCreature(LPCOLLISIONEVENT e)
+void CMario::OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e)
 {
-	CCreature* enemy = dynamic_cast<CCreature*>(e->obj);
+	CHarmfulObject* enemy = dynamic_cast<CHarmfulObject*>(e->obj);
 
 	// jump on top >> kill Goomba and deflect a bit 
 	if (e->ny < 0)
 	{
-		vy = MARIO_JUMP_DEFLECT_VX;
-		enemy->UnderAttack();
+		this->MeleeAttack(enemy);
+		if (life)
+		{	
+			vy = MARIO_JUMP_DEFLECT_VX;
+		}
 	}
 	else // hit by Goomba
 	{
-		if (enemy->GetState() != STATE_DIE)
-		{
-			life -= 1.0f;
-		}
+		UnderAttack(enemy);
 	}
 }
 

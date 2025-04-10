@@ -11,7 +11,6 @@
 CGameObject::CGameObject()
 {
 	x = y = 0;
-	state = -1;
 	isDeleted = false;
 }
 
@@ -21,6 +20,16 @@ void CGameObject::GetBoundingBox(float& left, float& top, float& right, float& b
 	top = y - bbox_height / 2;
 	right = left + bbox_width;
 	bottom = top + bbox_height;
+}
+
+void CGameObject::SetState(int state)
+{
+	switch (state)
+	{
+		case STATE_DIE:
+			//this->Delete();
+			break;
+	}
 }
 
 void CGameObject::RenderBoundingBox()

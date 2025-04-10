@@ -11,7 +11,7 @@
 #define PIRANHA_SHARP true
 #define PIRANHA_LIFE 1.0f
 
-#define PIRANHA_DIG_DISTANCE 30.0f
+#define PIRANHA_DISTANCE_HIDE 30.0f
 #define PIRANHA_SHOOT_MAX_DISTANCE 135.0f
 #define PIRANHA_SHOOT_MIN_DISTANCE 118.0f
 
@@ -35,13 +35,12 @@
 #define ANI_ID_PIRANHA_DOWN 0	
 #define ANI_ID_PIRANHA_UP 10	
 //Horizontal direction
-//left 0
-//right 1
+#define ANI_ID_PIRANHA_LEFT 0	
+#define ANI_ID_PIRANHA_RIGHT 1
 
 class CPiranhaPlant : public CCreature
 {
-	float origin_x;
-	float origin_y;
+	float start_y;	
 	
 	DWORD start_behavior_time;
 
@@ -49,9 +48,13 @@ class CPiranhaPlant : public CCreature
 public:
 	CPiranhaPlant(float x, float y);
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
-	virtual void DetermineState();
+	virtual void ChangeState();
 	virtual void SetState(int state);
 	virtual void Render();
 	virtual void ChangeAnimation();
-	virtual void UnderAttack();
+	virtual void UnderAttack(CHarmfulObject* by_another);
+	virtual void LookforMario(vector<LPGAMEOBJECT>* coObjects);
+
+	//Collision
+	void OnCollisionWith(LPCOLLISIONEVENT e);
 };

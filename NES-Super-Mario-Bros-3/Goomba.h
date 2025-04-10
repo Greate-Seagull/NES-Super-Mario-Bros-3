@@ -7,7 +7,7 @@
 #define GOOMBA_AX 0.0f
 #define GOOMBA_AY 0.002f
 
-#define GOOMBA_SHARP true
+#define GOOMBA_SHARP false;
 #define GOOMBA_LIFE 1.0f
 
 #define GOOMBA_BBOX_WIDTH 16

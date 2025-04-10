@@ -3,7 +3,7 @@
 #include "Platform.h"
 
 CGoomba::CGoomba(float x, float y):
-	CCreature(x, y, GOOMBA_SHARP, GOOMBA_LIFE)
+	CCreature(x, y, GOOMBA_LIFE)
 {
 	bbox_height = GOOMBA_BBOX_HEIGHT;
 	bbox_width = GOOMBA_BBOX_WIDTH;

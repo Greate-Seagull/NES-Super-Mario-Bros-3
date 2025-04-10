@@ -6,6 +6,7 @@ CMovableObject::CMovableObject(float x, float y):
 	this->vx = 0.0f;
 	this->vy = 0.0f;
 	this->nx = 0;
+	this->ny = 0;
 }
 
 void CMovableObject::Move(DWORD t)

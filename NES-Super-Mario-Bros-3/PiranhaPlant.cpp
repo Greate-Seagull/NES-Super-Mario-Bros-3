@@ -1,34 +1,42 @@
+#include "Game.h"
+#include "PlayScene.h"
+
 #include "PiranhaPlant.h"
+#include "Mario.h"
 #include "debug.h"
 
 CPiranhaPlant::CPiranhaPlant(float x, float y):
-	CCreature(x, y, PIRANHA_SHARP, PIRANHA_LIFE)
+	CCreature(x, y, PIRANHA_LIFE)
 {
-	origin_x = x;
-	origin_y = y;
+	bbox_height = PIRANHA_BBOX_HEIGHT;
+	bbox_width = PIRANHA_BBOX_WIDTH;
 
 	vx = PIRANHA_VX;
 	vy = PIRANHA_VY;
+
 	SetState(PIRANHA_STATE_EMERGE);
+	start_y = y;
 }
 
 void CPiranhaPlant::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
-	DebugOutTitle(L"State: %d", state);
+	ProcessLife();
+
 	dt = 16;
-	DetermineState();
+	ChangeState();
+	//CCollision::GetInstance()->Process(this, dt, coObjects);
+	LookforMario(coObjects);
 	Move(dt);
 }
 
-void CPiranhaPlant::DetermineState()
+void CPiranhaPlant::ChangeState()
 {	
 	switch (state)
 	{
 		case PIRANHA_STATE_EMERGE:
-			if (abs(y - origin_y) >= PIRANHA_BBOX_HEIGHT)
+			if (abs(y - start_y) >= bbox_height)
 			{
 				SetState((this->state + 1) % PIRANHA_NUMBER_STATE);
-				start_behavior_time = GetTickCount64();
 			}
 			break;
 		case PIRANHA_STATE_SHOOT:
@@ -38,10 +46,9 @@ void CPiranhaPlant::DetermineState()
 			}
 			break;
 		case PIRANHA_STATE_DIG:
-			if (abs(y - origin_y) == 0)
+			if (abs(y - start_y) >= bbox_height)
 			{
 				SetState((this->state + 1) % PIRANHA_NUMBER_STATE);
-				start_behavior_time = GetTickCount64();
 			}
 			break;
 		case PIRANHA_STATE_RELOAD:
@@ -51,27 +58,6 @@ void CPiranhaPlant::DetermineState()
 			}
 			break;
 	}
-
-	/*if (abs(y - origin_y) < PIRANHA_BBOX_HEIGHT && state == PIRANHA_STATE_RELOAD)
-	{
-		SetState(PIRANHA_STATE_EMERGE);
-	}
-	else if (GetTickCount64() - start_behavior_time < PIRANHA_SHOOT_TIME && state == PIRANHA_SHOOT_TIME)
-	{
-		SetState(PIRANHA_STATE_SHOOT);
-	}
-	else if (abs(y - origin_y) != 0 && state != PIRANHA_STATE_EMERGE)
-	{
-		SetState(PIRANHA_STATE_DIG);
-	}
-	else if (GetTickCount64() - start_behavior_time < PIRANHA_RELOAD_TIME && state != PIRANHA_RELOAD_TIME)
-	{
-		SetState(PIRANHA_STATE_RELOAD);
-	}
-	else
-	{
-		start_behavior_time = GetTickCount64();
-	}*/
 }
 
 void CPiranhaPlant::SetState(int state)
@@ -86,16 +72,24 @@ void CPiranhaPlant::SetState(int state)
 	switch (state)
 	{
 		case PIRANHA_STATE_EMERGE:
+			start_y = y;
 			vy = -PIRANHA_VY;
 			break;
 		case PIRANHA_STATE_SHOOT:
+			start_behavior_time = GetTickCount64();
 			vy = 0.0f;
 			break;
 		case PIRANHA_STATE_DIG:
+			start_y = y;
 			vy = PIRANHA_VY;
 			break;
 		case PIRANHA_STATE_RELOAD:
+			start_behavior_time = GetTickCount64();
 			vy = 0.0f;
+			break;
+		case STATE_DIE:
+			//CGameObject::SetState(state);
+			this->Delete();
 			break;
 	}
 }
@@ -126,13 +120,30 @@ void CPiranhaPlant::ChangeAnimation()
 		action = ANI_ID_PIRANHA_SHOOT;
 	}
 
-	int vertical = ANI_ID_PIRANHA_DOWN;
+	int vertical = ny;
 
 	int horizontal = nx;
 
 	aniID = object + action + vertical + horizontal;
 }
 
-void CPiranhaPlant::UnderAttack()
+void CPiranhaPlant::UnderAttack(CHarmfulObject* by_another)
 {	
+	this->MeleeAttack(by_another);
+}
+
+void CPiranhaPlant::LookforMario(vector<LPGAMEOBJECT>* coObjects)
+{
+	LPPLAYSCENE playScene = (LPPLAYSCENE)(CGame::GetInstance()->GetCurrentScene());
+	CMario* mario = (CMario*)playScene->GetPlayer();
+
+	float mario_x, mario_y;
+	mario->GetPosition(mario_x, mario_y);
+	nx = (mario_x < x) ? ANI_ID_PIRANHA_LEFT : ANI_ID_PIRANHA_RIGHT;
+	ny = (mario_y < y) ? ANI_ID_PIRANHA_UP : ANI_ID_PIRANHA_DOWN;
+}
+
+void CPiranhaPlant::OnCollisionWith(LPCOLLISIONEVENT e)
+{
+	
 }

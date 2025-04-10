@@ -98,7 +98,7 @@ class CMario : public CCreature
 	BOOLEAN isOnPlatform;
 	int coin; 
 
-	void OnCollisionWithCreature(LPCOLLISIONEVENT e);
+	void OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e);
 	void OnCollisionWithCoin(LPCOLLISIONEVENT e);
 	void OnCollisionWithPortal(LPCOLLISIONEVENT e);
 	void OnCollisionWithPlatform(LPCOLLISIONEVENT e);

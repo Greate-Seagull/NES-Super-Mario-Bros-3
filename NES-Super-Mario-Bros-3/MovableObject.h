@@ -10,7 +10,7 @@ class CMovableObject : public CGameObject
 {
 protected:
 	float vx, vy; //velocity	
-	int nx; //Direction
+	int nx, ny; //Direction
 
 public:
 	CMovableObject(float x, float y);
