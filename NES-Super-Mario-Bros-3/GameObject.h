@@ -16,6 +16,7 @@ using namespace std;
 #define BBOX_ALPHA 0.25f		// Bounding box transparency
 
 #define STATE_DIE -1
+#define STATE_LIVE 0
 
 #define GAME_GRAVITY			0.001f
 

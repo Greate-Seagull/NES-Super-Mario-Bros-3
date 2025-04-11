@@ -6,6 +6,7 @@ coin.txt
 cloud.txt
 brick.txt
 venus_fire_trap.txt
+red_koopa_troopa.txt
 #
 [OBJECTS]
 # type	x	y	extra_settings per object type
@@ -15,8 +16,11 @@ venus_fire_trap.txt
 # MARIO
 0	120	150
 
-#VENUS_FIRE_TRAP
-6	200	156
+#VENUS FIRE TRAP
+#6	200	156
+
+#RED KOOPA TROOPA
+7	200	115
 
 #COIN
 4	100	120

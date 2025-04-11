@@ -53,7 +53,7 @@ public:
 	virtual void Render();
 	virtual void ChangeAnimation();
 	virtual void UnderAttack(CHarmfulObject* by_another);
-	virtual void LookforMario(vector<LPGAMEOBJECT>* coObjects);
+	virtual void LookforMario();
 
 	//Collision
 	void OnCollisionWith(LPCOLLISIONEVENT e);

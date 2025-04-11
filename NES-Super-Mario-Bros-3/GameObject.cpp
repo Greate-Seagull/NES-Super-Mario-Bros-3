@@ -11,6 +11,7 @@
 CGameObject::CGameObject()
 {
 	x = y = 0;
+	state = STATE_LIVE;
 	isDeleted = false;
 }
 

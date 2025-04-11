@@ -25,7 +25,7 @@ void CPiranhaPlant::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	dt = 16;
 	ChangeState();
 	//CCollision::GetInstance()->Process(this, dt, coObjects);
-	LookforMario(coObjects);
+	LookforMario();
 	Move(dt);
 }
 
@@ -52,7 +52,11 @@ void CPiranhaPlant::ChangeState()
 			}
 			break;
 		case PIRANHA_STATE_RELOAD:
-			if (GetTickCount64() - start_behavior_time >= PIRANHA_RELOAD_TIME)
+			if (abs(nx) <= PIRANHA_DISTANCE_HIDE)
+			{
+				//just hide
+			}
+			else if (GetTickCount64() - start_behavior_time >= PIRANHA_RELOAD_TIME)
 			{
 				SetState((this->state + 1) % PIRANHA_NUMBER_STATE);
 			}
@@ -120,9 +124,9 @@ void CPiranhaPlant::ChangeAnimation()
 		action = ANI_ID_PIRANHA_SHOOT;
 	}
 
-	int vertical = ny;
+	int vertical = (ny < 0) ? ANI_ID_PIRANHA_UP : ANI_ID_PIRANHA_DOWN;
 
-	int horizontal = nx;
+	int horizontal = (nx < 0) ? ANI_ID_PIRANHA_LEFT: ANI_ID_PIRANHA_RIGHT;
 
 	aniID = object + action + vertical + horizontal;
 }
@@ -132,15 +136,15 @@ void CPiranhaPlant::UnderAttack(CHarmfulObject* by_another)
 	this->MeleeAttack(by_another);
 }
 
-void CPiranhaPlant::LookforMario(vector<LPGAMEOBJECT>* coObjects)
+void CPiranhaPlant::LookforMario()
 {
 	LPPLAYSCENE playScene = (LPPLAYSCENE)(CGame::GetInstance()->GetCurrentScene());
 	CMario* mario = (CMario*)playScene->GetPlayer();
 
 	float mario_x, mario_y;
 	mario->GetPosition(mario_x, mario_y);
-	nx = (mario_x < x) ? ANI_ID_PIRANHA_LEFT : ANI_ID_PIRANHA_RIGHT;
-	ny = (mario_y < y) ? ANI_ID_PIRANHA_UP : ANI_ID_PIRANHA_DOWN;
+	nx = mario_x - x;
+	ny = mario_y - y;
 }
 
 void CPiranhaPlant::OnCollisionWith(LPCOLLISIONEVENT e)

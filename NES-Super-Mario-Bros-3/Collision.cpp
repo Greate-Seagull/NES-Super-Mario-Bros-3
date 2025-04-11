@@ -223,7 +223,7 @@ void CCollision::Filter( LPGAMEOBJECT objSrc,
 *  Simple/Sample collision framework 
 *  NOTE: Student might need to improve this based on game logic 
 */
-void CCollision::Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+void CCollision::Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* coObjects) //Adjust to not move object if no collision
 {
 	vector<LPCOLLISIONEVENT> coEvents;
 	LPCOLLISIONEVENT colX = NULL; 
@@ -279,17 +279,18 @@ void CCollision::Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* co
 
 				if (colX_other != NULL)
 				{
-					x += colX_other->t * dx +colX_other->nx * BLOCK_PUSH_FACTOR;
+					x += colX_other->t * dx +colX_other->nx * BLOCK_PUSH_FACTOR;					
 					objSrc->OnCollisionWith(colX_other);
 				}
-				else
+				/*else
 				{
 					x += dx;
-				}
+				}*/
 			}
 			else // collision on X first
 			{
 				x += colX->t * dx + colX->nx * BLOCK_PUSH_FACTOR;
+				
 				objSrc->SetPosition(x, y);
 
 				objSrc->OnCollisionWith(colX);
@@ -315,32 +316,30 @@ void CCollision::Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* co
 					y += colY_other->t * dy + colY_other->ny * BLOCK_PUSH_FACTOR;
 					objSrc->OnCollisionWith(colY_other);
 				}
-				else
+				/*else
 				{
 					y += dy;
-				}
+				}*/
 			}
 		}
-		else
-		if (colX != NULL)
+		else if (colX != NULL)
 		{
 			x += colX->t * dx + colX->nx * BLOCK_PUSH_FACTOR;
-			y += dy;
+			//y += dy;
 			objSrc->OnCollisionWith(colX);
 		}
-		else 
-			if (colY != NULL)
-			{
-				x += dx;
-				y += colY->t * dy + colY->ny * BLOCK_PUSH_FACTOR;
-				objSrc->OnCollisionWith(colY);
-			}
-			else // both colX & colY are NULL 
-			{
-				x += dx;
-				y += dy;
-			}
-
+		else if (colY != NULL)
+		{
+			//x += dx;
+			y += colY->t * dy + colY->ny * BLOCK_PUSH_FACTOR;
+			objSrc->OnCollisionWith(colY);
+		}
+		//else // both colX & colY are NULL 
+		//{
+		//	x += dx;
+		//	y += dy;
+		//}
+		
 		objSrc->SetPosition(x, y);
 	}
 

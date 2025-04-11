@@ -39,7 +39,6 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	}
 
 	DetermineState();
-	DebugOutTitle(L"Life: %f", life);
 
 	float ax, ay;	
 	ApplyState(ax, ay);
@@ -274,7 +273,9 @@ void CMario::ApplySmallState(float &ax, float &ay)
 	}
 	else
 	{
-		ax = MARIO_SMALL_WALKING_AX;
+		ax = MARIO_SMALL_WALKING_MAX_VX;
+
+		//if (vx <= MARIO_SMALL_WALKING_MAX_VX)
 		maxVx = MARIO_SMALL_WALKING_MAX_VX;
 	}
 }
@@ -286,7 +287,7 @@ void CMario::ApplyBigState(float& ax, float& ay)
 		ax = MARIO_BIG_RUNNING_AX;
 		maxVx = MARIO_SMALL_RUNNING_MAX_VX;
 	}
-	else
+	else if (vx <= MARIO_SMALL_WALKING_MAX_VX)
 	{
 		ax = MARIO_BIG_WALKING_AX;
 		maxVx = MARIO_SMALL_WALKING_MAX_VX;
@@ -300,7 +301,7 @@ void CMario::ApplyRacoonState(float& ax, float& ay)
 		ax = MARIO_BIG_RUNNING_AX;
 		maxVx = MARIO_SMALL_RUNNING_MAX_VX;
 	}
-	else
+	else if (vx <= MARIO_SMALL_WALKING_MAX_VX)
 	{
 		ax = MARIO_BIG_WALKING_AX;
 		maxVx = MARIO_SMALL_WALKING_MAX_VX;

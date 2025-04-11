@@ -141,6 +141,7 @@
     <ClCompile Include="Goomba.cpp" />
     <ClCompile Include="HarmfulObject.cpp" />
     <ClCompile Include="KeyStateManager.cpp" />
+    <ClCompile Include="KoopaTroopa.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mario.cpp" />
     <ClCompile Include="MovableObject.cpp" />
@@ -171,6 +172,7 @@
     <ClInclude Include="HarmfulObject.h" />
     <ClInclude Include="KeyEventHandler.h" />
     <ClInclude Include="KeyStateManager.h" />
+    <ClInclude Include="KoopaTroopa.h" />
     <ClInclude Include="Mario.h" />
     <ClInclude Include="MovableObject.h" />
     <ClInclude Include="PiranhaPlant.h" />
