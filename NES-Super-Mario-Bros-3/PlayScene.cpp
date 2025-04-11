@@ -13,6 +13,8 @@
 #include "Pipe.h"
 #include "Container.h"
 #include "Background.h"
+#include "MiniBush.h"
+#include "BigBush.h"
 
 #include "SampleKeyEventHandler.h"
 
@@ -111,6 +113,23 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	switch (object_type)
 	{
 	case NON_OBJECT_TYPE_BACKGROUND: obj = new CBackground(x, y); break;
+	case NON_OBJECT_TYPE_MINI_BUSH: obj = new CMiniBush(x, y); break;
+	case NON_OBJECT_TYPE_BIG_BUSH:
+	{
+		float cell_width = (float)atof(tokens[3].c_str());
+		float cell_height = (float)atof(tokens[4].c_str());
+		int height = atoi(tokens[5].c_str());
+		int sprite_begin_begin = atoi(tokens[6].c_str());
+		int sprite_end_begin = atoi(tokens[7].c_str());
+		int sprite_begin_end = atoi(tokens[8].c_str());
+		int sprite_end_end = atoi(tokens[9].c_str());
+
+		obj = new CBigBush
+			(x, y, cell_width, cell_height, height,
+			sprite_begin_begin, sprite_end_begin,
+			sprite_begin_end, sprite_end_end);
+		break;
+	}
 	case OBJECT_TYPE_MARIO:
 		if (player!=NULL) 
 		{
