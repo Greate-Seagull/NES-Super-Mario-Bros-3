@@ -160,7 +160,7 @@ void CKoopaTroopa::SetState(int state)
 	}
 }
 
-void CKoopaTroopa::Reaction(CCreature* by_another, int action)
+void CKoopaTroopa::Reaction(CHarmfulObject* by_another, int action)
 {	
 	switch (state)
 	{
@@ -184,7 +184,7 @@ void CKoopaTroopa::Reaction(CCreature* by_another, int action)
 	}	
 }
 
-void CKoopaTroopa::Reaction_LivingState(CCreature* by_another, int action)
+void CKoopaTroopa::Reaction_LivingState(CHarmfulObject* by_another, int action)
 {
 	switch (action)
 	{
@@ -200,7 +200,7 @@ void CKoopaTroopa::Reaction_LivingState(CCreature* by_another, int action)
 	}
 }
 
-void CKoopaTroopa::Reaction_RollingState(CCreature* by_another, int action)
+void CKoopaTroopa::Reaction_RollingState(CHarmfulObject* by_another, int action)
 {
 	switch (action)
 	{
@@ -210,7 +210,7 @@ void CKoopaTroopa::Reaction_RollingState(CCreature* by_another, int action)
 	}
 }
 
-void CKoopaTroopa::Reaction_HidingState(CCreature* by_another, int action)
+void CKoopaTroopa::Reaction_HidingState(CHarmfulObject* by_another, int action)
 {
 	switch (action)
 	{

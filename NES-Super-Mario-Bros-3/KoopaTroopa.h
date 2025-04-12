@@ -48,10 +48,10 @@ public:
 	virtual void ChangeAnimation();
 	virtual void SetState(int state);
 
-	virtual void Reaction(CCreature* by_another, int action = ACTION_TOUCH);
-	virtual void Reaction_LivingState(CCreature* by_another, int action);
-	virtual void Reaction_RollingState(CCreature* by_another, int action);
-	virtual void Reaction_HidingState(CCreature* by_another, int action);
+	virtual void Reaction(CHarmfulObject* by_another, int action = ACTION_TOUCH);
+	virtual void Reaction_LivingState(CHarmfulObject* by_another, int action);
+	virtual void Reaction_RollingState(CHarmfulObject* by_another, int action);
+	virtual void Reaction_HidingState(CHarmfulObject* by_another, int action);
 
 
 	virtual void Recover();

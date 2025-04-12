@@ -23,7 +23,7 @@ public:
 	virtual void Touch(CHarmfulObject* another);
 	virtual void Carry(CHarmfulObject* another);
 	virtual void Drop();
-	virtual void Reaction(CCreature* by_another, int action = ACTION_TOUCH);
+	virtual void Reaction(CHarmfulObject* by_another, int action = ACTION_TOUCH);
 	virtual void Recover();
 	virtual void AgainstControl();
 };

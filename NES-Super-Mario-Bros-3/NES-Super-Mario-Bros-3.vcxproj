@@ -136,6 +136,7 @@
     <ClCompile Include="Collision.cpp" />
     <ClCompile Include="Creature.cpp" />
     <ClCompile Include="debug.cpp" />
+    <ClCompile Include="Fireball.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Goomba.cpp" />

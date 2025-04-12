@@ -54,7 +54,7 @@ void CCreature::Drop()
 	}
 }
 
-void CCreature::Reaction(CCreature* by_another, int action)
+void CCreature::Reaction(CHarmfulObject* by_another, int action)
 {
 	reaction = REACTION_NO_RESIST;
 }

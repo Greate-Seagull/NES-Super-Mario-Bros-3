@@ -34,11 +34,13 @@ public:
 	virtual void Unload();
 
 	LPGAMEOBJECT GetPlayer() { return player; }
-
+	
 	void Clear();
 	void PurgeDeletedObjects();
 
 	static bool IsGameObjectDeleted(const LPGAMEOBJECT& o);
+
+	void Add(LPGAMEOBJECT newObj);
 };
 
 typedef CPlayScene* LPPLAYSCENE;
