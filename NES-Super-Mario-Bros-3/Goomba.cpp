@@ -3,12 +3,13 @@
 #include "Platform.h"
 
 CGoomba::CGoomba(float x, float y):
-	CCreature(x, y, GOOMBA_LIFE)
+	CCreature(x, y)
 {
 	bbox_height = GOOMBA_BBOX_HEIGHT;
 	bbox_width = GOOMBA_BBOX_WIDTH;
 	vx = -GOOMBA_VX;
 	die_start = -1;
+	life = GOOMBA_LIFE;
 }
 
 void CGoomba::OnCollisionWith(LPCOLLISIONEVENT e)

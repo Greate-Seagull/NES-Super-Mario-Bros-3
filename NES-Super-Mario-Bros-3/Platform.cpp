@@ -62,8 +62,3 @@ int CPlatform::IsDirectionColliable(float nx, float ny)
 	if (nx == 0 && ny == -1) return 1;
 	else return 0;
 }
-
-string CPlatform::ToString()
-{
-	return "Platform";
-}

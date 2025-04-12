@@ -10,15 +10,15 @@
 
 CGameObject::CGameObject()
 {
-	x = y = 0;
-	state = STATE_LIVE;
+	x = y = 0;	
+	state = -1;
 	isDeleted = false;
 }
 
 void CGameObject::GetBoundingBox(float& left, float& top, float& right, float& bottom)
 {
-	left = x - bbox_width / 2;
-	top = y - bbox_height / 2;
+	left = x - (bbox_width / 2);
+	top = y - (bbox_height / 2);
 	right = left + bbox_width;
 	bottom = top + bbox_height;
 }
@@ -59,7 +59,7 @@ CGameObject::~CGameObject()
 
 }
 
-string CGameObject::ToString()
-{
-	return "Game Object";
+const char* CGameObject::ToString()  
+{  
+   return "Game Object";  
 }

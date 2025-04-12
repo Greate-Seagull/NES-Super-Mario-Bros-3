@@ -12,7 +12,7 @@
 #include "Collision.h"
 
 CMario::CMario(float x, float y):
-	CCreature(x, y, MARIO_LEVEL_SMALL)
+	CCreature(x, y)
 {
 	isSitting = false;
 	isBoost = false;
@@ -23,29 +23,26 @@ CMario::CMario(float x, float y):
 	untouchable_start = -1;
 	isOnPlatform = false;
 	coin = 0;
+
+	SetLevel(MARIO_LEVEL_SMALL);
+	state = STATE_LIVE;
+
+	ax = 0.0f;
+	ay = 0.0f;
 }
 
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {	
-
 	dt = min(17, dt);
 	dt = max(15, dt);	
 
-	ProcessLife();
-
-	if (state == STATE_DIE)
-	{
-		return;
-	}
-
-	DetermineState();
-
-	float ax, ay;	
-	ApplyState(ax, ay);
-	DetermineAccelerator(ax, ay, dt);
-	Accelerate(ax, ay, dt);
+	ProcessInput();
+	ApplyState();
+	ComputeAccelerator(dt);
+	Accelerate(dt);
 	CCollision::GetInstance()->Process(this, dt, coObjects);
 	Move(dt);
+	Carrying();
 
 	//// reset untouchable timer if untouchable time has passed
 	//if ( GetTickCount64() - untouchable_start > MARIO_UNTOUCHABLE_TIME) 
@@ -79,15 +76,16 @@ void CMario::OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e)
 	// jump on top >> kill Goomba and deflect a bit 
 	if (e->ny < 0)
 	{
-		this->MeleeAttack(enemy);
-		if (life)
-		{	
-			vy = MARIO_JUMP_DEFLECT_VX;
-		}
+		MeleeAttack(enemy);
+		BackJump();
+	}
+	else if (isBoost)
+	{
+		Carry(enemy);
 	}
 	else // hit by Goomba
 	{
-		UnderAttack(enemy);
+		Touch(enemy);
 	}
 }
 
@@ -199,35 +197,7 @@ void CMario::Render()
 //	CGameObject::SetState(state);
 //}
 
-void CMario::GetBoundingBox(float &left, float &top, float &right, float &bottom)
-{
-	if (life==MARIO_LEVEL_BIG)
-	{
-		if (isSitting)
-		{
-			left = x - MARIO_BIG_SITTING_BBOX_WIDTH / 2;
-			top = y - MARIO_BIG_SITTING_BBOX_HEIGHT / 2;
-			right = left + MARIO_BIG_SITTING_BBOX_WIDTH;
-			bottom = top + MARIO_BIG_SITTING_BBOX_HEIGHT;
-		}
-		else 
-		{
-			left = x - MARIO_BIG_BBOX_WIDTH/2;
-			top = y - MARIO_BIG_BBOX_HEIGHT/2;
-			right = left + MARIO_BIG_BBOX_WIDTH;
-			bottom = top + MARIO_BIG_BBOX_HEIGHT;
-		}
-	}
-	else
-	{
-		left = x - MARIO_SMALL_BBOX_WIDTH/2;
-		top = y - MARIO_SMALL_BBOX_HEIGHT/2;
-		right = left + MARIO_SMALL_BBOX_WIDTH;
-		bottom = top + MARIO_SMALL_BBOX_HEIGHT;
-	}
-}
-
-void CMario::DetermineState()
+void CMario::ProcessInput()
 {
 	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
 
@@ -248,23 +218,7 @@ void CMario::DetermineState()
 	isBoost = keyState->IsHold(VK_A);
 }
 
-void CMario::ApplyState(float& ax, float& ay)
-{
-	if (life == MARIO_LEVEL_RACOON)
-	{
-		ApplyRacoonState(ax, ay);
-	}
-	else if (life == MARIO_LEVEL_BIG)
-	{
-		ApplyBigState(ax, ay);
-	}
-	else
-	{
-		ApplySmallState(ax, ay);
-	}
-}
-
-void CMario::ApplySmallState(float &ax, float &ay)
+void CMario::ApplyState()
 {
 	if (isBoost)
 	{
@@ -273,111 +227,97 @@ void CMario::ApplySmallState(float &ax, float &ay)
 	}
 	else
 	{
-		ax = MARIO_SMALL_WALKING_MAX_VX;
+		ax = MARIO_SMALL_WALKING_AX;
 
-		//if (vx <= MARIO_SMALL_WALKING_MAX_VX)
-		maxVx = MARIO_SMALL_WALKING_MAX_VX;
+		if (abs(vx) <= MARIO_SMALL_WALKING_MAX_VX)
+			maxVx = MARIO_SMALL_WALKING_MAX_VX;
+
+		Drop();
+	}
+
+	if (isSitting)
+	{
+
+	}
+
+	if (isFalling)
+	{
+
 	}
 }
 
-void CMario::ApplyBigState(float& ax, float& ay)
-{
-	if (isBoost)
-	{
-		ax = MARIO_BIG_RUNNING_AX;
-		maxVx = MARIO_SMALL_RUNNING_MAX_VX;
-	}
-	else if (vx <= MARIO_SMALL_WALKING_MAX_VX)
-	{
-		ax = MARIO_BIG_WALKING_AX;
-		maxVx = MARIO_SMALL_WALKING_MAX_VX;
-	}
-}
-
-void CMario::ApplyRacoonState(float& ax, float& ay)
-{
-	if (isBoost)
-	{
-		ax = MARIO_BIG_RUNNING_AX;
-		maxVx = MARIO_SMALL_RUNNING_MAX_VX;
-	}
-	else if (vx <= MARIO_SMALL_WALKING_MAX_VX)
-	{
-		ax = MARIO_BIG_WALKING_AX;
-		maxVx = MARIO_SMALL_WALKING_MAX_VX;
-	}
-}
-
-void CMario::DetermineAccelerator(float& applied_ax, float& applied_ay, DWORD& t)
+void CMario::ComputeAccelerator(DWORD& t)
 {
 	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
 
-	float ax = 0.0f;
-	float ay = GAME_GRAVITY;
-	int nx = 0;
+	float new_ax = 0.0f;
+	float new_ay = GAME_GRAVITY;
+	int new_nx = 0;
 
 	if (keyState->IsHold(VK_LEFT))
 	{
 		if (vx > 0)
 		{
 			float temp_ax = min(MARIO_BRAKE_AX, fabs(vx / t));
-			ax += -temp_ax;
+			new_ax += -temp_ax;
 		}
 		else
 		{		
-			ax += -applied_ax;
+			new_ax += -ax;
 		}
 
-		nx--;
+		new_nx--;
 	}
 	if (keyState->IsHold(VK_RIGHT))
 	{
 		if (vx < 0)
 		{
 			float temp_ax = min(MARIO_BRAKE_AX, fabs(vx / t));
-			ax += temp_ax;
+			new_ax += temp_ax;
 		}
 		else
 		{
-			ax += applied_ax;
+			new_ax += ax;
 		}
 
-		nx++;
+		new_nx++;
 	}
-	if (ax == 0.0f)
+	if (new_ax == 0.0f)
 	{
-		ax = min(MARIO_DECELERATE_AX, fabs(vx) / t);
+		new_ax = min(MARIO_DECELERATE_AX, fabs(vx) / t);
 
 		if (vx > 0)
 		{
-			ax = -ax;
+			new_ax = -new_ax;
 		}
 	}
 
 	//Jump
 	if (keyState->IsPressed(VK_S) && !isFalling)
 	{
-		ay += MARIO_START_JUMPING_AY;
+		new_ay += MARIO_START_JUMPING_AY;
 		startJumpingPosition = y;
 	}
-	if (keyState->IsReleased(VK_S) || abs(y - startJumpingPosition) >= MARIO_MAX_JUMP_HEIGHT)
+	else if (keyState->IsReleased(VK_S) || abs(y - startJumpingPosition) >= MARIO_MAX_JUMP_HEIGHT || vy > 0.0f)
 	{
 		isFalling = true;		
 	}
 	else if (keyState->IsHold(VK_S) && !isFalling)
 	{
 		if(abs(vy) <= MARIO_SMALL_JUMPING_MAX_VY)
-			ay += -GAME_GRAVITY;
+			new_ay += -GAME_GRAVITY;
 	}
 	//------------------------------------------
 
-	if (nx)
+	if (new_nx)
 	{
-		this->nx = nx;
+		this->nx = new_nx;
 	}
 
-	applied_ax = ax;
-	applied_ay = ay;
+	ax = new_ax;
+	ay = new_ay;
+
+	//DebugOutTitle(L"ax: %f", applied_ax);
 }
 
 void CMario::ChangeAnimation()
@@ -433,7 +373,7 @@ void CMario::ChangeAnimation()
 	aniID = ID_ANI_MARIO + level + action + direction;	
 }
 
-void CMario::Accelerate(float ax, float ay, DWORD t)
+void CMario::Accelerate(DWORD t)
 {
 	CMovableObject::Accelerate(ax, ay, t);
 
@@ -447,6 +387,47 @@ void CMario::Accelerate(float ax, float ay, DWORD t)
 	}
 }
 
+void CMario::BackJump()
+{
+	if (life)
+	{
+		vy = MARIO_JUMP_DEFLECT_VX;
+	}
+}
+
+void CMario::Jump()
+{
+}
+
+void CMario::Reaction(CHarmfulObject* by_another, int action)
+{
+	if (action == ACTION_ATTACK)
+		UnderAttack(by_another);
+}
+
+void CMario::Carrying()
+{
+	if (weapon && weapon->IsControlled())
+	{
+		float weapon_x, weapon_y;
+
+		weapon_x = x + nx * (this->bbox_width + weapon->getBBoxWidth()) / 2;
+		weapon_y = y + (this->bbox_height - weapon->getBBoxHeight()) / 2;
+
+		weapon->SetPosition(weapon_x, weapon_y);
+	}
+	else
+	{
+		Drop();
+	}
+}
+
+void CMario::Drop()
+{
+	Touch(weapon);
+	CCreature::Drop();
+}
+
 void CMario::SetLevel(int l)
 {
 	// Adjust position to avoid falling off platform
@@ -456,16 +437,23 @@ void CMario::SetLevel(int l)
 	if (l == MARIO_LEVEL_RACOON)
 	{
 		life = MARIO_LEVEL_RACOON;
-		y += MARIO_BIG_TRANSFORMATION_OFFSET;
+		y += (bbox_height - MARIO_RACOON_BBOX_HEIGHT) / 2;
+		bbox_height = MARIO_RACOON_BBOX_HEIGHT;
+		bbox_width = MARIO_RACOON_BBOX_WIDTH;
 	}
 	else if (l == MARIO_LEVEL_BIG)
 	{
 		life = MARIO_LEVEL_BIG;
-		y += MARIO_BIG_TRANSFORMATION_OFFSET;
+		y += (bbox_height - MARIO_BIG_BBOX_HEIGHT) / 2;
+		bbox_height = MARIO_BIG_BBOX_HEIGHT;
+		bbox_width = MARIO_BIG_BBOX_WIDTH;
 	}
 	else
 	{
 		life = MARIO_LEVEL_SMALL;
+		y += (bbox_height - MARIO_SMALL_BBOX_HEIGHT) / 2;
+		bbox_height = MARIO_SMALL_BBOX_HEIGHT;
+		bbox_width = MARIO_SMALL_BBOX_WIDTH;
 	}
 }
 

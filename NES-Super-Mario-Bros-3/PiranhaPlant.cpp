@@ -6,7 +6,7 @@
 #include "debug.h"
 
 CPiranhaPlant::CPiranhaPlant(float x, float y):
-	CCreature(x, y, PIRANHA_LIFE)
+	CCreature(x, y)
 {
 	bbox_height = PIRANHA_BBOX_HEIGHT;
 	bbox_width = PIRANHA_BBOX_WIDTH;
@@ -16,6 +16,7 @@ CPiranhaPlant::CPiranhaPlant(float x, float y):
 
 	SetState(PIRANHA_STATE_EMERGE);
 	start_y = y;
+	life = PIRANHA_LIFE;
 }
 
 void CPiranhaPlant::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)

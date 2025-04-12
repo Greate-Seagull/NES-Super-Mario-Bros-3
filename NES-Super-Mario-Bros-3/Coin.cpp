@@ -15,8 +15,3 @@ void CCoin::GetBoundingBox(float& l, float& t, float& r, float& b)
 	r = l + COIN_BBOX_WIDTH;
 	b = t + COIN_BBOX_HEIGHT;
 }
-
-string CCoin::ToString()
-{
-	return "Coin";
-}

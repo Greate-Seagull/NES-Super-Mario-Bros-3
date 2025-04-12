@@ -20,3 +20,21 @@ void CMovableObject::Accelerate(float ax, float ay, DWORD t)
 	vx += ax * t;
 	vy += ay * t;
 }
+
+void CMovableObject::ChangeDirection()
+{
+	vx = -vx;
+	nx = -nx;
+
+	vy = -vy;
+	ny = -ny;
+}
+
+void CMovableObject::Stop()
+{
+	vx = STOP_V;
+	vy = STOP_V;
+
+	nx = DIRECTION_REMAIN;
+	ny = DIRECTION_REMAIN;
+}

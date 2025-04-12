@@ -49,7 +49,10 @@ public:
 	CGameObject(float x, float y) :CGameObject() { this->x = x; this->y = y; }
 
 
-	virtual void GetBoundingBox(float &left, float &top, float &right, float &bottom);
+	virtual void GetBoundingBox(float &left, float &top, float &right, float &bottom);	
+	virtual float getBBoxHeight() { return bbox_height; }
+	virtual float getBBoxWidth() { return bbox_width; }
+
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects = NULL) {};
 	virtual void Render() = 0;
 	virtual void SetState(int state);
@@ -75,5 +78,5 @@ public:
 
 	static bool IsDeleted(const LPGAMEOBJECT &o) { return o->isDeleted; }
 
-	virtual string ToString();
+	virtual const char* ToString();
 };

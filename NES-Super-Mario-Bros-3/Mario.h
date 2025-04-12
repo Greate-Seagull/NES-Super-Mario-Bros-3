@@ -67,27 +67,30 @@
 
 #define GROUND_Y 160.0f
 
+#define MARIO_SMALL_BBOX_WIDTH  12
+#define MARIO_SMALL_BBOX_HEIGHT 15
+
 #define MARIO_BIG_BBOX_WIDTH  14
-#define MARIO_BIG_BBOX_HEIGHT 24
-#define MARIO_BIG_SITTING_BBOX_WIDTH  14
-#define MARIO_BIG_SITTING_BBOX_HEIGHT 16
+#define MARIO_BIG_BBOX_HEIGHT 27
+#define MARIO_BIG_SITTING_BBOX_WIDTH  15
+#define MARIO_BIG_SITTING_BBOX_HEIGHT 15
 
-#define MARIO_SIT_HEIGHT_ADJUST ((MARIO_BIG_BBOX_HEIGHT-MARIO_BIG_SITTING_BBOX_HEIGHT)/2)
+#define MARIO_RACOON_BBOX_WIDTH  21
+#define MARIO_RACOON_BBOX_HEIGHT 28
 
-#define MARIO_SMALL_BBOX_WIDTH  13
-#define MARIO_SMALL_BBOX_HEIGHT 12
 
 
 #define MARIO_UNTOUCHABLE_TIME 2500
 
 class CMario : public CCreature
 {
+	float ax, ay;
 	float maxVx;
 
 	bool isOnSky;
 	bool isSitting;
 	bool isBoost;
-	bool isFalling;
+	bool isFalling;	
 
 	float startJumpingPosition;
 
@@ -119,18 +122,19 @@ public:
 	void OnNoCollision(DWORD dt);
 	void OnCollisionWith(LPCOLLISIONEVENT e);
 
-	void SetLevel(int l);
+	void SetLevel(int l);	
 	//void StartUntouchable() { untouchable = 1; untouchable_start = GetTickCount64(); }
 
-	void GetBoundingBox(float& left, float& top, float& right, float& bottom);
-
-	void DetermineState();
-	void ApplyState(float &ax, float &ay);
-	void ApplySmallState(float &ax, float &ay);
-	void ApplyBigState(float& ax, float& ay);
-	void ApplyRacoonState(float& ax, float& ay);
-	void DetermineAccelerator(float& ax, float& ay, DWORD& t);
+	void ProcessInput();
+	void ApplyState();
+	void ComputeAccelerator(DWORD& t);
 
 	void ChangeAnimation();
-	void Accelerate(float ax, float ay, DWORD t);
+	void Accelerate(DWORD t);
+
+	void BackJump();
+	void Jump();
+	void Reaction(CHarmfulObject* by_another, int action = ACTION_TOUCH);
+	void Carrying();
+	void Drop();
 };

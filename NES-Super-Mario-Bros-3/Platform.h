@@ -32,8 +32,6 @@ public:
 	void RenderBoundingBox();
 
 	int IsDirectionColliable(float nx, float ny);
-
-	virtual string ToString();
 };
 
 typedef CPlatform* LPPLATFORM;

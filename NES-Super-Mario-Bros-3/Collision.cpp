@@ -1,5 +1,6 @@
 #include "Collision.h"
 #include "GameObject.h"
+#include "KoopaTroopa.h"
 
 #include "debug.h"
 
@@ -342,6 +343,7 @@ void CCollision::Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* co
 		
 		objSrc->SetPosition(x, y);
 	}
+
 
 	//
 	// Scan all non-blocking collisions for further collision logic
