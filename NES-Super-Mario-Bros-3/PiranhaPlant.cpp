@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "PlayScene.h"
+#include "Game.h"
 
 #include "PiranhaPlant.h"
 #include "Mario.h"
@@ -15,10 +16,7 @@ CPiranhaPlant::CPiranhaPlant(float x, float y):
 	vy = PIRANHA_VY;
 
 	SetState(PIRANHA_STATE_EMERGE);
-	start_y = y;
-	life = PIRANHA_LIFE;
-	mag_size = PIRANHA_MAG_SIZE;
-	assault_mode = false;
+	life = PIRANHA_LIFE;	
 }
 
 void CPiranhaPlant::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
@@ -26,61 +24,67 @@ void CPiranhaPlant::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	ProcessLife();
 
 	dt = 16;
-	ChangeState();	
+	InPhase();	
 	LookforMario();
 	Move(dt);
-
-	if(boomerang)
-		boomerang->Update(dt, coObjects);
-	//DebugOutTitle(L"mag: %d", mag_size);
 }
 
-void CPiranhaPlant::ChangeState()
+void CPiranhaPlant::InPhase()
 {	
 	switch (state)
 	{
 		case PIRANHA_STATE_EMERGE:
-			if (abs(y - start_y) >= bbox_height)
-			{
-				SetState((this->state + 1) % PIRANHA_NUMBER_STATE);
-			}
+			InPhaseEmerge();
 			break;
-		case PIRANHA_STATE_SHOOT:
-		{
-			DWORD tick = GetTickCount64();
-			if (tick - start_action_time >= PIRANHA_SHOOT_TIME)
-			{
-				SetState((this->state + 1) % PIRANHA_NUMBER_STATE);
-			}
-			else if (tick - start_action_time >= PIRANHA_SHOOT_TIME / 2)
-			{
-				/*CPlayScene* playScene = (CPlayScene*) CGame::GetInstance()->GetCurrentScene();
-				playScene->Add(Shoot());*/
-				Shoot();
-			}
+		case PIRANHA_STATE_ATTACK:
+			InPhaseAttack();
 			break;
-		}
 		case PIRANHA_STATE_DIG:
-			if (abs(y - start_y) >= bbox_height)
-			{
-				SetState((this->state + 1) % PIRANHA_NUMBER_STATE);
-			}
+			InPhaseDig();
 			break;
-		case PIRANHA_STATE_RELOAD:
-			Reload();
-			if (abs(nx) <= PIRANHA_DISTANCE_HIDE)
-			{
-				//just hide
-			}
-			else if (GetTickCount64() - start_action_time >= PIRANHA_RELOAD_TIME)
-			{
-				SetState((this->state + 1) % PIRANHA_NUMBER_STATE);
-			}			
+		case PIRANHA_STATE_HIDE:			
+			InPhaseHide();
 			break;
 	}
 }
 
-void CPiranhaPlant::SetState(int state)
+void CPiranhaPlant::InPhaseEmerge()
+{
+	if (abs(y - start_y) >= bbox_height)
+	{
+		SetState((this->state + 1) % PIRANHA_NUMBER_STATE);
+	}
+}
+
+void CPiranhaPlant::InPhaseAttack()
+{
+	if (GetTickCount64() - start_action_time >= PIRANHA_ATTACK_TIME)
+	{
+		SetState((this->state + 1) % PIRANHA_NUMBER_STATE);
+	}
+}
+
+void CPiranhaPlant::InPhaseDig()
+{
+	if (abs(y - start_y) >= bbox_height)
+	{
+		SetState((this->state + 1) % PIRANHA_NUMBER_STATE);
+	}
+}
+
+void CPiranhaPlant::InPhaseHide()
+{
+	if (abs(target_dx) <= PIRANHA_DISTANCE_HIDE)
+	{
+		//just hide
+	}
+	else if (GetTickCount64() - start_action_time >= PIRANHA_HIDE_TIME)
+	{
+		SetState((this->state + 1) % PIRANHA_NUMBER_STATE);
+	}
+}
+
+void CPiranhaPlant::SetState(int state) //Start state
 {
 	if (this->state == state)
 	{
@@ -92,26 +96,46 @@ void CPiranhaPlant::SetState(int state)
 	switch (state)
 	{
 		case PIRANHA_STATE_EMERGE:
-			start_y = y;
-			vy = -PIRANHA_VY;
+			ToStateEmerge();
 			break;
-		case PIRANHA_STATE_SHOOT:
-			start_action_time = GetTickCount64();
-			vy = 0.0f;
+		case PIRANHA_STATE_ATTACK:
+			ToStateAttack();
 			break;
 		case PIRANHA_STATE_DIG:
-			start_y = y;
-			vy = PIRANHA_VY;
+			ToStateDig();
 			break;
-		case PIRANHA_STATE_RELOAD:
-			start_action_time = GetTickCount64();
-			vy = 0.0f;
+		case PIRANHA_STATE_HIDE:
+			ToStateHide();
 			break;
 		case STATE_DIE:
 			//CGameObject::SetState(state);
 			this->Delete();
 			break;
 	}
+}
+
+void CPiranhaPlant::ToStateEmerge()
+{
+	start_y = y;
+	vy = -PIRANHA_VY;
+}
+
+void CPiranhaPlant::ToStateAttack()
+{
+	start_action_time = GetTickCount64();
+	vy = 0.0f;
+}
+
+void CPiranhaPlant::ToStateDig()
+{
+	start_y = y;
+	vy = PIRANHA_VY;
+}
+
+void CPiranhaPlant::ToStateHide()
+{
+	start_action_time = GetTickCount64();
+	vy = 0.0f;
 }
 
 void CPiranhaPlant::Render()
@@ -126,8 +150,6 @@ void CPiranhaPlant::Render()
 	ChangeAnimation();
 
 	animations->Get(aniID)->Render(x, y);
-	if(boomerang)
-		boomerang->Render();
 
 	RenderBoundingBox();
 }
@@ -136,96 +158,38 @@ void CPiranhaPlant::ChangeAnimation()
 {
 	int object = ANI_ID_PIRANHA;
 
-	int action = ANI_ID_PIRANHA_LOOK;
-	if (state == PIRANHA_STATE_SHOOT)
-	{
-		action = ANI_ID_PIRANHA_SHOOT;
-	}
+	int action = ANI_ID_PIRANHA_BITE;
 
-	int vertical = (ny < 0) ? ANI_ID_PIRANHA_UP : ANI_ID_PIRANHA_DOWN;
-
-	int horizontal = (nx < 0) ? ANI_ID_PIRANHA_LEFT: ANI_ID_PIRANHA_RIGHT;
-
-	aniID = object + action + vertical + horizontal;
-}
-
-void CPiranhaPlant::UnderAttack(CHarmfulObject* by_another)
-{	
-	this->MeleeAttack(by_another);
+	aniID = object + action;
 }
 
 void CPiranhaPlant::LookforMario()
 {
+	//Get target
 	LPPLAYSCENE playScene = (LPPLAYSCENE)(CGame::GetInstance()->GetCurrentScene());
 	CMario* mario = (CMario*)playScene->GetPlayer();
 
+	//Determine target position
 	float mario_x, mario_y;
 	mario->GetPosition(mario_x, mario_y);
-	nx = mario_x - x;
-	ny = mario_y - y;
+
+	//aim at target
+	target_dx = mario_x - x;
+	target_dy = mario_y - y;	
 }
 
-void CPiranhaPlant::Reaction(CHarmfulObject* by_another, int action)
-{
-	AgainstControl();
-}
-
-void CPiranhaPlant::Shoot()
-{
-	if (mag_size)
+void CPiranhaPlant::Reaction(CGameObject* by_another, int action)
+{	
+	switch (action)
 	{
-		if (boomerang == nullptr)
-			boomerang = new CFireball(x, y);
-
-		if (abs(nx) <= PIRANHA_SHOOT_MIN_DISTANCE)
-		{
-			mag_size -= 1;
-			assault_mode = true;
-
-			float shoot_nx = (nx <= 0) ? DIRECTION_LEFT : DIRECTION_RIGHT;
-			float shoot_ny = (ny <= 0) ? DIRECTION_TOP : DIRECTION_DOWN;
-
-			float shoot_x = x;
-			float shoot_y = y - bbox_height / 4;
-
-			boomerang->SetPosition(shoot_x, shoot_y);
-			boomerang->ApplyRange(FIREBALL_RANGE_SHORT);
-			boomerang->ApplyDirection(shoot_nx, shoot_ny);
-
-			//return new CFireball(x, y, FIREBALL_RANGE_SHORT, shoot_nx, shoot_ny);
-		}
-		else if (assault_mode && abs(nx) <= PIRANHA_LOOK_MAX_DISTANCE)
-		{
-			mag_size -= 1;
-
-			float shoot_nx = (nx <= 0) ? DIRECTION_LEFT : DIRECTION_RIGHT;
-			float shoot_ny = (ny <= 0) ? DIRECTION_TOP : DIRECTION_DOWN;
-
-			float shoot_x = x;
-			float shoot_y = y - bbox_height / 4;
-
-			boomerang->SetPosition(shoot_x, shoot_y);
-			boomerang->ApplyRange(FIREBALL_RANGE_SHORT);
-			boomerang->ApplyDirection(shoot_nx, shoot_ny);
-			//return new CFireball(x, y, FIREBALL_RANGE_SHORT, shoot_nx, shoot_ny);
-		}
-		else
-		{
-			assault_mode = false;
-		}
+		case ACTION_CARRY:
+			AgainstControl();
+			break;
+		case ACTION_DESTROY:
+			UnderAttack((CHarmfulObject*) by_another);
+			break;
+		default:
+			MeleeAttack(by_another);
+			break;
 	}
-	//return nullptr;
-}
-
-void CPiranhaPlant::Reload()
-{
-	if (mag_size < PIRANHA_MAG_SIZE)
-	{
-		mag_size++;
-	}
-}
-
-void CPiranhaPlant::OnCollisionWith(LPCOLLISIONEVENT e)
-{
-	
 }

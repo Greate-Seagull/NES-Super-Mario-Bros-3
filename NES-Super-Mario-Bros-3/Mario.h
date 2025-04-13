@@ -122,6 +122,8 @@ public:
 	void OnNoCollision(DWORD dt);
 	void OnCollisionWith(LPCOLLISIONEVENT e);
 
+	void Reaction(CGameObject* by_another, int action);
+
 	void SetLevel(int l);	
 	//void StartUntouchable() { untouchable = 1; untouchable_start = GetTickCount64(); }
 

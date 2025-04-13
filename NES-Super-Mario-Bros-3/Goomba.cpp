@@ -10,6 +10,7 @@ CGoomba::CGoomba(float x, float y):
 	vx = -GOOMBA_VX;
 	die_start = -1;
 	life = GOOMBA_LIFE;
+	SetState(STATE_LIVE);
 }
 
 void CGoomba::OnCollisionWith(LPCOLLISIONEVENT e)
@@ -36,6 +37,13 @@ void CGoomba::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 
 void CGoomba::SetState(int state)
 {
+	if (this->state == state)
+	{
+		return;
+	}
+
+	this->state = state;
+
 	switch (state)
 	{
 		case STATE_DIE:
@@ -72,14 +80,21 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 }
 
 
-void CGoomba::Render()
+void CGoomba::ChangeAnimation()
 {
-	int aniId = ID_ANI_GOOMBA_WALKING;
+	int object = ANI_ID_GOOMBA;
+	int action = ANI_ID_GOOMBA_WALKING;
 	if (state == STATE_DIE)
 	{
-		aniId = ID_ANI_GOOMBA_DIE;
+		action = ANI_ID_GOOMBA_DIE;
 	}
 
-	CAnimations::GetInstance()->Get(aniId)->Render(x,y);
+	aniID = object + action;
+}
+
+void CGoomba::Render()
+{
+	ChangeAnimation();
+	CAnimations::GetInstance()->Get(aniID)->Render(x,y);
 	RenderBoundingBox();
 }

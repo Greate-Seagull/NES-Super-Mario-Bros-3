@@ -48,12 +48,12 @@ public:
 	virtual void ChangeAnimation();
 	virtual void SetState(int state);
 
-	virtual void Reaction(CHarmfulObject* by_another, int action = ACTION_TOUCH);
-	virtual void Reaction_LivingState(CHarmfulObject* by_another, int action);
-	virtual void Reaction_RollingState(CHarmfulObject* by_another, int action);
-	virtual void Reaction_HidingState(CHarmfulObject* by_another, int action);
+	virtual void Reaction(CGameObject* by_another, int action);
+	virtual void Reaction_LivingState(CGameObject* by_another, int action);
+	virtual void Reaction_RollingState(CGameObject* by_another, int action);
+	virtual void Reaction_HidingState(CGameObject* by_another, int action);
 
-
+	virtual void UnderAttack(CGameObject* by_another);
 	virtual void Recover();
 	virtual void LookForMario();
 

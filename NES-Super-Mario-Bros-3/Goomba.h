@@ -19,25 +19,34 @@
 #define GOOMBA_STATE_WALKING 100
 #define GOOMBA_STATE_DIE 200
 
-#define ID_ANI_GOOMBA_WALKING 5000
-#define ID_ANI_GOOMBA_DIE 5001
+
+//animations
+//object
+#define ANI_ID_GOOMBA 5000
+//actions
+#define ANI_ID_GOOMBA_WALKING 0
+#define ANI_ID_GOOMBA_DIE 1
 
 class CGoomba : public CCreature
 {
 protected:
 	ULONGLONG die_start;
 
-	virtual void Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects);
-	virtual void Render();
-
-	virtual int IsCollidable() { return 1; };
-	//virtual int IsBlocking() { return 0; }
 
 public:
 	CGoomba(float x, float y);
 	
+	virtual void Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects);
+
+	virtual void ChangeAnimation();
+	virtual void Render();
+
+	virtual int IsCollidable() { return 1; };
+	//virtual int IsBlocking() { return 0; }
 	virtual void OnCollisionWith(LPCOLLISIONEVENT e);	
 	virtual void OnCollisionWithPlatform(LPCOLLISIONEVENT e);
+
+	void Reaction(CGameObject* by_another, int action) {};
 	
 	virtual void SetState(int state);
 	virtual void ProcessState();

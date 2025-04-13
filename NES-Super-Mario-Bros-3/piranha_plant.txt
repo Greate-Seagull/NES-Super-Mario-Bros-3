@@ -1,5 +1,11 @@
 # id	left	top	right	bottom	texture_id
 [SPRITES]
-#WALK
-30001	1	1	16	16	10
-30002	18	1	33	16	10
+#BITE 0
+30301	1	200	16	230	10
+#BITE 1
+30302	18	199	33	230	10
+
+# ani_id	sprite1_id	time1	sprite2_id	time2	...
+[ANIMATIONS]
+#BITE
+7000	30301	100	30302	100

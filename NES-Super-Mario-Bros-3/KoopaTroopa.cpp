@@ -12,15 +12,15 @@ CKoopaTroopa::CKoopaTroopa(float x, float y):
 
 	vy = KOOPA_VY;	
 	SetState(STATE_LIVE);
-	life = KOOPA_LIFE;
+	life = KOOPA_LIFE;	
 }
 
 void CKoopaTroopa::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {		
-
+	DebugOutTitle(L"Life: %f", life);
 	Recover();
 
-	if(!isControl)
+	if(!IsControlled())
 	{
 		Accelerate(0.0f, GAME_GRAVITY, dt);
 	}
@@ -72,7 +72,20 @@ void CKoopaTroopa::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 void CKoopaTroopa::OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e)
 {
 	CHarmfulObject* obj = dynamic_cast<CHarmfulObject*>(e->obj);
-	MeleeAttack(obj);
+
+	switch (state)
+	{
+		case STATE_LIVE:
+			MeleeAttack(obj);
+			break;
+		case KOOPA_STATE_HIDE:			
+		case KOOPA_STATE_POP:
+		case KOOPA_STATE_ROLL:
+			Destroy(obj);
+			break;
+		case STATE_DIE:
+			break;
+	}
 }
 
 void CKoopaTroopa::Patrol()
@@ -141,26 +154,29 @@ void CKoopaTroopa::SetState(int state)
 			LookForMario();
 			vx = nx * KOOPA_VX;
 			AgainstControl();
+			LoseHighPower();
 			break;
 		case KOOPA_STATE_HIDE:
 			y += (bbox_height - KOOPA_BBOX_HEIGHT_HIDE) / 2;
 			bbox_height = KOOPA_BBOX_HEIGHT_HIDE;
 			vx = STOP_V;
 			start_time = GetTickCount64();
+			SetHighPower();
 			break;
 		case KOOPA_STATE_POP:
 			vx = KOOPA_POP_VX;
 			start_time = GetTickCount64();
 			break;
 		case KOOPA_STATE_ROLL:
-			vx = nx * KOOPA_ROLL_VX;			
+			vx = nx * KOOPA_ROLL_VX;
+			AgainstControl();
 			break;
 		case STATE_DIE:
 			break;
 	}
 }
 
-void CKoopaTroopa::Reaction(CHarmfulObject* by_another, int action)
+void CKoopaTroopa::Reaction(CGameObject* by_another, int action)
 {	
 	switch (state)
 	{
@@ -184,7 +200,7 @@ void CKoopaTroopa::Reaction(CHarmfulObject* by_another, int action)
 	}	
 }
 
-void CKoopaTroopa::Reaction_LivingState(CHarmfulObject* by_another, int action)
+void CKoopaTroopa::Reaction_LivingState(CGameObject* by_another, int action)
 {
 	switch (action)
 	{
@@ -200,17 +216,17 @@ void CKoopaTroopa::Reaction_LivingState(CHarmfulObject* by_another, int action)
 	}
 }
 
-void CKoopaTroopa::Reaction_RollingState(CHarmfulObject* by_another, int action)
+void CKoopaTroopa::Reaction_RollingState(CGameObject* by_another, int action)
 {
 	switch (action)
 	{
 		default:
-			MeleeAttack(by_another);
+			Destroy(by_another);
 			AgainstControl();
 	}
 }
 
-void CKoopaTroopa::Reaction_HidingState(CHarmfulObject* by_another, int action)
+void CKoopaTroopa::Reaction_HidingState(CGameObject* by_another, int action)
 {
 	switch (action)
 	{
@@ -218,10 +234,25 @@ void CKoopaTroopa::Reaction_HidingState(CHarmfulObject* by_another, int action)
 			//Powerless;
 			break;
 		default:
-			float mario_x, mario_y;
-			by_another->GetPosition(mario_x, mario_y);
-			nx = (x < mario_x) ? DIRECTION_LEFT : DIRECTION_RIGHT;
-			this->SetState(KOOPA_STATE_ROLL);		
+			if (CMario* mario = dynamic_cast<CMario*>(by_another))
+			{
+				float mario_x, mario_y;
+				mario->GetPosition(mario_x, mario_y);
+				nx = (x < mario_x) ? DIRECTION_LEFT : DIRECTION_RIGHT;
+				this->SetState(KOOPA_STATE_ROLL);
+			}
+			else
+			{
+				Destroy(by_another);
+			}
+	}
+}
+
+void CKoopaTroopa::UnderAttack(CGameObject* by_another)
+{
+	if (CMario* mario = dynamic_cast<CMario*>(by_another))
+	{
+		CCreature::UnderAttack(mario);
 	}
 }
 

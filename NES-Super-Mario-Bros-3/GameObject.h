@@ -32,7 +32,12 @@ protected:
 
 	int state;
 
+	//animation
+	int aniID;
+
 	bool isDeleted; 
+
+	void SetBoundingBox(float width, float height);
 
 public: 
 	void SetPosition(float x, float y) { this->x = x, this->y = y; }
@@ -66,7 +71,10 @@ public:
 	virtual void OnNoCollision(DWORD dt) {};
 
 	// When collision with an object has been detected (triggered by CCollision::Process)
+	//Active
 	virtual void OnCollisionWith(LPCOLLISIONEVENT e) {};
+	//Inactive
+	virtual void Reaction(CGameObject* by_another, int action) {};
 	
 	// Is this object blocking other object? If YES, collision framework will automatically push the other object
 	virtual int IsBlocking() { return 1; }

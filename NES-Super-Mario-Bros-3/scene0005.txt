@@ -7,6 +7,7 @@ cloud.txt
 brick.txt
 venus_fire_trap.txt
 red_koopa_troopa.txt
+piranha_plant.txt
 fireball.txt
 #
 [OBJECTS]
@@ -18,10 +19,13 @@ fireball.txt
 0	120	150
 
 #VENUS FIRE TRAP
-6	200	156
+#6	200	156
 
 #RED KOOPA TROOPA
 7	200	115
+
+#PIRANHA PLANT
+#8	250	115
 
 #GOOMBA
 2	250	50

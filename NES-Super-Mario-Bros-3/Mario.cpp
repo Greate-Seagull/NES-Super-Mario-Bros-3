@@ -69,6 +69,16 @@ void CMario::OnCollisionWith(LPCOLLISIONEVENT e)
 		OnCollisionWithPlatform(e);
 }
 
+void CMario::Reaction(CGameObject* by_another, int action)
+{
+	switch (action)
+	{
+		case ACTION_ATTACK:
+			UnderAttack((CHarmfulObject*)by_another);
+			break;
+	}
+}
+
 void CMario::OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e)
 {
 	CHarmfulObject* enemy = dynamic_cast<CHarmfulObject*>(e->obj);

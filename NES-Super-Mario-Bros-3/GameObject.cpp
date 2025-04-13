@@ -33,6 +33,12 @@ void CGameObject::SetState(int state)
 	}
 }
 
+void CGameObject::SetBoundingBox(float width, float height)
+{
+	this->bbox_width = width;
+	this->bbox_height = height;
+}
+
 void CGameObject::RenderBoundingBox()
 {
 	D3DXVECTOR3 p(x, y, 0);

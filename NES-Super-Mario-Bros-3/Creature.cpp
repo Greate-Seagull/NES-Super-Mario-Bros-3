@@ -18,30 +18,22 @@ void CCreature::UnderAttack(CHarmfulObject* by_another)
 	this->life -= 1;	
 }
 
-void CCreature::MeleeAttack(CHarmfulObject* another)
+void CCreature::Touch(CGameObject* another)
 {
-	if (CCreature* creature = dynamic_cast<CCreature*>(another))
+	if (another)
 	{
-		creature->Reaction(this, ACTION_ATTACK);
-	}
-}
-
-void CCreature::Touch(CHarmfulObject* another)
-{
-	if (CCreature* creature = dynamic_cast<CCreature*>(another))
-	{
-		creature->Reaction(this, ACTION_TOUCH);
+		another->Reaction(this, ACTION_TOUCH);
 	}
 }
 
 void CCreature::Carry(CHarmfulObject* another)
 {
-	weapon = another;
-	another->SetControl();
-
-	if (CCreature* creature = dynamic_cast<CCreature*>(another))
+	if (another)
 	{
-		creature->Reaction(this, ACTION_CARRY);
+		weapon = another;
+		another->SetControl();
+
+		another->Reaction(this, ACTION_CARRY);
 	}
 }
 
@@ -54,18 +46,8 @@ void CCreature::Drop()
 	}
 }
 
-void CCreature::Reaction(CHarmfulObject* by_another, int action)
-{
-	reaction = REACTION_NO_RESIST;
-}
-
 void CCreature::Recover()
 {
 	life += 1.0f;
 	SetState(STATE_LIVE);
-}
-
-void CCreature::AgainstControl()
-{
-	isControl = false;
 }
