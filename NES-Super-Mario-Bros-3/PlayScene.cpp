@@ -7,6 +7,7 @@
 #include "Textures.h"
 #include "Sprites.h"
 #include "Portal.h"
+#include "DeadStateTrigger.h"
 #include "Coin.h"
 #include "Platform.h"
 #include "QuestionBlock.h"
@@ -17,6 +18,7 @@
 #include "BigBush.h"
 #include "StripedBrick.h"
 #include "Cloud.h"
+#include "MapIcon.h"
 
 #include "SampleKeyEventHandler.h"
 
@@ -123,6 +125,14 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		background = (CBackground*)obj;
 		break;
 	}
+	case DEAD_STATE_TRIGGER:
+	{
+		float width = (float)atof(tokens[3].c_str());
+		float height = (float)atof(tokens[4].c_str());
+
+		obj = new CDeadStateTrigger(x, y, width, height);
+		break;
+	}
 	case NON_OBJECT_TYPE_MINI_BUSH: obj = new CMiniBush(x, y); break;
 	case NON_OBJECT_TYPE_BIG_BUSH:
 	{
@@ -158,6 +168,14 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 			sprite_begin_end, sprite_middle_end, sprite_end_end);
 		break;
 	}
+	case NON_OBJECT_TYPE_MAP_ICON:
+	{
+		int icon_type = atoi(tokens[3].c_str());
+
+		obj = new CMapIcon(x, y, icon_type);
+		break;
+	}
+
 	case OBJECT_TYPE_MARIO:
 		if (player!=NULL) 
 		{
@@ -363,7 +381,8 @@ void CPlayScene::Render()
 	for (int i = 0; i < objects.size(); i++)
 	{
 		if (dynamic_cast<CMario*>(objects[i]) ||
-			dynamic_cast<CPlatform*>(objects[i]))
+			dynamic_cast<CPlatform*>(objects[i]) ||
+			dynamic_cast<CDeadStateTrigger*>(objects[i]))
 			objects[i]->Render();
 		else
 		{

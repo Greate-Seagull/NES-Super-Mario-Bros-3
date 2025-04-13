@@ -8,6 +8,7 @@
 #include "Coin.h"
 #include "Portal.h"
 #include "Container.h"
+#include "DeadStateTrigger.h"
 
 #include "Collision.h"
 
@@ -52,6 +53,8 @@ void CMario::OnCollisionWith(LPCOLLISIONEVENT e)
 		OnCollisionWithGoomba(e);
 	else if (dynamic_cast<CCoin*>(e->obj))
 		OnCollisionWithCoin(e);
+	else if (dynamic_cast<CDeadStateTrigger*>(e->obj))
+		OnCollisionWithDeadTrigger(e);
 	else if (dynamic_cast<CPortal*>(e->obj))
 		OnCollisionWithPortal(e);
 }
@@ -100,6 +103,11 @@ void CMario::OnCollisionWithPortal(LPCOLLISIONEVENT e)
 {
 	CPortal* p = (CPortal*)e->obj;
 	CGame::GetInstance()->InitiateSwitchScene(p->GetSceneId());
+}
+
+void CMario::OnCollisionWithDeadTrigger(LPCOLLISIONEVENT e)
+{
+	SetState(MARIO_STATE_DIE);
 }
 
 //
