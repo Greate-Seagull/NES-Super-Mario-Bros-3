@@ -88,8 +88,6 @@ void CGoomba::ToStateLiving()
 {
 	vx = nx * GOOMBA_VX;
 	vy = GOOMBA_VY;
-	ax = 0.0f;
-	ay = GAME_GRAVITY;
 }
 
 void CGoomba::ToStateDying()
@@ -118,7 +116,7 @@ void CGoomba::InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 
 void CGoomba::InPhaseLiving(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
-	Accelerate(ax, ay, dt);
+	Accelerate(0.0f, GAME_GRAVITY, dt);
 	CCollision::GetInstance()->Process(this, dt, coObjects);
 	Move(dt);
 }

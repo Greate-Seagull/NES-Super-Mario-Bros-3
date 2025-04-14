@@ -11,6 +11,7 @@
 #include "Platform.h"
 #include "VenusFireTrap.h"
 #include "KoopaTroopa.h"
+#include "SuperMushroom.h"
 
 #include "SampleKeyEventHandler.h"
 
@@ -125,7 +126,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	case OBJECT_TYPE_RED_KOOPA_TROOPA: obj = new CKoopaTroopa(x, y); break;
 	case OBJECT_TYPE_BRICK: obj = new CBrick(x,y); break;
 	case OBJECT_TYPE_COIN: obj = new CCoin(x, y); break;
-
+	case OBJECT_TYPE_SUPER_MUSHROOM: obj = new CSuperMushroom(x, y); break;
 	case OBJECT_TYPE_PLATFORM:
 	{
 

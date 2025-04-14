@@ -24,8 +24,6 @@ class CGoomba : public CCreature
 protected:
 	ULONGLONG die_start;
 
-	float ax, ay;
-
 public:
 	CGoomba(float x, float y);
 	

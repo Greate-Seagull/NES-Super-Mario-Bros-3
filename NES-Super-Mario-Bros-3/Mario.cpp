@@ -8,6 +8,7 @@
 #include "Coin.h"
 #include "Portal.h"
 #include "Platform.h"
+#include "SuperMushroom.h"
 
 #include "Collision.h"
 
@@ -66,6 +67,8 @@ void CMario::OnCollisionWith(LPCOLLISIONEVENT e)
 		OnCollisionWithCoin(e);
 	else if (dynamic_cast<CPortal*>(e->obj))
 		OnCollisionWithPortal(e);
+	else if (dynamic_cast<CHelpfulObject*>(e->obj))
+		OnCollisionWithHelpfulObject(e);
 	else if (dynamic_cast<CPlatform*>(e->obj))
 		OnCollisionWithPlatform(e);
 }
@@ -76,6 +79,9 @@ void CMario::Reaction(CGameObject* by_another, int action)
 	{
 		case ACTION_ATTACK:
 			UnderAttack((CHarmfulObject*)by_another);
+			break;
+		case EFFECT_BIGGER:
+			SetLevel(MARIO_LEVEL_BIG);
 			break;
 	}
 }
@@ -119,6 +125,14 @@ void CMario::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 		vy = 0;
 		isFalling = false;
 	}	
+}
+
+void CMario::OnCollisionWithHelpfulObject(LPCOLLISIONEVENT e)
+{
+	if (e->ny > 0 || e->nx)
+	{
+		Touch(e->obj);
+	}
 }
 
 void CMario::Render()

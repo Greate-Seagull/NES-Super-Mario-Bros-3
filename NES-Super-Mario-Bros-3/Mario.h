@@ -67,16 +67,16 @@
 
 #define GROUND_Y 160.0f
 
-#define MARIO_SMALL_BBOX_WIDTH  12
-#define MARIO_SMALL_BBOX_HEIGHT 15
+#define MARIO_SMALL_BBOX_WIDTH  12.0f
+#define MARIO_SMALL_BBOX_HEIGHT 15.0f
 
-#define MARIO_BIG_BBOX_WIDTH  14
-#define MARIO_BIG_BBOX_HEIGHT 27
-#define MARIO_BIG_SITTING_BBOX_WIDTH  15
-#define MARIO_BIG_SITTING_BBOX_HEIGHT 15
+#define MARIO_BIG_BBOX_WIDTH  14.0f
+#define MARIO_BIG_BBOX_HEIGHT 27.0f
+#define MARIO_BIG_SITTING_BBOX_WIDTH  15.0f
+#define MARIO_BIG_SITTING_BBOX_HEIGHT 15.0f
 
-#define MARIO_RACOON_BBOX_WIDTH  21
-#define MARIO_RACOON_BBOX_HEIGHT 28
+#define MARIO_RACOON_BBOX_WIDTH  21.0f
+#define MARIO_RACOON_BBOX_HEIGHT 28.0f
 
 
 
@@ -105,6 +105,7 @@ class CMario : public CCreature
 	void OnCollisionWithCoin(LPCOLLISIONEVENT e);
 	void OnCollisionWithPortal(LPCOLLISIONEVENT e);
 	void OnCollisionWithPlatform(LPCOLLISIONEVENT e);
+	void OnCollisionWithHelpfulObject(LPCOLLISIONEVENT e);
 
 public:
 	CMario(float x, float y);

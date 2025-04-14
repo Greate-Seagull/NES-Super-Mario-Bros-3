@@ -1,16 +1,9 @@
 # list of object assets to load in this scene
 [ASSETS]
 mario.txt
-goomba.txt
 coin.txt
 cloud.txt
-brick.txt
-venus_fire_trap.txt
-red_koopa_troopa.txt
-piranha_plant.txt
-fireball.txt
-paragoomba.txt
-wings.txt
+super_mushroom.txt
 #
 [OBJECTS]
 # type	x	y	extra_settings per object type
@@ -19,6 +12,9 @@ wings.txt
 
 # MARIO
 0	120	150
+
+#SUPER MUSHROOM
+10	200	120
 
 #VENUS FIRE TRAP
 #6	200	156
@@ -33,7 +29,7 @@ wings.txt
 #2	250	50
 
 #PARAGOOMBA
-9	200	50
+#9	200	50
 
 #COIN
 4	100	120
