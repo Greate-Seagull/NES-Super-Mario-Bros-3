@@ -43,6 +43,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	CCollision::GetInstance()->Process(this, dt, coObjects);
 	Move(dt);
 	Carrying();
+	//DebugOutTitle(L"life: %f", life);
 
 	//// reset untouchable timer if untouchable time has passed
 	//if ( GetTickCount64() - untouchable_start > MARIO_UNTOUCHABLE_TIME) 

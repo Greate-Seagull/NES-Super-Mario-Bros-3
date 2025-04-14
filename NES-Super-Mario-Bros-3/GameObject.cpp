@@ -25,12 +25,7 @@ void CGameObject::GetBoundingBox(float& left, float& top, float& right, float& b
 
 void CGameObject::SetState(int state)
 {
-	switch (state)
-	{
-		case STATE_DIE:
-			//this->Delete();
-			break;
-	}
+	this->state = state;
 }
 
 void CGameObject::SetBoundingBox(float width, float height)

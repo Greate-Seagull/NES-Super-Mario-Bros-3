@@ -5,7 +5,7 @@ CCreature::CCreature(float x, float y):
 {
 }
 
-void CCreature::ProcessLife()
+void CCreature::IsLiving()
 {
 	if (this->life == 0.0f)
 	{
@@ -50,4 +50,9 @@ void CCreature::Recover()
 {
 	life += 1.0f;
 	SetState(STATE_LIVE);
+}
+
+void CCreature::Die()
+{
+	life = 0.0f;	
 }

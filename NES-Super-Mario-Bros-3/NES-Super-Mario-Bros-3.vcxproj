@@ -141,11 +141,13 @@
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Goomba.cpp" />
     <ClCompile Include="HarmfulObject.cpp" />
+    <ClCompile Include="HelpfulObject.cpp" />
     <ClCompile Include="KeyStateManager.cpp" />
     <ClCompile Include="KoopaTroopa.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mario.cpp" />
     <ClCompile Include="MovableObject.cpp" />
+    <ClCompile Include="Paragoomba.cpp" />
     <ClCompile Include="PiranhaPlant.cpp" />
     <ClCompile Include="Platform.cpp" />
     <ClCompile Include="PlayScene.cpp" />
@@ -157,6 +159,7 @@
     <ClCompile Include="Textures.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="VenusFireTrap.cpp" />
+    <ClCompile Include="Wings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h" />
@@ -173,11 +176,13 @@
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Goomba.h" />
     <ClInclude Include="HarmfulObject.h" />
+    <ClInclude Include="HelpfulObject.h" />
     <ClInclude Include="KeyEventHandler.h" />
     <ClInclude Include="KeyStateManager.h" />
     <ClInclude Include="KoopaTroopa.h" />
     <ClInclude Include="Mario.h" />
     <ClInclude Include="MovableObject.h" />
+    <ClInclude Include="Paragoomba.h" />
     <ClInclude Include="PiranhaPlant.h" />
     <ClInclude Include="Platform.h" />
     <ClInclude Include="PlayScene.h" />
@@ -190,6 +195,7 @@
     <ClInclude Include="Textures.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="VenusFireTrap.h" />
+    <ClInclude Include="Wings.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="mario.ico" />

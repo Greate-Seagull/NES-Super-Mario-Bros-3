@@ -21,7 +21,7 @@ CPiranhaPlant::CPiranhaPlant(float x, float y):
 
 void CPiranhaPlant::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
-	ProcessLife();
+	IsLiving();
 
 	dt = 16;
 	InPhase();	

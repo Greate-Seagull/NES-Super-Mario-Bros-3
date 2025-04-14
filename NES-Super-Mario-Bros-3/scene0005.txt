@@ -9,6 +9,8 @@ venus_fire_trap.txt
 red_koopa_troopa.txt
 piranha_plant.txt
 fireball.txt
+paragoomba.txt
+wings.txt
 #
 [OBJECTS]
 # type	x	y	extra_settings per object type
@@ -22,13 +24,16 @@ fireball.txt
 #6	200	156
 
 #RED KOOPA TROOPA
-7	200	115
+#7	200	115
 
 #PIRANHA PLANT
 #8	250	115
 
 #GOOMBA
-2	250	50
+#2	250	50
+
+#PARAGOOMBA
+9	200	50
 
 #COIN
 4	100	120

@@ -15,6 +15,7 @@ class CMovableObject : public CGameObject
 protected:
 	float vx, vy; //velocity	
 	int nx, ny; //Direction
+	bool isOnGround;
 
 public:
 	CMovableObject(float x, float y);
