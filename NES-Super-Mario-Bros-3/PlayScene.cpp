@@ -7,8 +7,18 @@
 #include "Textures.h"
 #include "Sprites.h"
 #include "Portal.h"
+#include "DeadStateTrigger.h"
 #include "Coin.h"
 #include "Platform.h"
+#include "QuestionBlock.h"
+#include "Pipe.h"
+#include "Container.h"
+#include "Background.h"
+#include "MiniBush.h"
+#include "BigBush.h"
+#include "StripedBrick.h"
+#include "Cloud.h"
+#include "MapIcon.h"
 
 #include "SampleKeyEventHandler.h"
 
@@ -18,6 +28,7 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 	CScene(id, filePath)
 {
 	player = NULL;
+	background = NULL;
 	key_handler = new CSampleKeyHandler(this);
 }
 
@@ -31,6 +42,9 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 #define ASSETS_SECTION_ANIMATIONS 2
 
 #define MAX_SCENE_LINE 1024
+#define SCREEN_WIDTH 320
+
+float tempCamPosY = 0;
 
 void CPlayScene::_ParseSection_SPRITES(string line)
 {
@@ -105,6 +119,63 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 
 	switch (object_type)
 	{
+	case NON_OBJECT_TYPE_BACKGROUND:
+	{
+		obj = new CBackground(x, y);
+		background = (CBackground*)obj;
+		break;
+	}
+	case DEAD_STATE_TRIGGER:
+	{
+		float width = (float)atof(tokens[3].c_str());
+		float height = (float)atof(tokens[4].c_str());
+
+		obj = new CDeadStateTrigger(x, y, width, height);
+		break;
+	}
+	case NON_OBJECT_TYPE_MINI_BUSH: obj = new CMiniBush(x, y); break;
+	case NON_OBJECT_TYPE_BIG_BUSH:
+	{
+		float cell_width = (float)atof(tokens[3].c_str());
+		float cell_height = (float)atof(tokens[4].c_str());
+		int height = atoi(tokens[5].c_str());
+		int sprite_begin_begin = atoi(tokens[6].c_str());
+		int sprite_end_begin = atoi(tokens[7].c_str());
+		int sprite_begin_end = atoi(tokens[8].c_str());
+		int sprite_end_end = atoi(tokens[9].c_str());
+
+		obj = new CBigBush
+			(x, y, cell_width, cell_height, height,
+			sprite_begin_begin, sprite_end_begin,
+			sprite_begin_end, sprite_end_end);
+		break;
+	}
+	case NON_OBJECT_TYPE_CLOUD:
+	{
+		float cell_width = (float)atof(tokens[3].c_str());
+		float cell_height = (float)atof(tokens[4].c_str());
+		int length = atoi(tokens[5].c_str());
+		int sprite_begin_begin = atoi(tokens[6].c_str());
+		int sprite_middle_begin = atoi(tokens[7].c_str());
+		int sprite_end_begin = atoi(tokens[8].c_str());
+		int sprite_begin_end = atoi(tokens[9].c_str());
+		int sprite_middle_end = atoi(tokens[10].c_str());
+		int sprite_end_end = atoi(tokens[11].c_str());
+
+		obj = new CCloud
+		(x, y, cell_width, cell_height, length + 2,
+			sprite_begin_begin, sprite_middle_begin, sprite_end_begin,
+			sprite_begin_end, sprite_middle_end, sprite_end_end);
+		break;
+	}
+	case NON_OBJECT_TYPE_MAP_ICON:
+	{
+		int icon_type = atoi(tokens[3].c_str());
+
+		obj = new CMapIcon(x, y, icon_type);
+		break;
+	}
+
 	case OBJECT_TYPE_MARIO:
 		if (player!=NULL) 
 		{
@@ -118,11 +189,11 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		break;
 	case OBJECT_TYPE_GOOMBA: obj = new CGoomba(x,y); break;
 	case OBJECT_TYPE_BRICK: obj = new CBrick(x,y); break;
+	case OBJECT_TYPE_STRIPED_BRICK: obj = new CStripedBrick(x, y); break;
 	case OBJECT_TYPE_COIN: obj = new CCoin(x, y); break;
 
 	case OBJECT_TYPE_PLATFORM:
 	{
-
 		float cell_width = (float)atof(tokens[3].c_str());
 		float cell_height = (float)atof(tokens[4].c_str());
 		int length = atoi(tokens[5].c_str());
@@ -138,6 +209,29 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 
 		break;
 	}
+	case OBJECT_TYPE_QUESTION_BLOCK: obj = new CQuestionBlock(x, y); break;
+	case OBJECT_TYPE_PIPE:
+	{
+		float cell_width = (float)atof(tokens[3].c_str());
+		float cell_height = (float)atof(tokens[4].c_str());
+		int pipe_height = atoi(tokens[5].c_str());
+
+		int sprite_id_begin_begin = atoi(tokens[6].c_str());
+		int sprite_id_end_begin = atoi(tokens[7].c_str());
+		int sprite_id_begin_end = atoi(tokens[8].c_str());
+		int sprite_id_end_end = atoi(tokens[9].c_str());
+
+		int face_direction = atoi(tokens[10].c_str());
+		int warp_direction = atoi(tokens[11].c_str());
+
+		obj = new CPipe(
+			x, y,
+			cell_width, cell_height, pipe_height, 
+			face_direction, warp_direction, 
+			sprite_id_begin_begin, sprite_id_end_begin, 
+			sprite_id_begin_end, sprite_id_end_end);
+		break;
+	}
 
 	case OBJECT_TYPE_PORTAL:
 	{
@@ -147,7 +241,34 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		obj = new CPortal(x, y, r, b, scene_id);
 	}
 	break;
+	case OBJECT_TYPE_CONTAINER:
+	{
+		float cell_width = (float)atof(tokens[3].c_str());
+		float cell_height = (float)atof(tokens[4].c_str());
+		int length = atoi(tokens[5].c_str());
+		int height = atoi(tokens[6].c_str());
 
+		int sprite_begin_begin = atoi(tokens[7].c_str());
+		int sprite_middle_begin = atoi(tokens[8].c_str());
+		int sprite_end_begin = atoi(tokens[9].c_str());
+		int sprite_begin_middle = atoi(tokens[10].c_str());
+		int sprite_middle_middle = atoi(tokens[11].c_str());
+		int sprite_end_middle = atoi(tokens[12].c_str());
+		int sprite_begin_end = atoi(tokens[13].c_str());
+		int sprite_middle_end = atoi(tokens[14].c_str());
+		int sprite_end_end = atoi(tokens[15].c_str());
+
+		obj = new CContainer(
+			x, y,
+			cell_width, cell_height,
+			length, height,
+			sprite_begin_begin, sprite_middle_begin, sprite_end_begin,
+			sprite_begin_middle, sprite_middle_middle, sprite_end_middle,
+			sprite_begin_end, sprite_middle_end, sprite_end_end
+		);
+
+		break;
+	}
 
 	default:
 		DebugOut(L"[ERROR] Invalid object type: %d\n", object_type);
@@ -157,8 +278,8 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	// General object setup
 	obj->SetPosition(x, y);
 
-
-	objects.push_back(obj);
+	if (object_type != NON_OBJECT_TYPE_BACKGROUND)
+		objects.push_back(obj);
 }
 
 void CPlayScene::LoadAssets(LPCWSTR assetFile)
@@ -260,15 +381,42 @@ void CPlayScene::Update(DWORD dt)
 
 	if (cx < 0) cx = 0;
 
-	CGame::GetInstance()->SetCamPos(cx, 0.0f /*cy*/);
+	if (GetAsyncKeyState(VK_UP) & 0x8000) tempCamPosY -= 10;
+	if (GetAsyncKeyState(VK_DOWN) & 0x8000) tempCamPosY += 10;
+
+	CGame::GetInstance()->SetCamPos(cx, tempCamPosY /*cy*/);
 
 	PurgeDeletedObjects();
 }
 
 void CPlayScene::Render()
 {
+	//if (background) background->Render();
+
 	for (int i = 0; i < objects.size(); i++)
-		objects[i]->Render();
+	{
+		if (dynamic_cast<CMario*>(objects[i]) ||
+			dynamic_cast<CPlatform*>(objects[i]) ||
+			dynamic_cast<CDeadStateTrigger*>(objects[i]))
+			objects[i]->Render();
+		else
+		{
+			float posX, posY;
+			objects[i]->GetPosition(posX, posY);
+
+			float posCamX, posCamY;
+			CGame::GetInstance()->GetCamPos(posCamX, posCamY);
+			if (player)
+			{
+				float playerPosX, playerPosY;
+				player->GetPosition(playerPosX, playerPosY);
+				if (posX > posCamX - 32 && posX < posCamX + SCREEN_WIDTH + 32)
+				{
+					objects[i]->Render();
+				}
+			}
+		}
+	}
 }
 
 /*
