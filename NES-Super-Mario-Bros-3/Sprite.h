@@ -18,6 +18,8 @@ public:
 	CSprite(int id, int left, int top, int right, int bottom, LPTEXTURE tex);
 
 	void Draw(float x, float y);
+
+	int GetHeight();
 };
 
 typedef CSprite* LPSPRITE;

@@ -1,6 +1,5 @@
 #include "Game.h"
 #include "PlayScene.h"
-#include "Game.h"
 
 #include "PiranhaPlant.h"
 #include "Mario.h"

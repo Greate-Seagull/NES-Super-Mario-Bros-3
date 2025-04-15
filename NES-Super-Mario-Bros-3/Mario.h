@@ -6,10 +6,6 @@
 
 #include "debug.h"
 
-#define MARIO_BIG_TRANSFORMATION_OFFSET -7
-
-#define MARIO_VX 0.0f
-#define MARIO_VY 0.0f
 #define MARIO_SMALL_WALKING_MAX_VX 0.1f
 #define MARIO_SMALL_RUNNING_MAX_VX 0.4f
 #define MARIO_SMALL_JUMPING_MAX_VY 0.15f
@@ -28,13 +24,18 @@
 
 #define MARIO_MAX_JUMP_HEIGHT 60.0f
 
+#define MARIO_LEVELUP_TRANSFORM_TIME 600
+#define MARIO_LEVELDOWN_TRANSFORM_TIME 700
+#define MARIO_INVULNERABLE_TIME 1000
+
 //life
 #define	MARIO_LEVEL_SMALL	1.0f
 #define	MARIO_LEVEL_BIG		2.0f
 #define MARIO_LEVEL_RACOON	3.0f
 
 //state
-#define MARIO_STATE_DIE				-2
+#define MARIO_STATE_GAIN_POWER 10
+#define MARIO_STATE_LOSE_POWER 11
 
 #define MARIO_ACCEL_WALK_X	0.0005f
 #define MARIO_ACCEL_RUN_X	0.0007f
@@ -59,16 +60,20 @@
 #define ID_ANI_SIT 30
 #define ID_ANI_RUN 40
 #define ID_ANI_BRACE 50
+#define ID_ANI_LEVEL_UP 60
+#define ID_ANI_LEVEL_DOWN 70
+#define ID_ANI_DIE 80
 // 1
 #define ID_ANI_LEFT 0
 #define ID_ANI_RIGHT 1
 
 #pragma endregion
 
-#define GROUND_Y 160.0f
-
 #define MARIO_SMALL_BBOX_WIDTH  12.0f
 #define MARIO_SMALL_BBOX_HEIGHT 15.0f
+
+#define MARIO_MIDDLE_BBOX_WIDTH 14.0f
+#define MARIO_MIDDLE_BBOX_HEIGHT 22.0f
 
 #define MARIO_BIG_BBOX_WIDTH  14.0f
 #define MARIO_BIG_BBOX_HEIGHT 27.0f
@@ -87,19 +92,17 @@ class CMario : public CCreature
 	float ax, ay;
 	float maxVx;
 
-	bool isOnSky;
-	bool isSitting;
-	bool isBoost;
-	bool isFalling;	
+	bool is_sitting;
+	bool is_boosting;
+	bool is_falling;	
+	bool is_invulnerable;
 
 	float startJumpingPosition;
 
-	int aniID;
+	int action_time;
 
-	int untouchable; 
-	ULONGLONG untouchable_start;
-	BOOLEAN isOnPlatform;
-	int coin; 
+	//BOOLEAN isOnPlatform;
+	//int coin; 
 
 	void OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e);
 	void OnCollisionWithCoin(LPCOLLISIONEVENT e);
@@ -109,16 +112,17 @@ class CMario : public CCreature
 
 public:
 	CMario(float x, float y);
+
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+	void Inphase(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+
+	void ChangeAnimation();
+	void ChangeAnimationInLivingState(int& actionID, DWORD& timePerFrame);
+	void ChangeDrawPosition(float& x, float& y);
 	void Render();
-	//void SetState(int state);
 
-	int IsCollidable()
-	{ 
-		return (state != STATE_DIE); 
-	}
-
-	int IsBlocking() { return (state != STATE_DIE && untouchable==0); }
+	int IsCollidable() { return (state != STATE_DIE); }
+	int IsBlocking() { return (state != STATE_DIE /*&& untouchable==0*/); }
 
 	void OnNoCollision(DWORD dt);
 	void OnCollisionWith(LPCOLLISIONEVENT e);
@@ -126,18 +130,21 @@ public:
 	void Reaction(CGameObject* by_another, int action);
 
 	void SetLevel(int l);	
+	void SetState(int state);
 	//void StartUntouchable() { untouchable = 1; untouchable_start = GetTickCount64(); }
 
 	void ProcessInput();
-	void ApplyState();
+	void UpdateMovementState();
 	void ComputeAccelerator(DWORD& t);
 
-	void ChangeAnimation();
 	void Accelerate(DWORD t);
+
+	void UnderAttack(CGameObject* by_another);
 
 	void BackJump();
 	void Jump();
 	void Reaction(CHarmfulObject* by_another, int action = ACTION_TOUCH);
 	void Carrying();
 	void Drop();
+	void StartInvulnerable();
 };

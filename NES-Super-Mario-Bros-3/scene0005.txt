@@ -4,6 +4,9 @@ mario.txt
 coin.txt
 cloud.txt
 super_mushroom.txt
+
+paragoomba.txt
+wings.txt
 #
 [OBJECTS]
 # type	x	y	extra_settings per object type
@@ -14,22 +17,10 @@ super_mushroom.txt
 0	120	150
 
 #SUPER MUSHROOM
-10	200	120
-
-#VENUS FIRE TRAP
-#6	200	156
-
-#RED KOOPA TROOPA
-#7	200	115
-
-#PIRANHA PLANT
-#8	250	115
-
-#GOOMBA
-#2	250	50
+10	250	120
 
 #PARAGOOMBA
-#9	200	50
+9	300	120
 
 #COIN
 4	100	120

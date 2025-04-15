@@ -19,10 +19,14 @@ class CFireball : public CHarmfulObject
 {
 public:
 	CFireball(float x, float y, int shoot_range = FIREBALL_RANGE_SHORT, int nx = 1, int ny = 1);
+
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+
 	virtual void Render();
+
 	virtual void ApplyRange(int range);
 	virtual void ApplyDirection(int nx, int ny);
+
 	virtual void MeleeAttack(CHarmfulObject* another);
 
 	//virtual void OnCollisionWith(LPCOLLISIONEVENT e);

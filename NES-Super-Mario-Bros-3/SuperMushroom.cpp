@@ -1,3 +1,5 @@
+#include "PlayScene.h"
+
 #include "SuperMushroom.h"
 #include "Platform.h"
 #include "Mario.h"
@@ -85,7 +87,7 @@ void CSuperMushroom::ToStateEmerging()
 
 void CSuperMushroom::ToStateRunning()
 {
-	vx = MUSHROOM_VX;
+	vx = nx * MUSHROOM_VX;
 	vy = 0.0f;
 }
 
@@ -112,6 +114,8 @@ void CSuperMushroom::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 
 void CSuperMushroom::Reaction(CGameObject* by_another, int action)
 {
+	LookAwayFromMario();
+
 	switch (state)
 	{		
 		case MUSHROOM_STATE_SLEEP:
@@ -148,6 +152,21 @@ void CSuperMushroom::Render()
 {
 	CAnimations::GetInstance()->Get(aniID)->Render(x, y);
 	RenderBoundingBox();
+}
+
+void CSuperMushroom::LookAwayFromMario()
+{
+	//Get target
+	LPPLAYSCENE playScene = (LPPLAYSCENE)(CGame::GetInstance()->GetCurrentScene());
+	CMario* mario = (CMario*)playScene->GetPlayer();
+
+	//Determine target position
+	float mario_x, mario_y;
+	mario->GetPosition(mario_x, mario_y);
+
+	//Look away
+	nx = (mario_x <= x) ? DIRECTION_LEFT : DIRECTION_RIGHT;
+	nx = -nx;
 }
 
 void CSuperMushroom::LaunchEffect(CGameObject* creature)
