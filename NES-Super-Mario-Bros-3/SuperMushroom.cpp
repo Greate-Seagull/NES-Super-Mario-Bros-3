@@ -139,12 +139,10 @@ void CSuperMushroom::Reaction_SleepingState(CGameObject* by_another, int action)
 
 void CSuperMushroom::Reaction_RunningState(CGameObject* by_another, int action)
 {
-	switch (action)
+	if (CMario* mario = dynamic_cast<CMario*>(by_another))
 	{
-		case ACTION_TOUCH:
-			LaunchEffect(by_another);
-			SetState(STATE_DIE);
-			break;
+		CHelpfulObject::LaunchEffect(mario);
+		SetState(STATE_DIE);
 	}
 }
 
@@ -167,10 +165,4 @@ void CSuperMushroom::LookAwayFromMario()
 	//Look away
 	nx = (mario_x <= x) ? DIRECTION_LEFT : DIRECTION_RIGHT;
 	nx = -nx;
-}
-
-void CSuperMushroom::LaunchEffect(CGameObject* creature)
-{
-	if (CMario* mario = dynamic_cast<CMario*>(creature))
-		CHelpfulObject::LaunchEffect(mario);
 }

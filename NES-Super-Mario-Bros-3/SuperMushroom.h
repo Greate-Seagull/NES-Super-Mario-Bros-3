@@ -45,6 +45,4 @@ public:
 	virtual void Render();
 
 	void LookAwayFromMario();
-	//Special
-	void LaunchEffect(CGameObject* creature);
 };

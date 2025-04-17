@@ -1,12 +1,15 @@
 # list of object assets to load in this scene
 [ASSETS]
 mario.txt
+effects.txt
 coin.txt
 cloud.txt
-super_mushroom.txt
+super_leaf.txt
 
-paragoomba.txt
-wings.txt
+#red_koopa_troopa.txt
+#paragoomba.txt
+#wings.txt
+#fireball.txt
 #
 [OBJECTS]
 # type	x	y	extra_settings per object type
@@ -17,10 +20,13 @@ wings.txt
 0	120	150
 
 #SUPER MUSHROOM
-10	250	120
+11	250	120
 
-#PARAGOOMBA
-9	300	120
+#KOOPA
+#7	300	150
+
+#GOOMBA
+#9	300	120
 
 #COIN
 4	100	120

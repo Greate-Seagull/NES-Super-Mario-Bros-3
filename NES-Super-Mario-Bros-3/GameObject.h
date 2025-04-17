@@ -1,9 +1,12 @@
 #pragma once
 
+#define _USE_MATH_DEFINES
+
 #include <Windows.h>
 #include <d3dx10.h>
 #include <vector>
 #include <string>
+#include <cmath>
 
 #include "Animation.h"
 #include "Animations.h"

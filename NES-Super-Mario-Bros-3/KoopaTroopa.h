@@ -25,10 +25,13 @@
 #define ANI_ID_KOOPA 5100
 #define ANI_ID_KOOPA_WALK 0
 #define ANI_ID_KOOPA_HIDE 10
-#define ANI_ID_KOOPA_ROLL 20
-#define ANI_ID_KOOPA_POP 30
+#define ANI_ID_KOOPA_ROLL 30
+#define ANI_ID_KOOPA_POP 50
+
 #define ANI_ID_KOOPA_LEFT 0
 #define ANI_ID_KOOPA_RIGHT 1
+#define ANI_ID_KOOPA_DOWN 0
+#define ANI_ID_KOOPA_UP 10
 
 class CKoopaTroopa : public CCreature
 {

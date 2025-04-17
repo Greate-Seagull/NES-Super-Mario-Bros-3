@@ -9,6 +9,7 @@
 #include "Portal.h"
 #include "Platform.h"
 #include "SuperMushroom.h"
+#include "SuperLeaf.h"
 
 #include "Collision.h"
 
@@ -59,10 +60,7 @@ void CMario::Inphase(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		Carrying();
 		break;
 	case MARIO_STATE_GAIN_POWER:
-		if (GetTickCount64() - action_time > MARIO_LEVELUP_TRANSFORM_TIME)
-		{
-			SetState(STATE_LIVE);
-		}
+		GainingPower();
 		break;
 	case MARIO_STATE_LOSE_POWER:
 		if (GetTickCount64() - action_time > MARIO_LEVELDOWN_TRANSFORM_TIME)
@@ -105,6 +103,9 @@ void CMario::Reaction(CGameObject* by_another, int action)
 		case EFFECT_BIGGER:
 			SetState(MARIO_STATE_GAIN_POWER);
 			SetLevel(MARIO_LEVEL_BIG);
+		case EFFECT_RACOONIZE:
+			SetState(MARIO_STATE_GAIN_POWER);
+			SetLevel(MARIO_LEVEL_RACOON);
 			break;
 	}
 }
@@ -337,16 +338,18 @@ void CMario::ChangeAnimation()
 	int direction = (nx <= 0) ? ID_ANI_LEFT : ID_ANI_RIGHT;
 	
 	aniID = ID_ANI_MARIO + level + action + direction;	
-	CAnimations::GetInstance()->Get(aniID)->ChangeTimePerFrame(timePerFrame);
+
+	if(timePerFrame < TIME_FRAME)
+		CAnimations::GetInstance()->Get(aniID)->ChangeTimePerFrame(timePerFrame);
 }
 
 void CMario::ChangeAnimationInLivingState(int &actionID, DWORD &timePerFrame)
 {
-	if (is_sitting && life != MARIO_LEVEL_SMALL)
+	if (is_sitting && life > MARIO_LEVEL_SMALL)
 	{
 		actionID = ID_ANI_SIT;
 	}
-	else if (vy > 0 && life != MARIO_LEVEL_SMALL)
+	else if (vy > 0 && life > MARIO_LEVEL_SMALL)
 	{
 		actionID = ID_ANI_FALL;
 	}
@@ -417,12 +420,6 @@ void CMario::Jump()
 {
 }
 
-void CMario::Reaction(CHarmfulObject* by_another, int action)
-{
-	if (action == ACTION_ATTACK)
-		UnderAttack(by_another);
-}
-
 void CMario::Carrying()
 {
 	if (weapon && weapon->IsControlled())
@@ -450,6 +447,29 @@ void CMario::StartInvulnerable()
 {
 	is_invulnerable = true;
 	action_time = GetTickCount64();
+}
+
+void CMario::GainingPower()
+{
+	int duration;
+	if (life == MARIO_LEVEL_RACOON)
+	{
+		duration = MARIO_RACOON_TRANSFORM_TIME;
+	}
+	else if (life == MARIO_LEVEL_BIG)
+	{
+		duration = MARIO_BIG_TRANSFORM_TIME;
+	}
+	else
+	{
+		return;
+	}
+
+
+	if (GetTickCount64() - action_time > duration)
+	{
+		SetState(STATE_LIVE);
+	}
 }
 
 void CMario::SetLevel(int l)

@@ -24,7 +24,8 @@
 
 #define MARIO_MAX_JUMP_HEIGHT 60.0f
 
-#define MARIO_LEVELUP_TRANSFORM_TIME 600
+#define MARIO_BIG_TRANSFORM_TIME 600
+#define MARIO_RACOON_TRANSFORM_TIME 350
 #define MARIO_LEVELDOWN_TRANSFORM_TIME 700
 #define MARIO_INVULNERABLE_TIME 1000
 
@@ -82,8 +83,6 @@
 
 #define MARIO_RACOON_BBOX_WIDTH  21.0f
 #define MARIO_RACOON_BBOX_HEIGHT 28.0f
-
-
 
 #define MARIO_UNTOUCHABLE_TIME 2500
 
@@ -143,8 +142,8 @@ public:
 
 	void BackJump();
 	void Jump();
-	void Reaction(CHarmfulObject* by_another, int action = ACTION_TOUCH);
 	void Carrying();
 	void Drop();
 	void StartInvulnerable();
+	void GainingPower();
 };

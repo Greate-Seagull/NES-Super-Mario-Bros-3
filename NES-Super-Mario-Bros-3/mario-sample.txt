@@ -18,5 +18,8 @@ height	240
 1	textures\mario_right.png
 10	textures\enemies_left.png
 11	textures\enemies_right.png
+12	textures\enemies_up.png
 20	textures\misc.png
-21	textures\items.png
+30	textures\items_left.png
+31	textures\items_right.png
+40	textures\effect.png
