@@ -14,6 +14,7 @@ minibush.txt
 bigbush.txt
 stripedbrick.txt
 mapicon.txt
+particle.txt
 #
 [OBJECTS]
 # type	x	y	extra_settings per object type
