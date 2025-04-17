@@ -10,6 +10,7 @@ using namespace std;
 #define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>
 
+#include "debug.h"
 #include "Texture.h"
 #include "KeyEventHandler.h"
 #include "Scene.h"
@@ -48,6 +49,9 @@ class CGame
 
 	float cam_x = 0.0f;
 	float cam_y = 0.0f;
+
+	float new_x;
+	float new_y;
 
 	HINSTANCE hInstance;
 
@@ -114,6 +118,11 @@ public:
 
 	void _ParseSection_TEXTURES(string line);
 
+	void SetNewPlayerPos(float x, float y) {
+		new_x = x; new_y = y;
+		DebugOut(L"YES\n");
+	}
+	void GetNewPlayerPos(float& x, float& y) { x = new_x; y = new_y; }
 
 	~CGame();
 };

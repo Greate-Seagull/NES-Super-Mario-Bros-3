@@ -7,6 +7,9 @@
 #include "Goomba.h"
 #include "Coin.h"
 #include "Portal.h"
+#include "Container.h"
+#include "QuestionBlock.h"
+#include "DeadStateTrigger.h"
 
 #include "Collision.h"
 
@@ -49,8 +52,12 @@ void CMario::OnCollisionWith(LPCOLLISIONEVENT e)
 
 	if (dynamic_cast<CGoomba*>(e->obj))
 		OnCollisionWithGoomba(e);
+	else if (dynamic_cast<CQuestionBlock*>(e->obj))
+		OnCollisionWithQuestionBlock(e);
 	else if (dynamic_cast<CCoin*>(e->obj))
 		OnCollisionWithCoin(e);
+	else if (dynamic_cast<CDeadStateTrigger*>(e->obj))
+		OnCollisionWithDeadTrigger(e);
 	else if (dynamic_cast<CPortal*>(e->obj))
 		OnCollisionWithPortal(e);
 }
@@ -89,6 +96,37 @@ void CMario::OnCollisionWithGoomba(LPCOLLISIONEVENT e)
 	}
 }
 
+void CMario::OnCollisionWithQuestionBlock(LPCOLLISIONEVENT e)
+{
+	int getLevel = level;
+	float ex, ey; //position of event's object
+	e->obj->GetPosition(ex, ey);
+
+	switch (getLevel)
+	{
+	case MARIO_LEVEL_BIG:
+	{
+		if (y - MARIO_BIG_BBOX_HEIGHT / 2 >= ey + QUESTION_BLOCK_BBOX_HEIGHT / 2)
+		{
+			e->obj->SetState(STATE_QUESTION_BLOCK_OFF);
+			CQuestionBlock* p = (CQuestionBlock*)e->obj;
+			p->ShakeToggle();
+		}
+		break;
+	}
+	case MARIO_LEVEL_SMALL:
+	{
+		if (y - MARIO_SMALL_BBOX_HEIGHT / 2 >= ey + QUESTION_BLOCK_BBOX_HEIGHT / 2)
+		{
+			e->obj->SetState(STATE_QUESTION_BLOCK_OFF);
+			CQuestionBlock* p = (CQuestionBlock*)e->obj;
+			p->ShakeToggle();
+		}
+		break;
+	}
+	}
+}
+
 void CMario::OnCollisionWithCoin(LPCOLLISIONEVENT e)
 {
 	e->obj->Delete();
@@ -98,7 +136,19 @@ void CMario::OnCollisionWithCoin(LPCOLLISIONEVENT e)
 void CMario::OnCollisionWithPortal(LPCOLLISIONEVENT e)
 {
 	CPortal* p = (CPortal*)e->obj;
+
+	float new_x, new_y;
+	p->GetNewPlayerPos(new_x, new_y);
+	DebugOut(L"%f\n", new_x);
+	DebugOut(L"%f\n", new_y);
+	CGame::GetInstance()->SetNewPlayerPos(new_x, new_y);
+
 	CGame::GetInstance()->InitiateSwitchScene(p->GetSceneId());
+}
+
+void CMario::OnCollisionWithDeadTrigger(LPCOLLISIONEVENT e)
+{
+	SetState(MARIO_STATE_DIE);
 }
 
 //
