@@ -1,10 +1,15 @@
 # list of object assets to load in this scene
 [ASSETS]
-mario.txt
+#Priority
 effects.txt
+
+#Objects
+mario.txt
 coin.txt
 cloud.txt
+
 super_leaf.txt
+super_mushroom.txt
 
 #red_koopa_troopa.txt
 #paragoomba.txt
@@ -19,8 +24,11 @@ super_leaf.txt
 # MARIO
 0	120	150
 
-#SUPER MUSHROOM
+#SUPER LEAF
 11	250	120
+
+#SUPER MUSHROOM
+10	200	120
 
 #KOOPA
 #7	300	150

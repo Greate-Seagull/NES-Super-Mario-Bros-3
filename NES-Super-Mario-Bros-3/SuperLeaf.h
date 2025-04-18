@@ -60,4 +60,5 @@ public:
 
 	//Special
 	void Oscillate(DWORD dt);
+	void ChangeDirection();
 };

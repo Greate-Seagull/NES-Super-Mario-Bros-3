@@ -49,6 +49,7 @@ void CSuperLeaf::InPhaseBlownState(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 void CSuperLeaf::InPhaseFallingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
 	Oscillate(dt);
+	ChangeDirection();
 }
 
 void CSuperLeaf::SetState(int state)
@@ -79,23 +80,31 @@ void CSuperLeaf::ToStateSleeping()
 {
 	vx = 0.0f;
 	vy = 0.0f;
+
+	nx = DIRECTION_LEFT;
+	ny = DIRECTION_UP;
 }
 
 void CSuperLeaf::ToStateBlownUp()
 {
 	vx = 0.0f;
 	vy = LEAF_BLOWNUP_VY;
+
+	//nx remains;
+	ny = (vy > 0) ? DIRECTION_DOWN : DIRECTION_UP;
 }
 
 void CSuperLeaf::ToStateFalling()
 {
 	origin_x = x;
 	origin_y = y;
-	vx = 0.0f; //calculate by The equation of harmonic oscillation
-	vy = 0.0f; //calculate by The equation of harmonic oscillation
+
 	x_oscillate_phase = 0.0f;
 	y_oscillate_phase = (float)M_PI / 2.5f;
+
 	time = 0;
+
+	ChangeDirection();
 }
 
 void CSuperLeaf::Reaction(CGameObject* by_another, int action)
@@ -142,10 +151,27 @@ void CSuperLeaf::Render()
 
 void CSuperLeaf::Oscillate(DWORD dt)
 {
+	float old_x = x, old_y = y;
+
+	//Oscillate
 	time += dt;
-	x = origin_x - LEAF_X_AMPLITUDE / LEAF_X_FREQUENCY * cos(LEAF_X_FREQUENCY * time + x_oscillate_phase) + LEAF_X_AMPLITUDE / LEAF_X_FREQUENCY;
-	//y += LEAF_GRAVITY + LEAF_Y_AMPLITUDE * sin(y_oscillate_phase);
+	x = origin_x - LEAF_X_AMPLITUDE / LEAF_X_FREQUENCY * cos(LEAF_X_FREQUENCY * time + x_oscillate_phase) + LEAF_X_AMPLITUDE / LEAF_X_FREQUENCY; //use integral of harmonic oscillation eqation instead of harmonic oscillation eqation for more accurate position
 	y = origin_y - LEAF_Y_AMPLITUDE / LEAF_Y_FREQUENCY * sin(LEAF_Y_FREQUENCY * time + y_oscillate_phase) + LEAF_Y_AMPLITUDE / 3 * time + LEAF_Y_AMPLITUDE / LEAF_Y_FREQUENCY;
-	//x_oscillate_phase = (LEAF_X_FREQUENCY * dt);
-	//y_oscillate_phase += LEAF_Y_FREQUENCY * dt;
+
+	//Update velocity
+	vx = x - old_x;
+	vy = y - old_y;
+}
+
+void CSuperLeaf::ChangeDirection()
+{
+	if (vy > 0 && ny == DIRECTION_UP) //Direction contradiction
+	{
+		nx = -nx;
+		ny = -ny;
+	}
+	else if (vy < 0 && ny == DIRECTION_DOWN)
+	{
+		ny = -ny;
+	}
 }

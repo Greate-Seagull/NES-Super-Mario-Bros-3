@@ -26,7 +26,7 @@
 
 #define MARIO_BIG_TRANSFORM_TIME 600
 #define MARIO_RACOON_TRANSFORM_TIME 350
-#define MARIO_LEVELDOWN_TRANSFORM_TIME 700
+#define MARIO_SMALL_TRANSFORM_TIME 700
 #define MARIO_INVULNERABLE_TIME 1000
 
 //life
@@ -146,4 +146,5 @@ public:
 	void Drop();
 	void StartInvulnerable();
 	void GainingPower();
+	void LosingPower();
 };

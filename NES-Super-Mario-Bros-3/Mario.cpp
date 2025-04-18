@@ -63,11 +63,7 @@ void CMario::Inphase(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		GainingPower();
 		break;
 	case MARIO_STATE_LOSE_POWER:
-		if (GetTickCount64() - action_time > MARIO_LEVELDOWN_TRANSFORM_TIME)
-		{
-			SetState(STATE_LIVE);
-			StartInvulnerable();
-		}
+		LosingPower();		
 		break;
 	}
 }
@@ -102,10 +98,10 @@ void CMario::Reaction(CGameObject* by_another, int action)
 			break;
 		case EFFECT_BIGGER:
 			SetState(MARIO_STATE_GAIN_POWER);
-			SetLevel(MARIO_LEVEL_BIG);
+			//SetLevel(MARIO_LEVEL_BIG);
 		case EFFECT_RACOONIZE:
 			SetState(MARIO_STATE_GAIN_POWER);
-			SetLevel(MARIO_LEVEL_RACOON);
+			//SetLevel(MARIO_LEVEL_RACOON);
 			break;
 	}
 }
@@ -161,17 +157,28 @@ void CMario::OnCollisionWithHelpfulObject(LPCOLLISIONEVENT e)
 
 void CMario::Render()
 {
-	if (!is_invulnerable || (GetTickCount64() - action_time) % 120 >= 60)
-	{
-		ChangeAnimation();
-	
-		float draw_x = x;
-		float draw_y = y;
-		ChangeDrawPosition(draw_x, draw_y);
+	if (is_invulnerable && (GetTickCount64() - action_time) % 120 < 60)
+		return;
 
-		CAnimations::GetInstance()->Get(aniID)->Render(draw_x, draw_y);
-	}
+	//Determine animation
+	ChangeAnimation();
 	
+	//Determine draw position
+	float draw_x = x;
+	float draw_y = y;
+
+	switch (state)
+	{
+	case MARIO_STATE_GAIN_POWER:
+		if(life == MARIO_LEVEL_SMALL) ChangeDrawPosition(draw_x, draw_y);
+		break;
+	case MARIO_STATE_LOSE_POWER:
+		if (life == MARIO_LEVEL_BIG) ChangeDrawPosition(draw_x, draw_y);
+		break;
+	}		
+
+	//Render
+	CAnimations::GetInstance()->Get(aniID)->Render(draw_x, draw_y);
 	RenderBoundingBox();
 
 	//DebugOutTitle(L"Coins: %d", coin);
@@ -335,8 +342,21 @@ void CMario::ChangeAnimation()
 			break;
 	}
 
-	int direction = (nx <= 0) ? ID_ANI_LEFT : ID_ANI_RIGHT;
+	int direction = 0;
+	switch (state)
+	{
+		case STATE_LIVE:
+			direction = (nx <= 0) ? ID_ANI_LEFT : ID_ANI_RIGHT;
+			break;
+		case MARIO_STATE_GAIN_POWER:
+			if (life == MARIO_LEVEL_SMALL) direction = (nx <= 0) ? ID_ANI_LEFT : ID_ANI_RIGHT;
+			break;
+		case MARIO_STATE_LOSE_POWER:
+			if (life == MARIO_LEVEL_BIG) direction = (nx <= 0) ? ID_ANI_LEFT : ID_ANI_RIGHT;
+			break;
+	}
 	
+
 	aniID = ID_ANI_MARIO + level + action + direction;	
 
 	if(timePerFrame < TIME_FRAME)
@@ -452,13 +472,13 @@ void CMario::StartInvulnerable()
 void CMario::GainingPower()
 {
 	int duration;
-	if (life == MARIO_LEVEL_RACOON)
+	if (life == MARIO_LEVEL_SMALL)
 	{
-		duration = MARIO_RACOON_TRANSFORM_TIME;
+		duration = MARIO_BIG_TRANSFORM_TIME;
 	}
 	else if (life == MARIO_LEVEL_BIG)
 	{
-		duration = MARIO_BIG_TRANSFORM_TIME;
+		duration = MARIO_RACOON_TRANSFORM_TIME;
 	}
 	else
 	{
@@ -468,7 +488,32 @@ void CMario::GainingPower()
 
 	if (GetTickCount64() - action_time > duration)
 	{
+		SetLevel(life + 1.0f);
 		SetState(STATE_LIVE);
+	}
+}
+
+void CMario::LosingPower()
+{
+	int duration;
+	if (life == MARIO_LEVEL_RACOON)
+	{
+		duration = MARIO_RACOON_TRANSFORM_TIME;
+	}
+	else if (life == MARIO_LEVEL_BIG)
+	{
+		duration = MARIO_SMALL_TRANSFORM_TIME;
+	}
+	else
+	{
+		return;
+	}
+
+	if (GetTickCount64() - action_time > duration)
+	{
+		SetLevel(life - 1.0f);
+		SetState(STATE_LIVE);
+		StartInvulnerable();
 	}
 }
 
@@ -492,11 +537,15 @@ void CMario::SetLevel(int l)
 		bbox_height = MARIO_BIG_BBOX_HEIGHT;
 		bbox_width = MARIO_BIG_BBOX_WIDTH;
 	}
-	else
+	else if (l == MARIO_LEVEL_SMALL)
 	{
 		y += (bbox_height - MARIO_SMALL_BBOX_HEIGHT) / 2;
 		bbox_height = MARIO_SMALL_BBOX_HEIGHT;
 		bbox_width = MARIO_SMALL_BBOX_WIDTH;
+	}
+	else
+	{
+		SetState(STATE_DIE);
 	}
 }
 

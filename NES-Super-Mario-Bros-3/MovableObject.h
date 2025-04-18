@@ -5,7 +5,7 @@
 #define DIRECTION_LEFT -1
 #define DIRECTION_RIGHT 1
 #define DIRECTION_REMAIN 0
-#define DIRECTION_TOP -1
+#define DIRECTION_UP -1
 #define DIRECTION_DOWN 1
 
 #define STOP_V 0.0f

@@ -56,6 +56,11 @@ void CPlayScene::_ParseSection_SPRITES(string line)
 		return; 
 	}
 
+	if (ID == 70000)
+	{
+		int i = 1;
+	};
+
 	CSprites::GetInstance()->Add(ID, l, t, r, b, tex);
 }
 
