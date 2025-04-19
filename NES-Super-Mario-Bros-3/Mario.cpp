@@ -6,7 +6,12 @@
 
 #include "Goomba.h"
 #include "Coin.h"
+#include "Brick.h"
+#include "BrickParticle.h"
 #include "Portal.h"
+#include "Container.h"
+#include "QuestionBlock.h"
+#include "DeadStateTrigger.h"
 
 #include "Collision.h"
 
@@ -49,8 +54,14 @@ void CMario::OnCollisionWith(LPCOLLISIONEVENT e)
 
 	if (dynamic_cast<CGoomba*>(e->obj))
 		OnCollisionWithGoomba(e);
+	else if (dynamic_cast<CQuestionBlock*>(e->obj))
+		OnCollisionWithQuestionBlock(e);
 	else if (dynamic_cast<CCoin*>(e->obj))
 		OnCollisionWithCoin(e);
+	else if (dynamic_cast<CBrick*>(e->obj))
+		OnCollisionWithBrick(e);
+	else if (dynamic_cast<CDeadStateTrigger*>(e->obj))
+		OnCollisionWithDeadTrigger(e);
 	else if (dynamic_cast<CPortal*>(e->obj))
 		OnCollisionWithPortal(e);
 }
@@ -89,16 +100,88 @@ void CMario::OnCollisionWithGoomba(LPCOLLISIONEVENT e)
 	}
 }
 
+void CMario::OnCollisionWithQuestionBlock(LPCOLLISIONEVENT e)
+{
+	if (e->obj->GetState() == STATE_QUESTION_BLOCK_ON)
+	{
+		int getLevel = level;
+		float ex, ey; //position of event's object
+		e->obj->GetPosition(ex, ey);
+
+		switch (getLevel)
+		{
+		case MARIO_LEVEL_BIG:
+		{
+			if (y - MARIO_BIG_BBOX_HEIGHT / 2 >= ey + QUESTION_BLOCK_BBOX_HEIGHT / 2)
+			{
+				e->obj->SetState(STATE_QUESTION_BLOCK_OFF);
+				CQuestionBlock* p = (CQuestionBlock*)e->obj;
+				p->ShakeToggle(); //A SIGN FOR OBJECTS TO BE INSTANTIATED
+
+				float cX, cY;
+				e->obj->GetPosition(cX, cY);
+				CCoin* c = new CCoin(cX, cY - QUESTION_BLOCK_BBOX_HEIGHT, true);
+				CGame::GetInstance()->GetCurrentScene()->InstantiateObject(c);
+			}
+			break;
+		}
+		case MARIO_LEVEL_SMALL:
+		{
+			if (y - MARIO_SMALL_BBOX_HEIGHT / 2 >= ey + QUESTION_BLOCK_BBOX_HEIGHT / 2)
+			{
+				e->obj->SetState(STATE_QUESTION_BLOCK_OFF);
+				CQuestionBlock* p = (CQuestionBlock*)e->obj;
+				p->ShakeToggle(); //A SIGN FOR OBJECTS TO BE INSTANTIATED
+
+				float cX, cY;
+				e->obj->GetPosition(cX, cY);
+				CCoin* c = new CCoin(cX, cY - QUESTION_BLOCK_BBOX_HEIGHT, true);
+				CGame::GetInstance()->GetCurrentScene()->InstantiateObject(c);
+			}
+			break;
+		}
+		}
+	}
+}
+
+void CMario::OnCollisionWithBrick(LPCOLLISIONEVENT e)
+{
+	float eX, eY;
+	e->obj->GetPosition(eX, eY);
+	CBrickParticle* p1 = new CBrickParticle(eX - 8, eY - 8, 1);
+	CBrickParticle* p2 = new CBrickParticle(eX + 8, eY - 8, 2);
+	CBrickParticle* p3 = new CBrickParticle(eX - 8, eY + 8, 3);
+	CBrickParticle* p4 = new CBrickParticle(eX + 8, eY + 8, 4);
+
+	CGame::GetInstance()->GetCurrentScene()->InstantiateObject(p1);
+	CGame::GetInstance()->GetCurrentScene()->InstantiateObject(p2);
+	CGame::GetInstance()->GetCurrentScene()->InstantiateObject(p3);
+	CGame::GetInstance()->GetCurrentScene()->InstantiateObject(p4);
+
+	e->obj->Delete();
+}
+
 void CMario::OnCollisionWithCoin(LPCOLLISIONEVENT e)
 {
 	e->obj->Delete();
-	coin++;
 }
 
 void CMario::OnCollisionWithPortal(LPCOLLISIONEVENT e)
 {
 	CPortal* p = (CPortal*)e->obj;
+
+	float new_x, new_y;
+	p->GetNewPlayerPos(new_x, new_y);
+	DebugOut(L"%f\n", new_x);
+	DebugOut(L"%f\n", new_y);
+	CGame::GetInstance()->SetNewPlayerPos(new_x, new_y);
+
 	CGame::GetInstance()->InitiateSwitchScene(p->GetSceneId());
+}
+
+void CMario::OnCollisionWithDeadTrigger(LPCOLLISIONEVENT e)
+{
+	SetState(MARIO_STATE_DIE);
 }
 
 //
@@ -237,10 +320,6 @@ void CMario::Render()
 		aniId = GetAniIdSmall();
 
 	animations->Get(aniId)->Render(x, y);
-
-	//RenderBoundingBox();
-	
-	DebugOutTitle(L"Coins: %d", coin);
 }
 
 void CMario::SetState(int state)

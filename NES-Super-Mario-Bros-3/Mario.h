@@ -112,11 +112,13 @@ class CMario : public CGameObject
 	int untouchable; 
 	ULONGLONG untouchable_start;
 	BOOLEAN isOnPlatform;
-	int coin; 
 
 	void OnCollisionWithGoomba(LPCOLLISIONEVENT e);
 	void OnCollisionWithCoin(LPCOLLISIONEVENT e);
+	void OnCollisionWithBrick(LPCOLLISIONEVENT e);
+	void OnCollisionWithDeadTrigger(LPCOLLISIONEVENT e);
 	void OnCollisionWithPortal(LPCOLLISIONEVENT e);
+	void OnCollisionWithQuestionBlock(LPCOLLISIONEVENT e);
 
 	int GetAniIdBig();
 	int GetAniIdSmall();
@@ -133,7 +135,6 @@ public:
 		untouchable = 0;
 		untouchable_start = -1;
 		isOnPlatform = false;
-		coin = 0;
 	}
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 	void Render();
