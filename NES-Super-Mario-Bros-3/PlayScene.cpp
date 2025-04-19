@@ -51,6 +51,8 @@ float tempCamPosY = 0;
 
 bool isStartSpawned = false;
 
+int coin = 0;
+
 void CPlayScene::_ParseSection_SPRITES(string line)
 {
 	vector<string> tokens = split(line);
@@ -376,6 +378,7 @@ void CPlayScene::Update(DWORD dt)
 {
 	// We know that Mario is the first object in the list hence we won't add him into the colliable object list
 	// TO-DO: This is a "dirty" way, need a more organized way 
+	DebugOutTitle(L"Coin: %d", coin);
 
 	vector<LPGAMEOBJECT> coObjects;
 	for (size_t i = 1; i < objects.size(); i++)
@@ -386,6 +389,19 @@ void CPlayScene::Update(DWORD dt)
 	for (size_t i = 0; i < objects.size(); i++)
 	{
 		objects[i]->Update(dt, &coObjects);
+
+		if (dynamic_cast<CCoin*>(objects[i]))
+		{
+			CCoin* c = (CCoin*)objects[i];
+			if (c->IsUnderOriginal())
+			{
+				if (!c->GetDisappear())
+				{
+					c->SetDisappear(true);
+					coin++;
+				}
+			}
+		}
 	}
 
 	// skip the rest if scene was already unloaded (Mario::Update might trigger PlayScene::Unload)
@@ -419,6 +435,11 @@ void CPlayScene::Render()
 			dynamic_cast<CPlatform*>(objects[i]) ||
 			dynamic_cast<CDeadStateTrigger*>(objects[i]))
 			objects[i]->Render();
+		else if (dynamic_cast<CCoin*>(objects[i]))
+		{
+			CCoin* c = (CCoin*)objects[i];
+			if (!c->IsUnderOriginal()) objects[i]->Render();
+		}
 		else
 		{
 			float posX, posY;
