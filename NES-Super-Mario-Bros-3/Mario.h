@@ -29,8 +29,8 @@
 #define MARIO_RACOON_TRANSFORM_TIME 350
 #define MARIO_SMALL_TRANSFORM_TIME 700
 #define MARIO_INVULNERABLE_TIME 1000
-#define MARIO_ATTACK_TIME 300
 #define MARIO_ATTACK_PHASE_TIME 60
+#define MARIO_KICK_TIME 200
 
 //life
 #define	MARIO_LEVEL_SMALL	1.0f
@@ -67,7 +67,9 @@
 #define ID_ANI_LEVEL_UP 60
 #define ID_ANI_LEVEL_DOWN 70
 #define ID_ANI_ATTACK 80
-#define ID_ANI_DIE 90
+#define ID_ANI_KICK 90
+//#define ID_ANI_DIE 200
+#define ID_ANI_CARRY 100
 // 1
 #define ID_ANI_LEFT 0
 #define ID_ANI_RIGHT 1
@@ -85,6 +87,7 @@
 #define MARIO_BIG_SITTING_BBOX_HEIGHT 18.0f
 
 #define MARIO_RACOON_TAIL_Y_OFFSET 7.0f
+#define MARIO_CARRY_OFFSET_X 10.0f
 
 class CMario : public CCreature
 {
@@ -99,12 +102,15 @@ class CMario : public CCreature
 	float startJumpingPosition;
 
 	int changing_state_time;
-	int transfrom_duration;
+
+	int action_duration;
 
 	bool is_attacking;
 	int attacking_time;
 	int attack_phase;
 	CRacoonTail* tail;
+
+	bool is_kicking;
 
 	//int coin; 
 
@@ -139,7 +145,6 @@ public:
 	void ToGainingPowerState();
 	void ToLosingPowerState();
 	void SetState(int state);
-	//void StartUntouchable() { untouchable = 1; untouchable_start = GetTickCount64(); }
 
 	void ProcessInput();
 	void ComputeAccelerator(float &ax, float &ay, DWORD& t);
@@ -158,7 +163,8 @@ public:
 	void BackJump();
 	void Jump();
 	void Carrying();
-	void Drop();
+	void Kick();
+	void Kicking(DWORD dt);
 	void StartInvulnerable();
 	void Invulnerable();
 	void GainingPower();

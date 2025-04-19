@@ -17,14 +17,57 @@ CKoopaTroopa::CKoopaTroopa(float x, float y):
 
 void CKoopaTroopa::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {		
-	Recover();
-
-	if(!IsControlled())
-	{
-		Accelerate(0.0f, GAME_GRAVITY, dt);
-	}
-
 	dt = 16;
+	InPhase(dt, coObjects);
+}
+
+void CKoopaTroopa::InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+{
+	switch (state)
+	{
+		case STATE_LIVE:
+			InPhaseLivingState(dt, coObjects);
+			break;
+		case KOOPA_STATE_HIDE:
+			InPhaseHidingState(dt, coObjects);
+			break;
+		case KOOPA_STATE_ROLL:
+			InPhaseRollingState(dt, coObjects);
+			break;
+		case KOOPA_STATE_POP:
+			InPhasePopingState(dt, coObjects);
+			break;
+		case STATE_DIE:
+			break;
+	}
+}
+
+void CKoopaTroopa::InPhaseLivingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+{
+	Accelerate(0.0f, GAME_GRAVITY, dt);
+	CCollision::GetInstance()->Process(this, dt, coObjects);
+	Move(dt);
+}
+
+void CKoopaTroopa::InPhaseHidingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+{
+	Hide(dt);
+	if (!IsControlled()) Accelerate(0.0f, GAME_GRAVITY, dt);
+	CCollision::GetInstance()->Process(this, dt, coObjects);
+	Move(dt);
+}
+
+void CKoopaTroopa::InPhaseRollingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+{
+	Accelerate(0.0f, GAME_GRAVITY, dt);
+	CCollision::GetInstance()->Process(this, dt, coObjects);
+	Move(dt);
+}
+
+void CKoopaTroopa::InPhasePopingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+{
+	Pop(dt);
+	if (!IsControlled()) Accelerate(0.0f, GAME_GRAVITY, dt);
 	CCollision::GetInstance()->Process(this, dt, coObjects);
 	Move(dt);
 }
@@ -103,7 +146,6 @@ void CKoopaTroopa::Render()
 void CKoopaTroopa::ChangeAnimation()
 {
 	int action = ANI_ID_KOOPA_WALK;
-	bool direction_ignore = false;
 	switch (state)
 	{
 		case STATE_LIVE:
@@ -111,15 +153,13 @@ void CKoopaTroopa::ChangeAnimation()
 			break;
 		case KOOPA_STATE_HIDE:
 			action = ANI_ID_KOOPA_HIDE;
-			direction_ignore = true;
 			break;
 		case KOOPA_STATE_POP:
 		{
 			action = ANI_ID_KOOPA_POP;
-			direction_ignore = true;
-			aniID = ANI_ID_KOOPA + action;			
+			//aniID = ANI_ID_KOOPA + action;
 			//DWORD timePerFrame = ( (float)remaining_time / KOOPA_POP_TIME) * KOOPA_POP_MAX_FRAME_TIME;			
-			CAnimations::GetInstance()->Get(aniID)->ChangeTimePerFrame(15);
+			//CAnimations::GetInstance()->Get(aniID)->ChangeTimePerFrame(15);
 			break;
 		}
 		case KOOPA_STATE_ROLL:
@@ -129,11 +169,29 @@ void CKoopaTroopa::ChangeAnimation()
 			break;
 	}
 
-	int horizontalDirection = 0;
-	if(direction_ignore == false)
-		horizontalDirection = (nx <= 0) ? ANI_ID_KOOPA_LEFT : ANI_ID_KOOPA_RIGHT;
+	int direction = ID_ANI_DIRECTION_LEFT;
+	switch (state)
+	{
+		case STATE_LIVE:
+			direction = (nx <= 0) ? ID_ANI_DIRECTION_LEFT : ID_ANI_DIRECTION_RIGHT;
+			break;
+		case KOOPA_STATE_HIDE:
+			direction = (ny < 0) ? ID_ANI_DIRECTION_UP : ID_ANI_DIRECTION_DOWN;
+			break;
+		case KOOPA_STATE_POP:
+		{
+			direction = (ny < 0) ? ID_ANI_DIRECTION_UP : ID_ANI_DIRECTION_DOWN;
+			break;
+		}
+		case KOOPA_STATE_ROLL:
+			direction = (nx <= 0) ? ID_ANI_DIRECTION_LEFT : ID_ANI_DIRECTION_RIGHT;
+			direction += (ny < 0) ? ID_ANI_DIRECTION_UP : ID_ANI_DIRECTION_DOWN;
+			break;
+		case STATE_DIE:
+			break;
+	}
 
-	aniID = ANI_ID_KOOPA + action + horizontalDirection;
+	aniID = ANI_ID_KOOPA + action + direction;
 }
 
 void CKoopaTroopa::SetState(int state)
@@ -158,13 +216,11 @@ void CKoopaTroopa::SetState(int state)
 		case KOOPA_STATE_HIDE:
 			y += (bbox_height - KOOPA_BBOX_HEIGHT_HIDE) / 2;
 			bbox_height = KOOPA_BBOX_HEIGHT_HIDE;
-			vx = STOP_V;
-			start_time = GetTickCount64();
+			recovering_time = 0;
 			SetHighPower();
 			break;
 		case KOOPA_STATE_POP:
 			vx = KOOPA_POP_VX;
-			start_time = GetTickCount64();
 			break;
 		case KOOPA_STATE_ROLL:
 			vx = nx * KOOPA_ROLL_VX;
@@ -181,31 +237,35 @@ void CKoopaTroopa::Reaction(CGameObject* by_another, int action)
 	{
 		case STATE_LIVE:
 		{
-			Reaction_LivingState(by_another, action);
+			ReactionInLivingState(by_another, action);
 			break;
 		}
 		case KOOPA_STATE_ROLL:
 		{
-			Reaction_RollingState(by_another, action);
+			ReactionInRollingState(by_another, action);
 			break;
 		}
 		case KOOPA_STATE_POP:
 		case KOOPA_STATE_HIDE:
 		{
-			Reaction_HidingState(by_another, action);
+			ReactionInHidingState(by_another, action);
 		}
 		case STATE_DIE:
 			break;
 	}	
 }
 
-void CKoopaTroopa::Reaction_LivingState(CGameObject* by_another, int action)
+void CKoopaTroopa::ReactionInLivingState(CGameObject* by_another, int action)
 {
 	switch (action)
 	{
 		case ACTION_ATTACK:
+			UnderAttack(by_another);
+			SetState(KOOPA_STATE_HIDE);
+			break;
 		case ACTION_DESTROY:
 			UnderAttack(by_another);
+			UnderDestructrion(by_another);
 			SetState(KOOPA_STATE_HIDE);
 			break;
 		case ACTION_CARRY:
@@ -216,7 +276,7 @@ void CKoopaTroopa::Reaction_LivingState(CGameObject* by_another, int action)
 	}
 }
 
-void CKoopaTroopa::Reaction_RollingState(CGameObject* by_another, int action)
+void CKoopaTroopa::ReactionInRollingState(CGameObject* by_another, int action)
 {
 	switch (action)
 	{
@@ -224,6 +284,7 @@ void CKoopaTroopa::Reaction_RollingState(CGameObject* by_another, int action)
 			if (dynamic_cast<CMario*>(by_another)) SetState(KOOPA_STATE_HIDE);
 			break;
 		case ACTION_DESTROY:
+			UnderDestructrion(by_another);
 			SetState(KOOPA_STATE_HIDE);
 			break;
 		default:
@@ -232,7 +293,7 @@ void CKoopaTroopa::Reaction_RollingState(CGameObject* by_another, int action)
 	}
 }
 
-void CKoopaTroopa::Reaction_HidingState(CGameObject* by_another, int action)
+void CKoopaTroopa::ReactionInHidingState(CGameObject* by_another, int action)
 {
 	switch (action)
 	{
@@ -240,7 +301,7 @@ void CKoopaTroopa::Reaction_HidingState(CGameObject* by_another, int action)
 			//Powerless;
 			break;
 		case ACTION_DESTROY:
-			//
+			UnderDestructrion(by_another);
 			break;
 		default:
 			if (CMario* mario = dynamic_cast<CMario*>(by_another)) //mario attacks
@@ -266,35 +327,43 @@ void CKoopaTroopa::UnderAttack(CGameObject* by_another)
 	}
 }
 
-void CKoopaTroopa::Recover()
+void CKoopaTroopa::UnderDestructrion(CGameObject* by_another)
 {
-	remaining_time = GetTickCount64() - start_time;
+	float enemy_x, enemy_y;
+	by_another->GetPosition(enemy_x, enemy_y);
 
-	switch (state)
+	int fly_out_direction = (x <= enemy_x) ? DIRECTION_LEFT : DIRECTION_RIGHT;
+	FlyOut(fly_out_direction);	
+}
+
+void CKoopaTroopa::Hide(DWORD dt)
+{
+	recovering_time += dt;
+
+	if (recovering_time >= KOOPA_HIDE_TIME)
 	{
-		case KOOPA_STATE_HIDE:
-		{
-			if (remaining_time >= KOOPA_HIDE_TIME)
-			{
-				SetState(KOOPA_STATE_POP);
-			}
-			break;
-		}
-		case KOOPA_STATE_POP:
-		{
-			if (remaining_time >= KOOPA_POP_TIME)
-			{
-				CCreature::Recover();
-			}
-			else
-			{
-				remaining_time = KOOPA_POP_TIME - remaining_time;
-				vx = -vx;
-			}
-			break;
-		}			
+		recovering_time %= KOOPA_HIDE_TIME;
+		SetState(KOOPA_STATE_POP);
 	}
-	
+	else
+	{
+		if (vy == 0.0f) vx = 0.0f;
+	}
+}
+
+void CKoopaTroopa::Pop(DWORD dt)
+{
+	recovering_time += dt;
+
+	if (recovering_time >= KOOPA_POP_TIME)
+	{
+		//recovering_time %= KOOPA_POP_TIME;
+		CCreature::Recover();
+	}
+	else
+	{
+		vx = -vx;
+	}
 }
 
 void CKoopaTroopa::LookForMario()
@@ -305,9 +374,4 @@ void CKoopaTroopa::LookForMario()
 	float mario_x, mario_y;
 	mario->GetPosition(mario_x, mario_y);
 	nx = (mario_x < x) ? DIRECTION_LEFT: DIRECTION_RIGHT;
-}
-
-const char* CKoopaTroopa::ToString()
-{
-	return "Koopa";
 }

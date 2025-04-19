@@ -19,9 +19,17 @@ void CHarmfulObject::Destroy(CGameObject* another)
 {
 	if (another && highPower)
 	{
+		//Effect boom
 		another->Reaction(this, ACTION_DESTROY);
 	}
-	
+}
+
+void CHarmfulObject::FlyOut(int attack_direction)
+{
+	vx = attack_direction * ATTACK_BOOM_VX;
+
+	ny = DIRECTION_UP;
+	vy = ny * ATTACK_BOOM_VY;
 }
 
 void CHarmfulObject::SetHighPower()

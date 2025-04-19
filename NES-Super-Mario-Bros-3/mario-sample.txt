@@ -22,4 +22,5 @@ height	240
 20	textures\misc.png
 30	textures\items_left.png
 31	textures\items_right.png
-40	textures\effect.png
+40	textures\effect_left.png
+41	textures\effect_right.png

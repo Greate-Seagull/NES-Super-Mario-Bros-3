@@ -35,30 +35,37 @@
 
 class CKoopaTroopa : public CCreature
 {
-	int start_time;
-	int remaining_time;
-
-	int aniID;
+	int recovering_time;
 public:
 	CKoopaTroopa(float x, float y);
+
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+	virtual void InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+	virtual void InPhaseLivingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+	virtual void InPhaseHidingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+	virtual void InPhaseRollingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+	virtual void InPhasePopingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+
 	virtual int IsCollidable() { return 1; };
 	virtual void OnCollisionWith(LPCOLLISIONEVENT e);
 	virtual void OnCollisionWithPlatform(LPCOLLISIONEVENT e);
 	virtual void OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e);
-	void Patrol();
-	virtual void Render();
-	virtual void ChangeAnimation();
-	virtual void SetState(int state);
 
 	virtual void Reaction(CGameObject* by_another, int action);
-	virtual void Reaction_LivingState(CGameObject* by_another, int action);
-	virtual void Reaction_RollingState(CGameObject* by_another, int action);
-	virtual void Reaction_HidingState(CGameObject* by_another, int action);
+	virtual void ReactionInLivingState(CGameObject* by_another, int action);
+	virtual void ReactionInRollingState(CGameObject* by_another, int action);
+	virtual void ReactionInHidingState(CGameObject* by_another, int action);
+
+	virtual void Render();
+	virtual void ChangeAnimation();
+
+	virtual void SetState(int state);
 
 	virtual void UnderAttack(CGameObject* by_another);
-	virtual void Recover();
-	virtual void LookForMario();
+	virtual void UnderDestructrion(CGameObject* by_another);
 
-	virtual const char* ToString();
+	virtual void Hide(DWORD dt);
+	virtual void Pop(DWORD dt);
+	void Patrol();
+	virtual void LookForMario();
 };

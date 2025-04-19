@@ -25,8 +25,14 @@ public:
 	
 	virtual void Move(DWORD t);
 	virtual void Accelerate(float ax, float ay, DWORD t);
+
 	virtual void SetSpeed(float vx, float vt) { this->vx = vx; this->vy = vy; }
 	virtual void GetSpeed(float& vx, float& vy) { vx = this->vx; vy = this->vy; }
+
 	virtual void ChangeDirection();
 	virtual void Stop();
+
+	int GetNx() { return nx; }
+	int GetNy() { return ny; }
+	int GetNz() { return nz; }
 };

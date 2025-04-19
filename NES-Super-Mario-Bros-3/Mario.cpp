@@ -64,6 +64,7 @@ void CMario::InPhaseLivingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	Invulnerable();
 	Carrying();
 	Attacking(dt, coObjects);
+	Kicking(dt);
 }
 
 void CMario::OnNoCollision(DWORD dt)
@@ -215,7 +216,7 @@ void CMario::ChangeAnimation()
 			action = ID_ANI_LEVEL_DOWN;
 			break;
 		case STATE_DIE:
-			action = ID_ANI_DIE;
+			//action = ID_ANI_DIE;
 			break;
 	}
 	
@@ -248,6 +249,10 @@ void CMario::ChangeAnimationInLivingState(int &actionID, DWORD &timePerFrame)
 	{
 		actionID = ID_ANI_ATTACK;
 	}
+	else if (is_kicking)
+	{
+		actionID = ID_ANI_KICK;
+	}
 	else if (vy > 0 && life > MARIO_LEVEL_SMALL)
 	{
 		actionID = ID_ANI_FALL;
@@ -272,6 +277,11 @@ void CMario::ChangeAnimationInLivingState(int &actionID, DWORD &timePerFrame)
 	{
 		actionID = ID_ANI_RUN;
 		timePerFrame *= (MARIO_SMALL_RUNNING_MAX_VX - abs(vx)) / MARIO_SMALL_RUNNING_MAX_VX;
+	}
+
+	if (weapon)
+	{
+		actionID += ID_ANI_CARRY;
 	}
 }
 
@@ -309,7 +319,10 @@ void CMario::ProcessInput()
 	if (keyState->IsHold(VK_A))
 		Run();
 	else
+	{
 		Walk();
+		Kick();
+	}
 }
 
 void CMario::ComputeAccelerator(float &calculated_ax, float &calculated_ay, DWORD& t)
@@ -462,9 +475,7 @@ void CMario::Walk()
 	else
 	{
 		ax = -MARIO_BRAKE_AX;
-	}
-
-	Drop();
+	}	
 }
 
 void CMario::Attack()
@@ -557,21 +568,38 @@ void CMario::Carrying()
 	{
 		float weapon_x, weapon_y;
 
-		weapon_x = x + nx * (this->bbox_width + weapon->getBBoxWidth()) / 2;
-		weapon_y = y + (this->bbox_height - weapon->getBBoxHeight()) / 2;
+		weapon_x = x + nx * MARIO_CARRY_OFFSET_X;
+		weapon_y = y + (this->bbox_height - weapon->getBBoxHeight()) / 2 - 1;
 
 		weapon->SetPosition(weapon_x, weapon_y);
 	}
 	else
 	{
-		Drop();
+		CCreature::Drop();
 	}
 }
 
-void CMario::Drop()
+void CMario::Kick()
 {
+	if (!weapon || is_kicking)
+		return;
+
+	is_kicking = true;
+	attacking_time = 0;
 	Touch(weapon);
 	CCreature::Drop();
+}
+
+void CMario::Kicking(DWORD dt)
+{
+	if (is_kicking == false)
+		return;
+
+	attacking_time += dt;
+	if (attacking_time >= MARIO_KICK_TIME)
+	{
+		is_kicking = false;
+	}
 }
 
 void CMario::StartInvulnerable()
@@ -590,7 +618,7 @@ void CMario::Invulnerable()
 
 void CMario::GainingPower()
 {
-	if (GetTickCount64() - changing_state_time > transfrom_duration)
+	if (GetTickCount64() - changing_state_time > action_duration)
 	{
 		nz = 0;
 		SetLevel(life + 1.0f);
@@ -600,7 +628,7 @@ void CMario::GainingPower()
 
 void CMario::LosingPower()
 {
-	if (GetTickCount64() - changing_state_time > transfrom_duration)
+	if (GetTickCount64() - changing_state_time > action_duration)
 	{
 		nz = 0;
 		SetLevel(life - 1.0f);
@@ -641,12 +669,12 @@ void CMario::ToGainingPowerState()
 
 	if (life == MARIO_LEVEL_SMALL)
 	{
-		transfrom_duration = MARIO_BIG_TRANSFORM_TIME;
+		action_duration = MARIO_BIG_TRANSFORM_TIME;
 	}
 	else if (life == MARIO_LEVEL_BIG)
 	{
 		nz = DIRECTION_FRONT;
-		transfrom_duration = MARIO_RACOON_TRANSFORM_TIME;
+		action_duration = MARIO_RACOON_TRANSFORM_TIME;
 	}
 }
 
@@ -657,11 +685,11 @@ void CMario::ToLosingPowerState()
 	if (life == MARIO_LEVEL_RACOON)
 	{
 		nz = DIRECTION_FRONT;
-		transfrom_duration = MARIO_RACOON_TRANSFORM_TIME;
+		action_duration = MARIO_RACOON_TRANSFORM_TIME;
 	}
 	else if (life == MARIO_LEVEL_BIG)
 	{
-		transfrom_duration = MARIO_SMALL_TRANSFORM_TIME;
+		action_duration = MARIO_SMALL_TRANSFORM_TIME;
 	}
 	else
 	{
