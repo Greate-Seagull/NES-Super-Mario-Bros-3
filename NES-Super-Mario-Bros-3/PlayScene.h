@@ -13,7 +13,8 @@ class CPlayScene: public CScene
 {
 protected: 
 	// A play scene has to have player, right? 
-	LPGAMEOBJECT player;					
+	LPGAMEOBJECT player;
+	LPGAMEOBJECT background;
 
 	vector<LPGAMEOBJECT> objects;
 
@@ -39,6 +40,8 @@ public:
 	void PurgeDeletedObjects();
 
 	static bool IsGameObjectDeleted(const LPGAMEOBJECT& o);
+
+	void InstantiateObject(LPGAMEOBJECT obj);
 };
 
 typedef CPlayScene* LPPLAYSCENE;
