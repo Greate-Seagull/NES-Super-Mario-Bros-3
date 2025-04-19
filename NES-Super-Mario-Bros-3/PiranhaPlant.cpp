@@ -185,7 +185,8 @@ void CPiranhaPlant::Reaction(CGameObject* by_another, int action)
 			AgainstControl();
 			break;
 		case ACTION_DESTROY:
-			UnderAttack((CHarmfulObject*) by_another);
+			Die();
+			SetState(STATE_DIE);
 			break;
 		default:
 			MeleeAttack(by_another);

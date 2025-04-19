@@ -4,9 +4,12 @@
 
 #define DIRECTION_LEFT -1
 #define DIRECTION_RIGHT 1
-#define DIRECTION_REMAIN 0
+
 #define DIRECTION_UP -1
 #define DIRECTION_DOWN 1
+
+#define DIRECTION_FRONT -1
+#define DIRECTION_BEHIND 1
 
 #define STOP_V 0.0f
 
@@ -14,7 +17,7 @@ class CMovableObject : public CGameObject
 {
 protected:
 	float vx, vy; //velocity	
-	int nx, ny; //Direction
+	int nx, ny, nz; //Direction
 	bool isOnGround;
 
 public:

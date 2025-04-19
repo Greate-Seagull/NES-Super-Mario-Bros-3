@@ -7,6 +7,7 @@ CMovableObject::CMovableObject(float x, float y):
 	this->vy = 0.0f;
 	this->nx = 0;
 	this->ny = 0;
+	this->nz = 0;
 	this->isOnGround = false;
 }
 
@@ -35,7 +36,4 @@ void CMovableObject::Stop()
 {
 	vx = STOP_V;
 	vy = STOP_V;
-
-	nx = DIRECTION_REMAIN;
-	ny = DIRECTION_REMAIN;
 }

@@ -55,4 +55,5 @@ void CCreature::Recover()
 void CCreature::Die()
 {
 	life = 0.0f;	
+	SetState(STATE_DIE);
 }

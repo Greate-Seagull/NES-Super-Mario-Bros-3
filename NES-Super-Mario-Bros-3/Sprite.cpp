@@ -55,6 +55,11 @@ void CSprite::Draw(float x, float y)
 
 int CSprite::GetHeight()
 {
-	return bottom - top;
+	return bottom - top + 1;
+}
+
+int CSprite::GetWidth()
+{
+	return right - left +1;
 }
 

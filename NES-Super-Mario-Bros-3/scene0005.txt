@@ -11,9 +11,12 @@ cloud.txt
 super_leaf.txt
 super_mushroom.txt
 
-#red_koopa_troopa.txt
+red_koopa_troopa.txt
+#goomba.txt
 #paragoomba.txt
 #wings.txt
+#piranha_plant.txt
+#venus_fire_trap.txt
 #fireball.txt
 #
 [OBJECTS]
@@ -30,11 +33,20 @@ super_mushroom.txt
 #SUPER MUSHROOM
 10	200	120
 
-#KOOPA
-#7	300	150
+KOOPA
+7	200	150
 
 #GOOMBA
-#9	300	120
+#2	250	150
+
+#GOOMBA
+#9	300	150
+
+#PIRANHA
+#8	350	150
+
+#VENUS
+#6	400	150
 
 #COIN
 4	100	120

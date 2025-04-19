@@ -17,7 +17,6 @@ CKoopaTroopa::CKoopaTroopa(float x, float y):
 
 void CKoopaTroopa::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {		
-	DebugOutTitle(L"Life: %f", life);
 	Recover();
 
 	if(!IsControlled())
@@ -205,14 +204,15 @@ void CKoopaTroopa::Reaction_LivingState(CGameObject* by_another, int action)
 	switch (action)
 	{
 		case ACTION_ATTACK:
+		case ACTION_DESTROY:
 			UnderAttack(by_another);
 			SetState(KOOPA_STATE_HIDE);
 			break;
 		case ACTION_CARRY:
 			AgainstControl();
-			break;
+			break;		
 		default:
-			MeleeAttack(by_another);			
+			MeleeAttack(by_another);
 	}
 }
 
@@ -220,6 +220,12 @@ void CKoopaTroopa::Reaction_RollingState(CGameObject* by_another, int action)
 {
 	switch (action)
 	{
+		case ACTION_ATTACK:
+			if (dynamic_cast<CMario*>(by_another)) SetState(KOOPA_STATE_HIDE);
+			break;
+		case ACTION_DESTROY:
+			SetState(KOOPA_STATE_HIDE);
+			break;
 		default:
 			Destroy(by_another);
 			AgainstControl();
@@ -233,8 +239,11 @@ void CKoopaTroopa::Reaction_HidingState(CGameObject* by_another, int action)
 		case ACTION_CARRY:
 			//Powerless;
 			break;
+		case ACTION_DESTROY:
+			//
+			break;
 		default:
-			if (CMario* mario = dynamic_cast<CMario*>(by_another))
+			if (CMario* mario = dynamic_cast<CMario*>(by_another)) //mario attacks
 			{
 				float mario_x, mario_y;
 				mario->GetPosition(mario_x, mario_y);
@@ -244,6 +253,7 @@ void CKoopaTroopa::Reaction_HidingState(CGameObject* by_another, int action)
 			else
 			{
 				Destroy(by_another);
+				Die();
 			}
 	}
 }

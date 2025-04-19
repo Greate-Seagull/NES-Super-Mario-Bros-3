@@ -60,6 +60,7 @@ void CParagoomba::Reaction_LivingState(CGameObject* by_another, int action)
 			SetState(PARAGOOMBA_STATE_GOOMBA);
 		case ACTION_DESTROY:
 			Die();
+			SetState(STATE_DIE);
 			break;
 		case ACTION_TOUCH:
 			MeleeAttack(by_another);

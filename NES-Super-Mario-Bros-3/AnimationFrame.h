@@ -2,7 +2,7 @@
 
 #include "Sprite.h"
 
-#define TIME_FRAME 100
+#define TIME_FRAME 150
 
 /*
 	Sprite animation

@@ -20,6 +20,7 @@ public:
 	void Draw(float x, float y);
 
 	int GetHeight();
+	int GetWidth();
 };
 
 typedef CSprite* LPSPRITE;

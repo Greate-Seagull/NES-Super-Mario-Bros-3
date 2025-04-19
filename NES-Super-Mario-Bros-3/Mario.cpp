@@ -16,56 +16,54 @@
 CMario::CMario(float x, float y):
 	CCreature(x, y)
 {
-	is_sitting = false;
-	is_boosting = false;
 	is_falling = false;
 	is_invulnerable = false;
 
-	/*untouchable = 0;
-	untouchable_start = -1;
-	isOnPlatform = false;
+	/*isOnPlatform = false;
 	coin = 0;*/
 
-	SetLevel(MARIO_LEVEL_SMALL);
 	SetState(STATE_LIVE);
+	SetLevel(MARIO_LEVEL_SMALL);
 }
 
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {	
-	dt = min(17, dt);
-	dt = max(15, dt);	
-	Inphase(dt, coObjects);
-	
-	//DebugOutTitle(L"life: %f", life);
-
-	//// reset untouchable timer if untouchable time has passed
-	//if ( GetTickCount64() - untouchable_start > MARIO_UNTOUCHABLE_TIME) 
-	//{
-	//	untouchable_start = 0;
-	//	untouchable = 0;
-	//}
+	if(dt > 30)
+		DebugOutTitle(L"time: %d", dt);
+	dt = 16;
+	InPhase(dt, coObjects);
 }
 
-void CMario::Inphase(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+void CMario::InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
 	switch (state)
 	{
 	case STATE_LIVE:
-		ProcessInput();
-		UpdateMovementState();
-		ComputeAccelerator(dt);
-		Accelerate(dt);
-		CCollision::GetInstance()->Process(this, dt, coObjects);
-		Move(dt);
-		Carrying();
+		InPhaseLivingState(dt, coObjects);
 		break;
 	case MARIO_STATE_GAIN_POWER:
 		GainingPower();
 		break;
 	case MARIO_STATE_LOSE_POWER:
-		LosingPower();		
+		LosingPower();
 		break;
 	}
+}
+
+void CMario::InPhaseLivingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+{
+	ProcessInput();
+
+	float calculated_ax, calculated_ay;
+	ComputeAccelerator(calculated_ax, calculated_ay, dt);
+	Accelerate(calculated_ax, calculated_ay, dt);
+
+	CCollision::GetInstance()->Process(this, dt, coObjects);
+	Move(dt);
+
+	Invulnerable();
+	Carrying();
+	Attacking(dt, coObjects);
 }
 
 void CMario::OnNoCollision(DWORD dt)
@@ -143,6 +141,7 @@ void CMario::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 	if (e->ny)
 	{
 		vy = 0;
+		ny = 0;
 		is_falling = false;
 	}	
 }
@@ -157,7 +156,7 @@ void CMario::OnCollisionWithHelpfulObject(LPCOLLISIONEVENT e)
 
 void CMario::Render()
 {
-	if (is_invulnerable && (GetTickCount64() - action_time) % 120 < 60)
+	if (is_invulnerable && (GetTickCount64() - changing_state_time) % 120 < 60)
 		return;
 
 	//Determine animation
@@ -169,147 +168,25 @@ void CMario::Render()
 
 	switch (state)
 	{
-	case MARIO_STATE_GAIN_POWER:
-		if(life == MARIO_LEVEL_SMALL) ChangeDrawPosition(draw_x, draw_y);
-		break;
-	case MARIO_STATE_LOSE_POWER:
-		if (life == MARIO_LEVEL_BIG) ChangeDrawPosition(draw_x, draw_y);
-		break;
+		case STATE_LIVE:
+			if(life == MARIO_LEVEL_RACOON) ChangeDrawX(draw_x);
+			break;
+		case MARIO_STATE_GAIN_POWER:
+			if (life == MARIO_LEVEL_SMALL) ChangeDrawY(draw_y);
+			break;
+		case MARIO_STATE_LOSE_POWER:
+			if (life == MARIO_LEVEL_BIG) ChangeDrawY(draw_y);
+			break;			
 	}		
 
 	//Render
-	CAnimations::GetInstance()->Get(aniID)->Render(draw_x, draw_y);
+	CAnimations::GetInstance()->Get(aniID)->Render(draw_x, draw_y, true);
 	RenderBoundingBox();
 
+	if (tail)
+		tail->Render();
+
 	//DebugOutTitle(L"Coins: %d", coin);
-}
-
-void CMario::ProcessInput()
-{
-	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
-
-	/*if (keyState->IsPressed(VK_1))
-	{
-		SetLevel(MARIO_LEVEL_SMALL);
-	}
-	else if (keyState->IsPressed(VK_2))
-	{
-		SetLevel(MARIO_LEVEL_BIG);
-	}
-	else if (keyState->IsPressed(VK_3))
-	{
-		SetLevel(MARIO_LEVEL_RACOON);
-	}*/
-
-	is_sitting = keyState->IsHold(VK_DOWN) && !keyState->IsHold(VK_LEFT) && !keyState->IsHold(VK_RIGHT);
-	is_boosting = keyState->IsHold(VK_A);
-}
-
-void CMario::UpdateMovementState()
-{
-	if (is_boosting)
-	{
-		ax = MARIO_SMALL_RUNNING_AX;
-		maxVx = MARIO_SMALL_RUNNING_MAX_VX;
-	}
-	else
-	{
-		ax = MARIO_SMALL_WALKING_AX;
-
-		if (abs(vx) <= MARIO_SMALL_WALKING_MAX_VX)
-			maxVx = MARIO_SMALL_WALKING_MAX_VX;
-
-		Drop();
-	}
-
-	if (is_sitting)
-	{
-
-	}
-
-	if (is_falling)
-	{
-
-	}
-
-	if (is_invulnerable && GetTickCount64() - action_time > MARIO_INVULNERABLE_TIME)
-	{
-		is_invulnerable = false;
-	}
-}
-
-void CMario::ComputeAccelerator(DWORD& t)
-{
-	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
-
-	float new_ax = 0.0f;
-	float new_ay = GAME_GRAVITY;
-	int new_nx = 0;
-
-	if (keyState->IsHold(VK_LEFT))
-	{
-		if (vx > 0)
-		{
-			float temp_ax = min(MARIO_BRAKE_AX, fabs(vx / t));
-			new_ax += -temp_ax;
-		}
-		else
-		{		
-			new_ax += -ax;
-		}
-
-		new_nx--;
-	}
-	if (keyState->IsHold(VK_RIGHT))
-	{
-		if (vx < 0)
-		{
-			float temp_ax = min(MARIO_BRAKE_AX, fabs(vx / t));
-			new_ax += temp_ax;
-		}
-		else
-		{
-			new_ax += ax;
-		}
-
-		new_nx++;
-	}
-	if (new_ax == 0.0f)
-	{
-		new_ax = min(MARIO_DECELERATE_AX, fabs(vx) / t);
-
-		if (vx > 0)
-		{
-			new_ax = -new_ax;
-		}
-	}
-
-	//Jump
-	if (keyState->IsPressed(VK_S) && !is_falling)
-	{
-		new_ay += MARIO_START_JUMPING_AY;
-		startJumpingPosition = y;
-	}
-	else if (keyState->IsReleased(VK_S) || abs(y - startJumpingPosition) >= MARIO_MAX_JUMP_HEIGHT || vy > 0.0f)
-	{
-		is_falling = true;		
-	}
-	else if (keyState->IsHold(VK_S) && !is_falling)
-	{
-		if(abs(vy) <= MARIO_SMALL_JUMPING_MAX_VY)
-			new_ay += -GAME_GRAVITY;
-	}
-	//------------------------------------------
-
-	if (new_nx)
-	{
-		this->nx = new_nx;
-	}
-
-	ax = new_ax;
-	ay = new_ay;
-
-	//DebugOutTitle(L"ax: %f", applied_ax);
 }
 
 void CMario::ChangeAnimation()
@@ -341,19 +218,15 @@ void CMario::ChangeAnimation()
 			action = ID_ANI_DIE;
 			break;
 	}
-
+	
 	int direction = 0;
-	switch (state)
+	if (nz)
 	{
-		case STATE_LIVE:
-			direction = (nx <= 0) ? ID_ANI_LEFT : ID_ANI_RIGHT;
-			break;
-		case MARIO_STATE_GAIN_POWER:
-			if (life == MARIO_LEVEL_SMALL) direction = (nx <= 0) ? ID_ANI_LEFT : ID_ANI_RIGHT;
-			break;
-		case MARIO_STATE_LOSE_POWER:
-			if (life == MARIO_LEVEL_BIG) direction = (nx <= 0) ? ID_ANI_LEFT : ID_ANI_RIGHT;
-			break;
+		direction = (nz < 0) ? ID_ANI_FRONT : ID_ANI_BEHIND;
+	}
+	else
+	{
+		direction = (nx <= 0) ? ID_ANI_LEFT : ID_ANI_RIGHT;
 	}
 	
 
@@ -361,13 +234,19 @@ void CMario::ChangeAnimation()
 
 	if(timePerFrame < TIME_FRAME)
 		CAnimations::GetInstance()->Get(aniID)->ChangeTimePerFrame(timePerFrame);
+	
+	CAnimations::GetInstance()->Get(aniID)->SwitchSprite();
 }
 
 void CMario::ChangeAnimationInLivingState(int &actionID, DWORD &timePerFrame)
 {
-	if (is_sitting && life > MARIO_LEVEL_SMALL)
+	if (is_sitting)
 	{
 		actionID = ID_ANI_SIT;
+	}
+	else if (is_attacking)
+	{
+		actionID = ID_ANI_ATTACK;
 	}
 	else if (vy > 0 && life > MARIO_LEVEL_SMALL)
 	{
@@ -396,19 +275,117 @@ void CMario::ChangeAnimationInLivingState(int &actionID, DWORD &timePerFrame)
 	}
 }
 
-void CMario::ChangeDrawPosition(float& x, float& y)
+void CMario::ChangeDrawX(float& x)
 {
 	LPANIMATION_FRAME currentFrame = CAnimations::GetInstance()->Get(aniID)->GetCurrentFrame();
 
-	if (currentFrame)
+	LPSPRITE sprite = currentFrame->GetSprite();
+	float sprite_width = (float)sprite->GetWidth();
+
+	x = this->x + nx * (bbox_width - sprite_width) / 2.0f;
+}
+
+void CMario::ChangeDrawY(float& y)
+{
+	LPANIMATION_FRAME currentFrame = CAnimations::GetInstance()->Get(aniID)->GetCurrentFrame();
+
+	LPSPRITE sprite = currentFrame->GetSprite();
+	float sprite_height = (float)sprite->GetHeight();
+
+	y = this->y + (bbox_height - sprite_height) / 2.0f;
+}
+
+void CMario::ProcessInput()
+{
+	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
+
+	if (keyState->IsHold(VK_DOWN) && !keyState->IsHold(VK_LEFT) && !keyState->IsHold(VK_RIGHT))
+		Sit();
+	else
+		Stand();
+
+	if (keyState->IsPressed(VK_A))
+		Attack();
+	if (keyState->IsHold(VK_A))
+		Run();
+	else
+		Walk();
+}
+
+void CMario::ComputeAccelerator(float &calculated_ax, float &calculated_ay, DWORD& t)
+{
+	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
+
+	calculated_ax = 0.0f;
+	calculated_ay = GAME_GRAVITY;
+	int new_nx = 0;
+
+	if (keyState->IsHold(VK_LEFT))
 	{
-		LPSPRITE sprite = currentFrame->GetSprite();
-		float sprite_height = (float)sprite->GetHeight();
-		y = this->y + (bbox_height - sprite_height) / 2;
+		if (vx > 0)
+		{
+			float temp_ax = min(MARIO_BRAKE_AX, fabs(vx / t));
+			calculated_ax += -temp_ax;
+		}
+		else
+		{		
+			calculated_ax += -ax;
+		}
+
+		new_nx += DIRECTION_LEFT;
+	}
+	if (keyState->IsHold(VK_RIGHT))
+	{
+		if (vx < 0)
+		{
+			float temp_ax = min(MARIO_BRAKE_AX, fabs(vx / t));
+			calculated_ax += temp_ax;
+		}
+		else
+		{
+			calculated_ax += ax;
+		}
+
+		new_nx += DIRECTION_RIGHT;
+	}
+	if (calculated_ax == 0.0f)
+	{
+		calculated_ax = min(MARIO_DECELERATE_AX, fabs(vx) / t);
+
+		if (vx > 0)
+		{
+			calculated_ax = -calculated_ax;
+		}
+	}
+
+	//Jump
+	if (keyState->IsPressed(VK_S) && !is_falling)
+	{
+		calculated_ay += MARIO_START_JUMPING_AY;
+		startJumpingPosition = y;
+		ny = DIRECTION_UP;
+	}
+	else if (keyState->IsReleased(VK_S) || abs(y - startJumpingPosition) >= MARIO_MAX_JUMP_HEIGHT || vy > 0.0f)
+	{
+		is_falling = true;
+		ny = DIRECTION_DOWN;
+	}
+	else if (keyState->IsHold(VK_S) && !is_falling)
+	{
+		if(abs(vy) <= MARIO_SMALL_JUMPING_MAX_VY)
+			calculated_ay += -GAME_GRAVITY;
+
+		ny = DIRECTION_UP;
+	}
+	//------------------------------------------
+
+	if (new_nx)
+	{
+		this->nx = new_nx;
 	}
 }
 
-void CMario::Accelerate(DWORD t)
+void CMario::Accelerate(float ax, float ay, DWORD t)
 {
 	CMovableObject::Accelerate(ax, ay, t);
 
@@ -425,7 +402,140 @@ void CMario::Accelerate(DWORD t)
 void CMario::UnderAttack(CGameObject* by_another)
 {
 	SetState(MARIO_STATE_LOSE_POWER);
-	SetLevel(life - 1);	
+}
+
+void CMario::Sit()
+{
+	if (is_sitting)
+		return;
+	if (life == MARIO_LEVEL_SMALL) //Cannot sit
+	{
+		is_sitting = false;
+		return;
+	}
+
+	is_sitting = true;
+
+	y += (bbox_height - MARIO_BIG_SITTING_BBOX_HEIGHT) / 2;
+	bbox_height = MARIO_BIG_SITTING_BBOX_HEIGHT;
+}
+
+void CMario::Stand()
+{
+	is_sitting = false;
+
+	float new_bbox_height;
+	
+	if (life > MARIO_LEVEL_SMALL)
+	{
+		new_bbox_height = MARIO_BIG_BBOX_HEIGHT;
+	}	
+	else //small mario no need to change
+	{
+		return;
+	}
+
+	y += (bbox_height - new_bbox_height) / 2;
+	bbox_height = new_bbox_height;
+}
+
+void CMario::Run()
+{
+	if (is_boosting)
+		return;
+
+	is_boosting = true;
+
+	ax = MARIO_SMALL_RUNNING_AX;
+	maxVx = MARIO_SMALL_RUNNING_MAX_VX;
+}
+
+void CMario::Walk()
+{
+	is_boosting = false;
+
+	if (abs(vx) <= MARIO_SMALL_WALKING_MAX_VX)
+	{
+		ax = MARIO_SMALL_WALKING_AX;
+		maxVx = MARIO_SMALL_WALKING_MAX_VX;
+	}
+	else
+	{
+		ax = -MARIO_BRAKE_AX;
+	}
+
+	Drop();
+}
+
+void CMario::Attack()
+{
+	if (life < MARIO_LEVEL_RACOON || is_attacking)
+		return;
+
+	is_attacking = true;
+	attacking_time = 0;
+	attack_phase = -1;
+	tail = new CRacoonTail(x, y);
+}
+
+void CMario::Attacking(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+{
+	if (is_attacking == false)
+		return;
+
+	//Switching phase
+	attacking_time += dt;
+	int phase = attacking_time / MARIO_ATTACK_PHASE_TIME;
+	ToAttackPhase(phase);
+	
+	//Tail's position should be done after processing phase to synchronize with animation
+	if (tail)
+	{
+		float tail_x = x - nx * (bbox_width + tail->getBBoxWidth()) / 2.0f; //attack the opposite
+		float tail_y = y + MARIO_RACOON_TAIL_Y_OFFSET;
+		tail->SetPosition(tail_x, tail_y);
+		tail->Update(dt, coObjects);
+	}
+}
+
+void CMario::ToAttackPhase(int phase)
+{
+	if (this->attack_phase == phase)
+	{
+		return;
+	}
+
+	this->attack_phase = phase;
+
+	if (phase == 0)
+	{
+		nz = 0;
+	}
+	else if (phase == 1)
+	{
+		nz = DIRECTION_FRONT;
+	}
+	else if (phase == 2)
+	{
+		nz = 0;
+		nx = -nx;
+	}
+	else if (phase == 3)
+	{
+		nz = DIRECTION_BEHIND;
+	}
+	else if (phase == 4)
+	{
+		nz = 0;
+		nx = -nx;
+	}
+	else
+	{
+		delete tail;
+		tail = nullptr;
+
+		is_attacking = false;
+	}
 }
 
 void CMario::BackJump()
@@ -433,6 +543,7 @@ void CMario::BackJump()
 	if (life)
 	{
 		vy = MARIO_JUMP_DEFLECT_VX;
+		ny = DIRECTION_UP;
 	}
 }
 
@@ -466,28 +577,22 @@ void CMario::Drop()
 void CMario::StartInvulnerable()
 {
 	is_invulnerable = true;
-	action_time = GetTickCount64();
+	changing_state_time = GetTickCount64();
+}
+
+void CMario::Invulnerable()
+{
+	if (is_invulnerable && GetTickCount64() - changing_state_time > MARIO_INVULNERABLE_TIME)
+	{
+		is_invulnerable = false;
+	}
 }
 
 void CMario::GainingPower()
 {
-	int duration;
-	if (life == MARIO_LEVEL_SMALL)
+	if (GetTickCount64() - changing_state_time > transfrom_duration)
 	{
-		duration = MARIO_BIG_TRANSFORM_TIME;
-	}
-	else if (life == MARIO_LEVEL_BIG)
-	{
-		duration = MARIO_RACOON_TRANSFORM_TIME;
-	}
-	else
-	{
-		return;
-	}
-
-
-	if (GetTickCount64() - action_time > duration)
-	{
+		nz = 0;
 		SetLevel(life + 1.0f);
 		SetState(STATE_LIVE);
 	}
@@ -495,22 +600,9 @@ void CMario::GainingPower()
 
 void CMario::LosingPower()
 {
-	int duration;
-	if (life == MARIO_LEVEL_RACOON)
+	if (GetTickCount64() - changing_state_time > transfrom_duration)
 	{
-		duration = MARIO_RACOON_TRANSFORM_TIME;
-	}
-	else if (life == MARIO_LEVEL_BIG)
-	{
-		duration = MARIO_SMALL_TRANSFORM_TIME;
-	}
-	else
-	{
-		return;
-	}
-
-	if (GetTickCount64() - action_time > duration)
-	{
+		nz = 0;
 		SetLevel(life - 1.0f);
 		SetState(STATE_LIVE);
 		StartInvulnerable();
@@ -525,13 +617,7 @@ void CMario::SetLevel(int l)
 
 	life = l;
 
-	if (l == MARIO_LEVEL_RACOON)
-	{
-		y += (bbox_height - MARIO_RACOON_BBOX_HEIGHT) / 2;
-		bbox_height = MARIO_RACOON_BBOX_HEIGHT;
-		bbox_width = MARIO_RACOON_BBOX_WIDTH;
-	}
-	else if (l == MARIO_LEVEL_BIG)
+	if (l > MARIO_LEVEL_SMALL)
 	{
 		y += (bbox_height - MARIO_BIG_BBOX_HEIGHT) / 2;
 		bbox_height = MARIO_BIG_BBOX_HEIGHT;
@@ -549,6 +635,40 @@ void CMario::SetLevel(int l)
 	}
 }
 
+void CMario::ToGainingPowerState()
+{
+	changing_state_time = GetTickCount64();
+
+	if (life == MARIO_LEVEL_SMALL)
+	{
+		transfrom_duration = MARIO_BIG_TRANSFORM_TIME;
+	}
+	else if (life == MARIO_LEVEL_BIG)
+	{
+		nz = DIRECTION_FRONT;
+		transfrom_duration = MARIO_RACOON_TRANSFORM_TIME;
+	}
+}
+
+void CMario::ToLosingPowerState()
+{
+	changing_state_time = GetTickCount64();
+
+	if (life == MARIO_LEVEL_RACOON)
+	{
+		nz = DIRECTION_FRONT;
+		transfrom_duration = MARIO_RACOON_TRANSFORM_TIME;
+	}
+	else if (life == MARIO_LEVEL_BIG)
+	{
+		transfrom_duration = MARIO_SMALL_TRANSFORM_TIME;
+	}
+	else
+	{
+		SetLevel(life - 1.0f);
+	}
+}
+
 void CMario::SetState(int state)
 {
 	if (this->state == state)
@@ -561,10 +681,14 @@ void CMario::SetState(int state)
 	switch (state)
 	{
 		case MARIO_STATE_GAIN_POWER:
+			ToGainingPowerState();
+			break;
 		case MARIO_STATE_LOSE_POWER:
-			action_time = GetTickCount64();
+			ToLosingPowerState();
 			break;
 		case STATE_LIVE:
+			vx = 0.0f;
+			vy = 0.0f;		
 			break;
 		case STATE_DIE:
 			break;

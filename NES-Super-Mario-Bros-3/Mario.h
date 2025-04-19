@@ -1,5 +1,6 @@
 #pragma once
 #include "Creature.h"
+#include "RacoonTail.h"
 
 #include "Animation.h"
 #include "Animations.h"
@@ -7,7 +8,7 @@
 #include "debug.h"
 
 #define MARIO_SMALL_WALKING_MAX_VX 0.1f
-#define MARIO_SMALL_RUNNING_MAX_VX 0.4f
+#define MARIO_SMALL_RUNNING_MAX_VX 0.2f
 #define MARIO_SMALL_JUMPING_MAX_VY 0.15f
 
 #define MARIO_SMALL_WALKING_AX 0.0002f
@@ -28,6 +29,8 @@
 #define MARIO_RACOON_TRANSFORM_TIME 350
 #define MARIO_SMALL_TRANSFORM_TIME 700
 #define MARIO_INVULNERABLE_TIME 1000
+#define MARIO_ATTACK_TIME 300
+#define MARIO_ATTACK_PHASE_TIME 60
 
 //life
 #define	MARIO_LEVEL_SMALL	1.0f
@@ -63,28 +66,25 @@
 #define ID_ANI_BRACE 50
 #define ID_ANI_LEVEL_UP 60
 #define ID_ANI_LEVEL_DOWN 70
-#define ID_ANI_DIE 80
+#define ID_ANI_ATTACK 80
+#define ID_ANI_DIE 90
 // 1
 #define ID_ANI_LEFT 0
 #define ID_ANI_RIGHT 1
+#define ID_ANI_FRONT 2
+#define ID_ANI_BEHIND 3
 
 #pragma endregion
 
 #define MARIO_SMALL_BBOX_WIDTH  12.0f
 #define MARIO_SMALL_BBOX_HEIGHT 15.0f
 
-#define MARIO_MIDDLE_BBOX_WIDTH 14.0f
-#define MARIO_MIDDLE_BBOX_HEIGHT 22.0f
-
 #define MARIO_BIG_BBOX_WIDTH  14.0f
 #define MARIO_BIG_BBOX_HEIGHT 27.0f
-#define MARIO_BIG_SITTING_BBOX_WIDTH  15.0f
-#define MARIO_BIG_SITTING_BBOX_HEIGHT 15.0f
 
-#define MARIO_RACOON_BBOX_WIDTH  21.0f
-#define MARIO_RACOON_BBOX_HEIGHT 28.0f
+#define MARIO_BIG_SITTING_BBOX_HEIGHT 18.0f
 
-#define MARIO_UNTOUCHABLE_TIME 2500
+#define MARIO_RACOON_TAIL_Y_OFFSET 7.0f
 
 class CMario : public CCreature
 {
@@ -98,9 +98,14 @@ class CMario : public CCreature
 
 	float startJumpingPosition;
 
-	int action_time;
+	int changing_state_time;
+	int transfrom_duration;
 
-	//BOOLEAN isOnPlatform;
+	bool is_attacking;
+	int attacking_time;
+	int attack_phase;
+	CRacoonTail* tail;
+
 	//int coin; 
 
 	void OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e);
@@ -113,11 +118,13 @@ public:
 	CMario(float x, float y);
 
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
-	void Inphase(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+	void InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+	void InPhaseLivingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 
 	void ChangeAnimation();
 	void ChangeAnimationInLivingState(int& actionID, DWORD& timePerFrame);
-	void ChangeDrawPosition(float& x, float& y);
+	void ChangeDrawX(float& x);
+	void ChangeDrawY(float& y);
 	void Render();
 
 	int IsCollidable() { return (state != STATE_DIE); }
@@ -129,22 +136,31 @@ public:
 	void Reaction(CGameObject* by_another, int action);
 
 	void SetLevel(int l);	
+	void ToGainingPowerState();
+	void ToLosingPowerState();
 	void SetState(int state);
 	//void StartUntouchable() { untouchable = 1; untouchable_start = GetTickCount64(); }
 
 	void ProcessInput();
-	void UpdateMovementState();
-	void ComputeAccelerator(DWORD& t);
+	void ComputeAccelerator(float &ax, float &ay, DWORD& t);
 
-	void Accelerate(DWORD t);
+	void Accelerate(float ax, float ay, DWORD t);
 
 	void UnderAttack(CGameObject* by_another);
 
+	void Sit();
+	void Stand();
+	void Run();
+	void Walk();
+	void Attack();
+	void Attacking(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+	void ToAttackPhase(int phase);
 	void BackJump();
 	void Jump();
 	void Carrying();
 	void Drop();
 	void StartInvulnerable();
+	void Invulnerable();
 	void GainingPower();
 	void LosingPower();
 };

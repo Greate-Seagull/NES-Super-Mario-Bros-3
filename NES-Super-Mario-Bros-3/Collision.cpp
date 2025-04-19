@@ -372,3 +372,29 @@ void CCollision::Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* co
 
 	for (UINT i = 0; i < coEvents.size(); i++) delete coEvents[i];
 }
+
+void CCollision::ProcessOverlap(LPGAMEOBJECT objSrc, vector<LPGAMEOBJECT>* coObjects)
+{
+	for (UINT i = 0; i < coObjects->size(); i++)
+	{
+		if (Overlap(objSrc, coObjects->at(i)))
+		{
+			CCollisionEvent* e = new CCollisionEvent(-1, 0, 0, 0, 0, coObjects->at(i), objSrc);
+			objSrc->OnCollisionWith(e);
+		}
+	}
+}
+
+bool CCollision::Overlap(LPGAMEOBJECT objSrc, LPGAMEOBJECT objDst)
+{
+	float min_width = (objSrc->getBBoxWidth() + objDst->getBBoxWidth()) / 2;
+	float min_height = (objSrc->getBBoxHeight() + objDst->getBBoxHeight()) / 2;
+
+	float objSrc_x, objSrc_y;
+	float objDst_x, objDst_y;
+
+	objSrc->GetPosition(objSrc_x, objSrc_y);
+	objDst->GetPosition(objDst_x, objDst_y);
+
+	return fabs(objSrc_x - objDst_x) < min_width && fabs(objSrc_y - objDst_y) < min_height;
+}
