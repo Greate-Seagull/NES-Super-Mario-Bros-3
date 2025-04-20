@@ -26,7 +26,8 @@ void CHarmfulObject::Destroy(CGameObject* another)
 
 void CHarmfulObject::FlyOut(int attack_direction)
 {
-	vx = attack_direction * ATTACK_BOOM_VX;
+	nx = attack_direction;
+	vx = nx * ATTACK_BOOM_VX;
 
 	ny = DIRECTION_UP;
 	vy = ny * ATTACK_BOOM_VY;

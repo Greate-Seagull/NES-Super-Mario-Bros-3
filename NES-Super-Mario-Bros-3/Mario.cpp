@@ -19,6 +19,8 @@ CMario::CMario(float x, float y):
 	is_falling = false;
 	is_invulnerable = false;
 
+	decrease_momentum_time = 0;
+	momentum = 0;
 	/*isOnPlatform = false;
 	coin = 0;*/
 
@@ -28,8 +30,9 @@ CMario::CMario(float x, float y):
 
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {	
-	if(dt > 30)
-		DebugOutTitle(L"time: %d", dt);
+	/*if(dt > 30)
+		DebugOutTitle(L"time: %d", dt);*/
+	DebugOutTitle(L"Momentum: %d, vx: %f", momentum, fabs(vx));
 	dt = 16;
 	InPhase(dt, coObjects);
 }
@@ -66,7 +69,8 @@ void CMario::Living(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	Move(dt);
 
 	TriggerActions();
-	Invulnerable();
+	UpdateMomentum(dt);
+	Invulnerable(dt);
 	Carrying();
 	Attacking(dt, coObjects);
 	Kicking(dt);
@@ -98,11 +102,13 @@ void CMario::Reaction(CGameObject* by_another, int action)
 	switch (action)
 	{
 		case ACTION_ATTACK:
+		case ACTION_DESTROY:
 			UnderAttack(by_another);
 			break;
 		case EFFECT_BIGGER:
 			SetState(MARIO_STATE_GAIN_POWER);
 			//SetLevel(MARIO_LEVEL_BIG);
+			break;
 		case EFFECT_RACOONIZE:
 			SetState(MARIO_STATE_GAIN_POWER);
 			//SetLevel(MARIO_LEVEL_RACOON);
@@ -162,7 +168,7 @@ void CMario::OnCollisionWithHelpfulObject(LPCOLLISIONEVENT e)
 
 void CMario::Render()
 {
-	if (is_invulnerable && (GetTickCount64() - changing_state_time) % 120 < 60)
+	if (is_invulnerable && changing_state_time % 120 < 60)
 		return;
 
 	//Determine animation
@@ -278,6 +284,10 @@ void CMario::ChangeAnimationInLivingState(int &actionID, DWORD &timePerFrame)
 	{
 		actionID = ID_ANI_BRACE;
 	}
+	else if (fabs(vx) >= MARIO_SMALL_RUNNING_MAX_VX && !weapon)
+	{
+		actionID = ID_ANI_SUPER_RUN;
+	}
 	else
 	{
 		actionID = ID_ANI_RUN;
@@ -314,12 +324,6 @@ void CMario::TriggerActions()
 {
 	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
 
-	if (keyState->IsHold(VK_DOWN) && 
-		!keyState->IsHold(VK_LEFT) && !keyState->IsHold(VK_RIGHT))
-		Sit();
-	else
-		Stand();
-
 	if (keyState->IsPressed(VK_A))
 		Attack();
 	if (keyState->IsHold(VK_A))
@@ -329,6 +333,12 @@ void CMario::TriggerActions()
 		Walk();
 		Kick();
 	}
+
+	if (keyState->IsHold(VK_DOWN) && 
+		!keyState->IsHold(VK_LEFT) && !keyState->IsHold(VK_RIGHT))
+		Sit();
+	else
+		Stand();
 }
 
 void CMario::ComputeAccelerator(float &calculated_ax, float &calculated_ay, DWORD& t)
@@ -420,18 +430,23 @@ void CMario::Accelerate(float ax, float ay, DWORD t)
 
 void CMario::UnderAttack(CGameObject* by_another)
 {
+	if (is_invulnerable)
+		return;
+
 	SetState(MARIO_STATE_LOSE_POWER);
 }
 
 void CMario::Sit()
 {
+	UntriggerTail();
+
 	if (is_sitting)
 		return;
 	if (life == MARIO_LEVEL_SMALL || weapon) //Cannot sit
 	{
 		Stand();
 		return;
-	}
+	}	
 
 	is_sitting = true;
 
@@ -469,18 +484,38 @@ void CMario::Run()
 	maxVx = MARIO_SMALL_RUNNING_MAX_VX;
 }
 
+void CMario::UpdateMomentum(DWORD dt)
+{
+	if (fabs(vx) <= MARIO_SMALL_WALKING_MAX_VX)
+	{
+		decrease_momentum_time += dt;
+		if (decrease_momentum_time > MARIO_MOMENTUM_TIME)
+		{
+			momentum = max(0, momentum - 1);
+			decrease_momentum_time %= dt;
+		}
+	}
+	else
+	{
+		momentum = max(momentum, 1 + (int)((fabs(vx) - MARIO_SMALL_WALKING_MAX_VX) / MARIO_VX_BAND));
+		momentum = min(momentum, MARIO_MAX_MOMENTUM);
+		decrease_momentum_time = 0;
+	}
+}
+
 void CMario::Walk()
 {
 	is_boosting = false;
 
+	ax = MARIO_SMALL_RUNNING_AX;
+
 	if (abs(vx) <= MARIO_SMALL_WALKING_MAX_VX)
-	{
-		ax = MARIO_SMALL_WALKING_AX;
+	{		
 		maxVx = MARIO_SMALL_WALKING_MAX_VX;
 	}
 	else
 	{
-		ax = -MARIO_BRAKE_AX;
+		ax = -MARIO_DECELERATE_AX;
 	}	
 }
 
@@ -558,6 +593,8 @@ void CMario::UntriggerTail()
 	tail = nullptr;
 
 	is_attacking = false;
+
+	nz = 0;
 }
 
 void CMario::BackJump()
@@ -616,12 +653,16 @@ void CMario::Kicking(DWORD dt)
 void CMario::StartInvulnerable()
 {
 	is_invulnerable = true;
-	changing_state_time = GetTickCount64();
+	changing_state_time = 0;
 }
 
-void CMario::Invulnerable()
+void CMario::Invulnerable(DWORD dt)
 {
-	if (is_invulnerable && GetTickCount64() - changing_state_time > MARIO_INVULNERABLE_TIME)
+	if (!is_invulnerable)
+		return;
+
+	changing_state_time += dt;
+	if (changing_state_time >= MARIO_INVULNERABLE_TIME)
 	{
 		is_invulnerable = false;
 	}

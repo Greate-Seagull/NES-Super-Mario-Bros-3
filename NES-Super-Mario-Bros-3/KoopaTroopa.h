@@ -13,6 +13,8 @@
 #define KOOPA_VY 0.0f
 #define KOOPA_ROLL_VX 0.225f
 #define KOOPA_POP_VX 0.0625f
+#define KOOPA_BOUNCE_VY -0.08f
+#define KOOPA_FALL
 
 #define KOOPA_HIDE_TIME 7000
 #define KOOPA_POP_TIME 2000
@@ -35,6 +37,11 @@
 
 class CKoopaTroopa : public CCreature
 {
+	//fall sensor
+	bool start_falling;
+	bool is_falling;
+
+	//recovering
 	int recovering_time;
 public:
 	CKoopaTroopa(float x, float y);
@@ -53,8 +60,8 @@ public:
 
 	virtual void Reaction(CGameObject* by_another, int action);
 	virtual void ReactionInLivingState(CGameObject* by_another, int action);
-	virtual void ReactionInRollingState(CGameObject* by_another, int action);
 	virtual void ReactionInHidingState(CGameObject* by_another, int action);
+	virtual void ReactionInRollingState(CGameObject* by_another, int action);
 
 	virtual void Render();
 	virtual void ChangeAnimation();
@@ -64,8 +71,16 @@ public:
 	virtual void UnderAttack(CGameObject* by_another);
 	virtual void UnderDestructrion(CGameObject* by_another);
 
+	virtual void Bounce();
 	virtual void Hide(DWORD dt);
 	virtual void Pop(DWORD dt);
+
+	void InitiateFallSensor();
+	void ThinkOfFalling();
+	void AwareOfNotFalling();
+	void Falling();
+	bool IsGoingToFall();
 	void Patrol();
+
 	virtual void LookForMario();
 };

@@ -12,7 +12,7 @@ CKoopaTroopa::CKoopaTroopa(float x, float y):
 
 	vy = KOOPA_VY;	
 	SetState(STATE_LIVE);
-	life = KOOPA_LIFE;	
+	life = KOOPA_LIFE;
 }
 
 void CKoopaTroopa::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
@@ -43,9 +43,14 @@ void CKoopaTroopa::InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 }
 
 void CKoopaTroopa::InPhaseLivingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
-{
+{	
+	ThinkOfFalling();
+
 	Accelerate(0.0f, GAME_GRAVITY, dt);
 	CCollision::GetInstance()->Process(this, dt, coObjects);
+
+	Patrol();
+
 	Move(dt);
 }
 
@@ -88,26 +93,23 @@ void CKoopaTroopa::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 {
 	if (e->ny)
 	{
-		vy = 0;
+		switch (state)
+		{
+			case KOOPA_STATE_HIDE:
+				Bounce();
+				break;
+			case STATE_LIVE:
+				AwareOfNotFalling();
+			default:
+				vy = 0.0f;
+				break;
+		}
 	}
-
-	float left, top, right, bot;
-	e->obj->GetBoundingBox(left, top, right, bot);	
 
 	if (e->nx)
 	{
-		ChangeDirection();
-	}
-	else if (this->state == STATE_LIVE)
-	{
-		if (x <= left && vx < 0)
-		{
-			ChangeDirection();
-		}
-		else if (x >= right && vx > 0)
-		{
-			ChangeDirection();
-		}
+		nx = -nx;
+		vx = -vx;
 	}
 }
 
@@ -130,9 +132,48 @@ void CKoopaTroopa::OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e)
 	}
 }
 
+void CKoopaTroopa::InitiateFallSensor()
+{
+	start_falling = true;
+	is_falling = true;
+}
+
+void CKoopaTroopa::ThinkOfFalling()
+{
+	start_falling = true;
+}
+
+void CKoopaTroopa::AwareOfNotFalling()
+{
+	start_falling = false;
+	is_falling = false;
+}
+
+void CKoopaTroopa::Falling()
+{
+	if (start_falling)
+	{
+		is_falling = true;
+	}
+}
+
+bool CKoopaTroopa::IsGoingToFall()
+{
+	return start_falling && is_falling == false;
+}
+
 void CKoopaTroopa::Patrol()
 {
-
+	if (IsGoingToFall())
+	{
+		nx = -nx;
+		vx = -vx;
+		vy = 0;
+	}
+	else
+	{
+		Falling();
+	}
 }
 
 void CKoopaTroopa::Render()
@@ -196,10 +237,10 @@ void CKoopaTroopa::ChangeAnimation()
 
 void CKoopaTroopa::SetState(int state)
 {
-	if (this->state == state)
+	/*if (this->state == state)
 	{
 		return;
-	}
+	}*/
 
 	this->state = state;
 
@@ -210,6 +251,7 @@ void CKoopaTroopa::SetState(int state)
 			bbox_height = KOOPA_BBOX_HEIGHT_FOOT_1;
 			LookForMario();
 			vx = nx * KOOPA_VX;
+			InitiateFallSensor();
 			AgainstControl();
 			LoseHighPower();
 			break;
@@ -236,20 +278,15 @@ void CKoopaTroopa::Reaction(CGameObject* by_another, int action)
 	switch (state)
 	{
 		case STATE_LIVE:
-		{
 			ReactionInLivingState(by_another, action);
 			break;
-		}
 		case KOOPA_STATE_ROLL:
-		{
 			ReactionInRollingState(by_another, action);
 			break;
-		}
 		case KOOPA_STATE_POP:
 		case KOOPA_STATE_HIDE:
-		{
 			ReactionInHidingState(by_another, action);
-		}
+			break;
 		case STATE_DIE:
 			break;
 	}	
@@ -303,6 +340,7 @@ void CKoopaTroopa::ReactionInHidingState(CGameObject* by_another, int action)
 			break;
 		case ACTION_DESTROY:
 			UnderDestructrion(by_another);
+			SetState(KOOPA_STATE_HIDE);
 			break;
 		default:
 			if (CMario* mario = dynamic_cast<CMario*>(by_another)) //mario attacks
@@ -337,6 +375,20 @@ void CKoopaTroopa::UnderDestructrion(CGameObject* by_another)
 	FlyOut(fly_out_direction);	
 }
 
+void CKoopaTroopa::Bounce()
+{
+	if (fabs(vy) > 0.16f)
+	{
+		vx = nx * ATTACK_BOOM_VX;
+		vy = KOOPA_BOUNCE_VY;
+	}
+	else
+	{
+		vx = 0.0f;
+		vy = 0.0f;
+	}
+}
+
 void CKoopaTroopa::Hide(DWORD dt)
 {
 	recovering_time += dt;
@@ -345,10 +397,6 @@ void CKoopaTroopa::Hide(DWORD dt)
 	{
 		recovering_time %= KOOPA_HIDE_TIME;
 		SetState(KOOPA_STATE_POP);
-	}
-	else
-	{
-		if (vy == 0.0f) vx = 0.0f;
 	}
 }
 

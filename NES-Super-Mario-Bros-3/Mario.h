@@ -8,11 +8,13 @@
 #include "debug.h"
 
 #define MARIO_SMALL_WALKING_MAX_VX 0.1f
-#define MARIO_SMALL_RUNNING_MAX_VX 0.2f
+#define MARIO_SMALL_RUNNING_MAX_VX 0.25f
 #define MARIO_SMALL_JUMPING_MAX_VY 0.15f
 
-#define MARIO_SMALL_WALKING_AX 0.0002f
-#define MARIO_SMALL_RUNNING_AX 0.00021f
+#define MARIO_VX_BAND 0.02f
+#define MARIO_MAX_MOMENTUM 7
+
+#define MARIO_SMALL_RUNNING_AX 0.0002f
 
 #define MARIO_BIG_WALKING_AX 0.00016f
 #define MARIO_BIG_RUNNING_AX 0.0002f
@@ -32,6 +34,7 @@
 #define MARIO_ATTACK_PHASE_TIME 60
 #define MARIO_KICK_TIME 200
 #define MARIO_DYING_TIME 700
+#define MARIO_MOMENTUM_TIME 300
 
 //life
 #define	MARIO_LEVEL_SMALL	1.0f
@@ -64,6 +67,7 @@
 #define ID_ANI_FALL 20
 #define ID_ANI_SIT 30
 #define ID_ANI_RUN 40
+#define ID_ANI_SUPER_RUN 45
 #define ID_ANI_BRACE 50
 #define ID_ANI_LEVEL_UP 60
 #define ID_ANI_LEVEL_DOWN 70
@@ -113,6 +117,9 @@ class CMario : public CCreature
 
 	bool is_kicking;
 
+	int momentum;
+	int decrease_momentum_time;
+
 	//int coin; 
 
 	void OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e);
@@ -158,7 +165,9 @@ public:
 
 	void Sit();
 	void Stand();
+
 	void Run();
+	void UpdateMomentum(DWORD dt);
 	void Walk();
 
 	void Attack();
@@ -174,7 +183,7 @@ public:
 	void Kicking(DWORD dt);
 
 	void StartInvulnerable();
-	void Invulnerable();
+	void Invulnerable(DWORD dt);
 
 	void GainingPower(DWORD dt);
 	void LosingPower(DWORD dt);
