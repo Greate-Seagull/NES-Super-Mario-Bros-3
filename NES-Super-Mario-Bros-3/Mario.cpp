@@ -38,28 +38,34 @@ void CMario::InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
 	switch (state)
 	{
-	case STATE_LIVE:
-		InPhaseLivingState(dt, coObjects);
-		break;
-	case MARIO_STATE_GAIN_POWER:
-		GainingPower();
-		break;
-	case MARIO_STATE_LOSE_POWER:
-		LosingPower();
-		break;
+		case STATE_LIVE:
+			Living(dt, coObjects);
+			break;
+		case MARIO_STATE_GAIN_POWER:
+			GainingPower(dt);
+			break;
+		case MARIO_STATE_LOSE_POWER:
+			LosingPower(dt);
+			break;
+		case STATE_DIE:		
+			Dying(dt);
+			break;
 	}
 }
 
-void CMario::InPhaseLivingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+void CMario::Living(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
 	float calculated_ax, calculated_ay;
 	ComputeAccelerator(calculated_ax, calculated_ay, dt);
 	Accelerate(calculated_ax, calculated_ay, dt);
 
 	CCollision::GetInstance()->Process(this, dt, coObjects);
+	if (this->state != STATE_LIVE) //Check state changed after collision
+		return;
+
 	Move(dt);
 
-	ProcessInput();
+	TriggerActions();
 	Invulnerable();
 	Carrying();
 	Attacking(dt, coObjects);
@@ -215,7 +221,7 @@ void CMario::ChangeAnimation()
 			action = ID_ANI_LEVEL_DOWN;
 			break;
 		case STATE_DIE:
-			//action = ID_ANI_DIE;
+			action = ID_ANI_DIE;
 			break;
 	}
 	
@@ -304,7 +310,7 @@ void CMario::ChangeDrawY(float& y)
 	y = this->y + (bbox_height - sprite_height) / 2.0f;
 }
 
-void CMario::ProcessInput()
+void CMario::TriggerActions()
 {
 	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
 
@@ -621,9 +627,10 @@ void CMario::Invulnerable()
 	}
 }
 
-void CMario::GainingPower()
+void CMario::GainingPower(DWORD dt)
 {
-	if (GetTickCount64() - changing_state_time > action_duration)
+	changing_state_time += dt;
+	if (changing_state_time > action_duration)
 	{
 		nz = 0;
 		SetLevel(life + 1.0f);
@@ -631,9 +638,10 @@ void CMario::GainingPower()
 	}
 }
 
-void CMario::LosingPower()
+void CMario::LosingPower(DWORD dt)
 {
-	if (GetTickCount64() - changing_state_time > action_duration)
+	changing_state_time += dt;
+	if (changing_state_time > action_duration)
 	{
 		nz = 0;
 		SetLevel(life - 1.0f);
@@ -670,7 +678,7 @@ void CMario::SetLevel(int l)
 
 void CMario::ToGainingPowerState()
 {
-	changing_state_time = GetTickCount64();
+	changing_state_time = 0;
 
 	if (life == MARIO_LEVEL_SMALL)
 	{
@@ -685,7 +693,7 @@ void CMario::ToGainingPowerState()
 
 void CMario::ToLosingPowerState()
 {
-	changing_state_time = GetTickCount64();
+	changing_state_time = 0;
 
 	if (life == MARIO_LEVEL_RACOON)
 	{
@@ -697,15 +705,38 @@ void CMario::ToLosingPowerState()
 	{
 		action_duration = MARIO_SMALL_TRANSFORM_TIME;
 	}
-	else
+	else //Only for small mario
 	{
-		SetLevel(life - 1.0f);
+		//SetLevel(life - 1.0f);
+		Die();
 	}
+}
+
+void CMario::ToDyingState()
+{
+	nx = 0;
+	ny = DIRECTION_UP;
+	nz = 0;
+
+	vx = 0.0f;
+	vy = ny * ATTACK_BOOM_VY;
+
+	changing_state_time = 0;
 }
 
 void CMario::LoseRacoonPower()
 {
 	UntriggerTail();
+}
+
+void CMario::Dying(DWORD dt)
+{
+	changing_state_time += dt;
+	if (changing_state_time >= MARIO_DYING_TIME)
+	{
+		Accelerate(0.0f, GAME_GRAVITY, dt);
+		Move(dt);
+	}
 }
 
 void CMario::SetState(int state)
@@ -728,6 +759,7 @@ void CMario::SetState(int state)
 		case STATE_LIVE:
 			break;
 		case STATE_DIE:
+			ToDyingState();			
 			break;
 	}
 }

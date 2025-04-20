@@ -31,6 +31,7 @@
 #define MARIO_INVULNERABLE_TIME 1000
 #define MARIO_ATTACK_PHASE_TIME 60
 #define MARIO_KICK_TIME 200
+#define MARIO_DYING_TIME 700
 
 //life
 #define	MARIO_LEVEL_SMALL	1.0f
@@ -68,7 +69,7 @@
 #define ID_ANI_LEVEL_DOWN 70
 #define ID_ANI_ATTACK 80
 #define ID_ANI_KICK 90
-//#define ID_ANI_DIE 200
+#define ID_ANI_DIE 200
 #define ID_ANI_CARRY 100
 // 1
 #define ID_ANI_LEFT 0
@@ -125,7 +126,7 @@ public:
 
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 	void InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
-	void InPhaseLivingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+	void Living(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 
 	void ChangeAnimation();
 	void ChangeAnimationInLivingState(int& actionID, DWORD& timePerFrame);
@@ -141,13 +142,14 @@ public:
 
 	void Reaction(CGameObject* by_another, int action);
 
-	void SetLevel(int l);	
+	void SetLevel(int l);
+
+	void SetState(int state);
 	void ToGainingPowerState();
 	void ToLosingPowerState();
-	void LoseRacoonPower();
-	void SetState(int state);
+	void ToDyingState();
 
-	void ProcessInput();
+	void TriggerActions();
 	void ComputeAccelerator(float &ax, float &ay, DWORD& t);
 
 	void Accelerate(float ax, float ay, DWORD t);
@@ -158,17 +160,25 @@ public:
 	void Stand();
 	void Run();
 	void Walk();
+
 	void Attack();
 	void Attacking(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 	void ToAttackPhase(int phase);
 	void UntriggerTail();
+
 	void BackJump();
 	void Jump();
+
 	void Carrying();
 	void Kick();
 	void Kicking(DWORD dt);
+
 	void StartInvulnerable();
 	void Invulnerable();
-	void GainingPower();
-	void LosingPower();
+
+	void GainingPower(DWORD dt);
+	void LosingPower(DWORD dt);
+	void LoseRacoonPower();
+
+	void Dying(DWORD dt);
 };
