@@ -52,8 +52,6 @@ void CMario::InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 
 void CMario::InPhaseLivingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
-	ProcessInput();
-
 	float calculated_ax, calculated_ay;
 	ComputeAccelerator(calculated_ax, calculated_ay, dt);
 	Accelerate(calculated_ax, calculated_ay, dt);
@@ -61,6 +59,7 @@ void CMario::InPhaseLivingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	CCollision::GetInstance()->Process(this, dt, coObjects);
 	Move(dt);
 
+	ProcessInput();
 	Invulnerable();
 	Carrying();
 	Attacking(dt, coObjects);
@@ -265,11 +264,11 @@ void CMario::ChangeAnimationInLivingState(int &actionID, DWORD &timePerFrame)
 	{
 		actionID = ID_ANI_IDLE;
 	}
-	else if (vx > 0 && nx == DIRECTION_LEFT)
+	else if (vx > 0 && nx == DIRECTION_LEFT && !weapon)
 	{
 		actionID = ID_ANI_BRACE;
 	}
-	else if (vx < 0 && nx == DIRECTION_RIGHT)
+	else if (vx < 0 && nx == DIRECTION_RIGHT && !weapon)
 	{
 		actionID = ID_ANI_BRACE;
 	}
@@ -309,7 +308,8 @@ void CMario::ProcessInput()
 {
 	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
 
-	if (keyState->IsHold(VK_DOWN) && !keyState->IsHold(VK_LEFT) && !keyState->IsHold(VK_RIGHT))
+	if (keyState->IsHold(VK_DOWN) && 
+		!keyState->IsHold(VK_LEFT) && !keyState->IsHold(VK_RIGHT))
 		Sit();
 	else
 		Stand();
@@ -421,9 +421,9 @@ void CMario::Sit()
 {
 	if (is_sitting)
 		return;
-	if (life == MARIO_LEVEL_SMALL) //Cannot sit
+	if (life == MARIO_LEVEL_SMALL || weapon) //Cannot sit
 	{
-		is_sitting = false;
+		Stand();
 		return;
 	}
 
@@ -542,11 +542,16 @@ void CMario::ToAttackPhase(int phase)
 	}
 	else
 	{
-		delete tail;
-		tail = nullptr;
-
-		is_attacking = false;
+		UntriggerTail();
 	}
+}
+
+void CMario::UntriggerTail()
+{
+	delete tail;
+	tail = nullptr;
+
+	is_attacking = false;
 }
 
 void CMario::BackJump()
@@ -569,7 +574,7 @@ void CMario::Carrying()
 		float weapon_x, weapon_y;
 
 		weapon_x = x + nx * MARIO_CARRY_OFFSET_X;
-		weapon_y = y + (this->bbox_height - weapon->getBBoxHeight()) / 2 - 1;
+		weapon_y = y + (bbox_height - weapon->getBBoxHeight()) / 4.0f;
 
 		weapon->SetPosition(weapon_x, weapon_y);
 	}
@@ -647,13 +652,13 @@ void CMario::SetLevel(int l)
 
 	if (l > MARIO_LEVEL_SMALL)
 	{
-		y += (bbox_height - MARIO_BIG_BBOX_HEIGHT) / 2;
+		y += (bbox_height - MARIO_BIG_BBOX_HEIGHT) / 2.0f;
 		bbox_height = MARIO_BIG_BBOX_HEIGHT;
 		bbox_width = MARIO_BIG_BBOX_WIDTH;
 	}
 	else if (l == MARIO_LEVEL_SMALL)
 	{
-		y += (bbox_height - MARIO_SMALL_BBOX_HEIGHT) / 2;
+		y += (bbox_height - MARIO_SMALL_BBOX_HEIGHT) / 2.0f;
 		bbox_height = MARIO_SMALL_BBOX_HEIGHT;
 		bbox_width = MARIO_SMALL_BBOX_WIDTH;
 	}
@@ -686,6 +691,7 @@ void CMario::ToLosingPowerState()
 	{
 		nz = DIRECTION_FRONT;
 		action_duration = MARIO_RACOON_TRANSFORM_TIME;
+		LoseRacoonPower();
 	}
 	else if (life == MARIO_LEVEL_BIG)
 	{
@@ -695,6 +701,11 @@ void CMario::ToLosingPowerState()
 	{
 		SetLevel(life - 1.0f);
 	}
+}
+
+void CMario::LoseRacoonPower()
+{
+	UntriggerTail();
 }
 
 void CMario::SetState(int state)
@@ -715,8 +726,6 @@ void CMario::SetState(int state)
 			ToLosingPowerState();
 			break;
 		case STATE_LIVE:
-			vx = 0.0f;
-			vy = 0.0f;		
 			break;
 		case STATE_DIE:
 			break;

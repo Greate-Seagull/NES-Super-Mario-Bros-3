@@ -270,6 +270,7 @@ void CKoopaTroopa::ReactionInLivingState(CGameObject* by_another, int action)
 			break;
 		case ACTION_CARRY:
 			AgainstControl();
+			MeleeAttack(by_another);
 			break;		
 		default:
 			MeleeAttack(by_another);

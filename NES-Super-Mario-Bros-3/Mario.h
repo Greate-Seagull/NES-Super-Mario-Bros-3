@@ -12,7 +12,7 @@
 #define MARIO_SMALL_JUMPING_MAX_VY 0.15f
 
 #define MARIO_SMALL_WALKING_AX 0.0002f
-#define MARIO_SMALL_RUNNING_AX 0.00024f
+#define MARIO_SMALL_RUNNING_AX 0.00021f
 
 #define MARIO_BIG_WALKING_AX 0.00016f
 #define MARIO_BIG_RUNNING_AX 0.0002f
@@ -144,6 +144,7 @@ public:
 	void SetLevel(int l);	
 	void ToGainingPowerState();
 	void ToLosingPowerState();
+	void LoseRacoonPower();
 	void SetState(int state);
 
 	void ProcessInput();
@@ -160,6 +161,7 @@ public:
 	void Attack();
 	void Attacking(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 	void ToAttackPhase(int phase);
+	void UntriggerTail();
 	void BackJump();
 	void Jump();
 	void Carrying();
