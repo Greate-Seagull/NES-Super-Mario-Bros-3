@@ -17,4 +17,6 @@ height	240
 -10	textures\background.jpg
 0	textures\mario.png
 10	textures\enemies.png
+11	textures\enemies - 2.png
 20	textures\misc.png
+21	textures\stage-tiles.png

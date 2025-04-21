@@ -4,14 +4,14 @@
 #include "Animation.h"
 #include "Animations.h"
 
-#define ID_ANI_BRICK 10000
-#define BRICK_WIDTH 16
-#define BRICK_BBOX_WIDTH 16
-#define BRICK_BBOX_HEIGHT 16
+#define ID_ANI_PIPE 14000
+#define PIPE_WIDTH 32
+#define PIPE_BBOX_WIDTH 32
+#define PIPE_BBOX_HEIGHT 51
 
-class CBrick : public CBlock {
+class CPipe : public CBlock {
 public:
-	CBrick(float x, float y) : CBlock(x, y) {}
+	CPipe(float x, float y) : CBlock(x, y) {}
 	void Render();
 	void Update(DWORD dt) {}
 	void GetBoundingBox(float& l, float& t, float& r, float& b);
