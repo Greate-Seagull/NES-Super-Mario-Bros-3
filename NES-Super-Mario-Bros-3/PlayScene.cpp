@@ -20,6 +20,7 @@
 #include "StripedBrick.h"
 #include "Cloud.h"
 #include "MapIcon.h"
+#include "BrickParticle.h"
 
 #include "SampleKeyEventHandler.h"
 
@@ -44,6 +45,8 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 
 #define MAX_SCENE_LINE 1024
 #define SCREEN_WIDTH 320
+#define SCREEN_HEIGHT 240
+#define OFFSET 32
 
 float tempCamPosY = 0;
 
@@ -295,6 +298,11 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		objects.push_back(obj);
 }
 
+void CPlayScene::InstantiateObject(LPGAMEOBJECT obj)
+{
+	objects.push_back(obj);
+}
+
 void CPlayScene::LoadAssets(LPCWSTR assetFile)
 {
 	DebugOut(L"[INFO] Start loading assets from : %s \n", assetFile);
@@ -421,9 +429,8 @@ void CPlayScene::Render()
 			CGame::GetInstance()->GetCamPos(posCamX, posCamY);
 			if (player)
 			{
-				float playerPosX, playerPosY;
-				player->GetPosition(playerPosX, playerPosY);
-				if (posX > posCamX - 32 && posX < posCamX + SCREEN_WIDTH + 32)
+				if (posX > posCamX - OFFSET && posX < posCamX + SCREEN_WIDTH + OFFSET
+					&& posY > posCamY - OFFSET && posY < posCamY + SCREEN_HEIGHT + OFFSET)
 				{
 					objects[i]->Render();
 				}

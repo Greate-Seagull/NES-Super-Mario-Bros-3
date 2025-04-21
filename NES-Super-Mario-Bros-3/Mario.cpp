@@ -6,6 +6,8 @@
 
 #include "Goomba.h"
 #include "Coin.h"
+#include "Brick.h"
+#include "BrickParticle.h"
 #include "Portal.h"
 #include "Container.h"
 #include "QuestionBlock.h"
@@ -56,6 +58,8 @@ void CMario::OnCollisionWith(LPCOLLISIONEVENT e)
 		OnCollisionWithQuestionBlock(e);
 	else if (dynamic_cast<CCoin*>(e->obj))
 		OnCollisionWithCoin(e);
+	else if (dynamic_cast<CBrick*>(e->obj))
+		OnCollisionWithBrick(e);
 	else if (dynamic_cast<CDeadStateTrigger*>(e->obj))
 		OnCollisionWithDeadTrigger(e);
 	else if (dynamic_cast<CPortal*>(e->obj))
@@ -125,6 +129,23 @@ void CMario::OnCollisionWithQuestionBlock(LPCOLLISIONEVENT e)
 		break;
 	}
 	}
+}
+
+void CMario::OnCollisionWithBrick(LPCOLLISIONEVENT e)
+{
+	float eX, eY;
+	e->obj->GetPosition(eX, eY);
+	CBrickParticle* p1 = new CBrickParticle(eX - 8, eY - 8, 1);
+	CBrickParticle* p2 = new CBrickParticle(eX + 8, eY - 8, 2);
+	CBrickParticle* p3 = new CBrickParticle(eX - 8, eY + 8, 3);
+	CBrickParticle* p4 = new CBrickParticle(eX + 8, eY + 8, 4);
+
+	CGame::GetInstance()->GetCurrentScene()->InstantiateObject(p1);
+	CGame::GetInstance()->GetCurrentScene()->InstantiateObject(p2);
+	CGame::GetInstance()->GetCurrentScene()->InstantiateObject(p3);
+	CGame::GetInstance()->GetCurrentScene()->InstantiateObject(p4);
+
+	e->obj->Delete();
 }
 
 void CMario::OnCollisionWithCoin(LPCOLLISIONEVENT e)
