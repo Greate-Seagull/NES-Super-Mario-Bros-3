@@ -203,7 +203,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	case OBJECT_TYPE_GOOMBA: obj = new CGoomba(x,y); break;
 	case OBJECT_TYPE_BRICK: obj = new CBrick(x,y); break;
 	case OBJECT_TYPE_STRIPED_BRICK: obj = new CStripedBrick(x, y); break;
-	case OBJECT_TYPE_COIN: obj = new CCoin(x, y); break;
+	case OBJECT_TYPE_COIN: obj = new CCoin(x, y, false); break;
 
 	case OBJECT_TYPE_PLATFORM:
 	{
@@ -393,7 +393,7 @@ void CPlayScene::Update(DWORD dt)
 		if (dynamic_cast<CCoin*>(objects[i]))
 		{
 			CCoin* c = (CCoin*)objects[i];
-			if (c->IsUnderOriginal())
+			if (c->GetToggled() && c->IsUnderOriginal())
 			{
 				if (!c->GetDisappear())
 				{
@@ -438,7 +438,8 @@ void CPlayScene::Render()
 		else if (dynamic_cast<CCoin*>(objects[i]))
 		{
 			CCoin* c = (CCoin*)objects[i];
-			if (!c->IsUnderOriginal()) objects[i]->Render();
+			if (c->GetToggled() && !c->IsUnderOriginal()) objects[i]->Render();
+			else if (!c->GetToggled()) objects[i]->Render();
 		}
 		else
 		{

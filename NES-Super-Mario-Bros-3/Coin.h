@@ -19,18 +19,20 @@ protected:
 	bool isDisappear;
 	float originalY;
 public:
-	CCoin(float x, float y) : CGameObject(x, y) {}
 	CCoin(float x, float y, bool isToggled) : CGameObject(x, y)
 	{
 		this->isToggled = isToggled;
 		this->isDisappear = false;
 		originalY = y;
-		vy = COIN_VELOCITY_Y;
+		if (this->isToggled) vy = COIN_VELOCITY_Y;
+		else vy = 0;
 	}
 	void Render();
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 	void GetBoundingBox(float& l, float& t, float& r, float& b);
 	int IsBlocking() { return 0; }
+
+	bool GetToggled() { return isToggled; }
 
 	void SetDisappear(bool Disappear) { this->isDisappear = Disappear; }
 	bool GetDisappear() { return isDisappear; }
