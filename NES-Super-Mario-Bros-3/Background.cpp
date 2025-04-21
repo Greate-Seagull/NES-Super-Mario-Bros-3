@@ -6,8 +6,7 @@ void CBackground::Render()
 	animations->Get(ID_ANI_BACKGROUND)->Render(x, y);
 }
 
-void CBackground::GetBoundingBox(float& l, float& t, float& r, float& b)
-{
+void CBackground::GetBoundingBox(float& l, float& t, float& r, float& b) {
 	l = 0;
 	t = 0;
 	r = 0;

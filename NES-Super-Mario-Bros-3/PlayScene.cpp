@@ -6,6 +6,7 @@
 #include "Utils.h"
 #include "Textures.h"
 #include "Sprites.h"
+#include "Background.h"
 #include "Portal.h"
 #include "Coin.h"
 #include "Platform.h"
