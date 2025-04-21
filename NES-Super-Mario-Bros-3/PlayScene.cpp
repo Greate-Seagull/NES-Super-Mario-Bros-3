@@ -17,6 +17,7 @@
 #include "MiniBush.h"
 #include "BigBush.h"
 #include "StripedBrick.h"
+#include "Cloud.h"
 
 #include "SampleKeyEventHandler.h"
 
@@ -41,6 +42,8 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 
 #define MAX_SCENE_LINE 1024
 #define SCREEN_WIDTH 320
+
+float tempCamPosY = 0;
 
 void CPlayScene::_ParseSection_SPRITES(string line)
 {
@@ -136,6 +139,24 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 			(x, y, cell_width, cell_height, height,
 			sprite_begin_begin, sprite_end_begin,
 			sprite_begin_end, sprite_end_end);
+		break;
+	}
+	case NON_OBJECT_TYPE_CLOUD:
+	{
+		float cell_width = (float)atof(tokens[3].c_str());
+		float cell_height = (float)atof(tokens[4].c_str());
+		int length = atoi(tokens[5].c_str());
+		int sprite_begin_begin = atoi(tokens[6].c_str());
+		int sprite_middle_begin = atoi(tokens[7].c_str());
+		int sprite_end_begin = atoi(tokens[8].c_str());
+		int sprite_begin_end = atoi(tokens[9].c_str());
+		int sprite_middle_end = atoi(tokens[10].c_str());
+		int sprite_end_end = atoi(tokens[11].c_str());
+
+		obj = new CCloud
+		(x, y, cell_width, cell_height, length + 2,
+			sprite_begin_begin, sprite_middle_begin, sprite_end_begin,
+			sprite_begin_end, sprite_middle_end, sprite_end_end);
 		break;
 	}
 	case OBJECT_TYPE_MARIO:
@@ -328,7 +349,10 @@ void CPlayScene::Update(DWORD dt)
 
 	if (cx < 0) cx = 0;
 
-	CGame::GetInstance()->SetCamPos(cx, 0.0f /*cy*/);
+	if (GetAsyncKeyState(VK_UP) & 0x8000) tempCamPosY -= 10;
+	if (GetAsyncKeyState(VK_DOWN) & 0x8000) tempCamPosY += 10;
+
+	CGame::GetInstance()->SetCamPos(cx, tempCamPosY /*cy*/);
 
 	PurgeDeletedObjects();
 }
