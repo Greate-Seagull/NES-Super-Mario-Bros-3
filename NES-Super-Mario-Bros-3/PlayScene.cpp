@@ -25,6 +25,7 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 	CScene(id, filePath)
 {
 	player = NULL;
+	background = NULL;
 	key_handler = new CSampleKeyHandler(this);
 }
 
@@ -113,7 +114,12 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 
 	switch (object_type)
 	{
-	case NON_OBJECT_TYPE_BACKGROUND: obj = new CBackground(x, y); break;
+	case NON_OBJECT_TYPE_BACKGROUND:
+	{
+		obj = new CBackground(x, y);
+		background = (CBackground*)obj;
+		break;
+	}
 	case NON_OBJECT_TYPE_MINI_BUSH: obj = new CMiniBush(x, y); break;
 	case NON_OBJECT_TYPE_BIG_BUSH:
 	{
@@ -326,6 +332,8 @@ void CPlayScene::Update(DWORD dt)
 
 void CPlayScene::Render()
 {
+	background->Render();
+
 	for (int i = 0; i < objects.size(); i++)
 	{
 		if (dynamic_cast<CMario*>(objects[i]) ||
@@ -335,17 +343,19 @@ void CPlayScene::Render()
 		{
 			float posX, posY;
 			objects[i]->GetPosition(posX, posY);
+
+			float posCamX, posCamY;
+			CGame::GetInstance()->GetCamPos(posCamX, posCamY);
 			if (player)
 			{
 				float playerPosX, playerPosY;
 				player->GetPosition(playerPosX, playerPosY);
-				if (posX > playerPosX - SCREEN_WIDTH && posX < playerPosX + SCREEN_WIDTH)
+				if (posX > posCamX - 32 && posX < posCamX + SCREEN_WIDTH + 32)
 				{
 					objects[i]->Render();
 				}
 			}
 		}
-		objects[i]->Render();
 	}
 }
 
