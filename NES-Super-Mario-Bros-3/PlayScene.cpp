@@ -16,6 +16,7 @@
 #include "Background.h"
 #include "MiniBush.h"
 #include "BigBush.h"
+#include "StripedBrick.h"
 
 #include "SampleKeyEventHandler.h"
 
@@ -150,6 +151,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		break;
 	case OBJECT_TYPE_GOOMBA: obj = new CGoomba(x,y); break;
 	case OBJECT_TYPE_BRICK: obj = new CBrick(x,y); break;
+	case OBJECT_TYPE_STRIPED_BRICK: obj = new CStripedBrick(x, y); break;
 	case OBJECT_TYPE_COIN: obj = new CCoin(x, y); break;
 
 	case OBJECT_TYPE_PLATFORM:
@@ -173,7 +175,8 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	case OBJECT_TYPE_PIPE:
 	{
 		int ani_id = atoi(tokens[3].c_str());
-		obj = new CPipe(x, y, ani_id);
+		int pipe_height = (float)atof(tokens[4].c_str());
+		obj = new CPipe(x, y, ani_id, pipe_height);
 		break;
 	}
 
@@ -222,8 +225,8 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	// General object setup
 	obj->SetPosition(x, y);
 
-
-	objects.push_back(obj);
+	if (object_type != NON_OBJECT_TYPE_BACKGROUND)
+		objects.push_back(obj);
 }
 
 void CPlayScene::LoadAssets(LPCWSTR assetFile)
@@ -332,7 +335,7 @@ void CPlayScene::Update(DWORD dt)
 
 void CPlayScene::Render()
 {
-	background->Render();
+	if (background) background->Render();
 
 	for (int i = 0; i < objects.size(); i++)
 	{
