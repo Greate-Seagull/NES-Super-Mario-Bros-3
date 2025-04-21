@@ -14,7 +14,28 @@ void CAnimation::Add(int spriteId, DWORD time)
 	frames.push_back(frame);
 }
 
-void CAnimation::Render(float x, float y)
+LPANIMATION_FRAME CAnimation::GetCurrentFrame()
+{
+	return (currentFrame == -1) ? nullptr : frames[currentFrame];
+}
+
+void CAnimation::Render(float x, float y, bool is_switched)
+{
+	if(is_switched == false)
+		SwitchSprite();
+
+	frames[currentFrame]->GetSprite()->Draw(x, y);
+}
+
+void CAnimation::ChangeTimePerFrame(DWORD time)
+{
+	for (LPANIMATION_FRAME frame : frames)
+	{
+		frame->SetTime(time);
+	}
+}
+
+void CAnimation::SwitchSprite()
 {
 	ULONGLONG now = GetTickCount64();
 	if (currentFrame == -1)
@@ -31,9 +52,6 @@ void CAnimation::Render(float x, float y)
 			lastFrameTime = now;
 			if (currentFrame == frames.size()) currentFrame = 0;
 		}
-
 	}
-
-	frames[currentFrame]->GetSprite()->Draw(x, y);
 }
 

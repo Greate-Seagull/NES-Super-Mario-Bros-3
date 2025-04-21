@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GameObject.h"
+#include "MovableObject.h"
 #include "Animation.h"
 #include "Animations.h"
 
@@ -11,17 +11,19 @@
 #define Y_ACCELERATION_A 0.025f
 #define Y_ACCELERATION_B 0.05f
 
-class CBrickParticle : public CGameObject
+class CBrickParticle : public CMovableObject
 {
 protected:
 	int corner;
 public:
-	CBrickParticle(float x, float y, int corner) : CGameObject(x, y)
+	CBrickParticle(float x, float y, int corner) : CMovableObject(x, y)
 	{
 		this->corner = corner;
-		vy = -5;
+		vy = -5.0f;
+
+		aniID = ID_PARTICLE_ROTATION;
 	}
-	void Render();
+
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 	void GetBoundingBox(float& l, float& t, float& r, float& b);
 };

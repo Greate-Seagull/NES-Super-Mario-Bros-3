@@ -4,7 +4,7 @@
 #include "Animation.h"
 #include "Animations.h"
 
-#define ID_ANI_BACKGROUND 0
+#define ID_ANI_BACKGROUND -10000
 
 #define BACKGROUND_WIDTH 2560
 #define BACKGROUND_HEIGHT 393

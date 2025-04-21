@@ -11,10 +11,13 @@
 #include "DeadStateTrigger.h"
 #include "Coin.h"
 #include "Platform.h"
+#include "VenusFireTrap.h"
+#include "KoopaTroopa.h"
+#include "SuperMushroom.h"
+#include "SuperLeaf.h"
 #include "QuestionBlock.h"
 #include "Pipe.h"
 #include "Container.h"
-#include "Background.h"
 #include "Bush.h"
 #include "StripedBrick.h"
 #include "Cloud.h"
@@ -29,8 +32,8 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 	CScene(id, filePath)
 {
 	player = NULL;
-	background = NULL;
-	key_handler = new CSampleKeyHandler(this);
+	//key_handler = new CSampleKeyHandler(this);
+	background = NULL;	
 }
 
 
@@ -70,9 +73,8 @@ void CPlayScene::_ParseSection_SPRITES(string line)
 	if (tex == NULL)
 	{
 		DebugOut(L"[ERROR] Texture ID %d not found!\n", texID);
-		return; 
+		return;
 	}
-
 	CSprites::GetInstance()->Add(ID, l, t, r, b, tex);
 }
 
@@ -201,10 +203,15 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		isStartSpawned = true;
 		break;
 	case OBJECT_TYPE_GOOMBA: obj = new CGoomba(x,y); break;
+	case OBJECT_TYPE_PARAGOOMBA: obj = new CParagoomba(x,y); break;
+	case OBJECT_TYPE_VENUS_FIRE_TRAP: obj = new CVenusFireTrap(x, y); break;
+	case OBJECT_TYPE_PIRANHA_PLANT: obj = new CPiranhaPlant(x, y); break;
+	case OBJECT_TYPE_RED_KOOPA_TROOPA: obj = new CKoopaTroopa(x, y); break;
 	case OBJECT_TYPE_BRICK: obj = new CBrick(x,y); break;
 	case OBJECT_TYPE_STRIPED_BRICK: obj = new CStripedBrick(x, y); break;
 	case OBJECT_TYPE_COIN: obj = new CCoin(x, y); break;
-
+	case OBJECT_TYPE_SUPER_MUSHROOM: obj = new CSuperMushroom(x, y); break;
+	case OBJECT_TYPE_SUPER_LEAF: obj = new CSuperLeaf(x, y); break;
 	case OBJECT_TYPE_PLATFORM:
 	{
 		float cell_width = (float)atof(tokens[3].c_str());
@@ -297,11 +304,6 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 
 	if (object_type != NON_OBJECT_TYPE_BACKGROUND)
 		objects.push_back(obj);
-}
-
-void CPlayScene::InstantiateObject(LPGAMEOBJECT obj)
-{
-	objects.push_back(obj);
 }
 
 void CPlayScene::LoadAssets(LPCWSTR assetFile)
@@ -490,6 +492,12 @@ void CPlayScene::Unload()
 }
 
 bool CPlayScene::IsGameObjectDeleted(const LPGAMEOBJECT& o) { return o == NULL; }
+
+void CPlayScene::Add(LPGAMEOBJECT newObj)
+{
+	if(newObj)
+		objects.push_back(newObj);
+}
 
 void CPlayScene::PurgeDeletedObjects()
 {

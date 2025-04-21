@@ -28,7 +28,7 @@ public:
 		this->spriteIdEndEnd = sprite_id_end_end;
 	}
 	void Render();
-	void Update(DWORD dt) {}
+	void Update(DWORD dt) {} //GameObject co ham update roi! "virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects = NULL) {};"
 	void GetBoundingBox(float& l, float& t, float& r, float& b);
 	int IsDirectionColliable(float nx, float ny) 
 	{

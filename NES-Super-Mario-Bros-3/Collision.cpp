@@ -1,5 +1,6 @@
 #include "Collision.h"
 #include "GameObject.h"
+#include "KoopaTroopa.h"
 
 #include "debug.h"
 
@@ -170,7 +171,7 @@ void CCollision::Scan(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* objDe
 	{
 		LPCOLLISIONEVENT e = SweptAABB(objSrc, dt, objDests->at(i));
 
-		if (e->WasCollided()==1)
+		if (e->WasCollided() == 1)
 			coEvents.push_back(e);
 		else
 			delete e;
@@ -223,7 +224,7 @@ void CCollision::Filter( LPGAMEOBJECT objSrc,
 *  Simple/Sample collision framework 
 *  NOTE: Student might need to improve this based on game logic 
 */
-void CCollision::Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+void CCollision::Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* coObjects) //Adjust to not move object if no collision
 {
 	vector<LPCOLLISIONEVENT> coEvents;
 	LPCOLLISIONEVENT colX = NULL; 
@@ -260,6 +261,7 @@ void CCollision::Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* co
 
 				objSrc->OnCollisionWith(colY);
 
+				objSrc->GetPosition(x, y);
 				//
 				// see if after correction on Y, is there still a collision on X ? 
 				//
@@ -278,21 +280,26 @@ void CCollision::Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* co
 
 				if (colX_other != NULL)
 				{
-					x += colX_other->t * dx +colX_other->nx * BLOCK_PUSH_FACTOR;
+					x += colX_other->t * dx +colX_other->nx * BLOCK_PUSH_FACTOR;	
+
+					objSrc->SetPosition(x, y);
+
 					objSrc->OnCollisionWith(colX_other);
 				}
-				else
+				/*else
 				{
 					x += dx;
-				}
+				}*/
 			}
 			else // collision on X first
 			{
 				x += colX->t * dx + colX->nx * BLOCK_PUSH_FACTOR;
+				
 				objSrc->SetPosition(x, y);
 
 				objSrc->OnCollisionWith(colX);
 
+				objSrc->GetPosition(x, y);
 				//
 				// see if after correction on X, is there still a collision on Y ? 
 				//
@@ -312,36 +319,43 @@ void CCollision::Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* co
 				if (colY_other != NULL)
 				{
 					y += colY_other->t * dy + colY_other->ny * BLOCK_PUSH_FACTOR;
+
+					objSrc->SetPosition(x, y);
+
 					objSrc->OnCollisionWith(colY_other);
 				}
-				else
+				/*else
 				{
 					y += dy;
-				}
+				}*/
 			}
 		}
-		else
-		if (colX != NULL)
+		else if (colX != NULL)
 		{
 			x += colX->t * dx + colX->nx * BLOCK_PUSH_FACTOR;
-			y += dy;
+			//y += dy;
+			objSrc->SetPosition(x, y); //Can be commented
+
 			objSrc->OnCollisionWith(colX);
 		}
-		else 
-			if (colY != NULL)
-			{
-				x += dx;
-				y += colY->t * dy + colY->ny * BLOCK_PUSH_FACTOR;
-				objSrc->OnCollisionWith(colY);
-			}
-			else // both colX & colY are NULL 
-			{
-				x += dx;
-				y += dy;
-			}
+		else if (colY != NULL)
+		{
+			//x += dx;
+			y += colY->t * dy + colY->ny * BLOCK_PUSH_FACTOR;
 
-		objSrc->SetPosition(x, y);
+			objSrc->SetPosition(x, y); //Can be commented
+
+			objSrc->OnCollisionWith(colY);
+		}
+		//else // both colX & colY are NULL 
+		//{
+		//	x += dx;
+		//	y += dy;
+		//}
+		
+		//objSrc->SetPosition(x, y);
 	}
+
 
 	//
 	// Scan all non-blocking collisions for further collision logic
@@ -357,4 +371,30 @@ void CCollision::Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* co
 
 
 	for (UINT i = 0; i < coEvents.size(); i++) delete coEvents[i];
+}
+
+void CCollision::ProcessOverlap(LPGAMEOBJECT objSrc, vector<LPGAMEOBJECT>* coObjects)
+{
+	for (UINT i = 0; i < coObjects->size(); i++)
+	{
+		if (Overlap(objSrc, coObjects->at(i)))
+		{
+			CCollisionEvent* e = new CCollisionEvent(-1, 0, 0, 0, 0, coObjects->at(i), objSrc);
+			objSrc->OnCollisionWith(e);
+		}
+	}
+}
+
+bool CCollision::Overlap(LPGAMEOBJECT objSrc, LPGAMEOBJECT objDst)
+{
+	float min_width = (objSrc->getBBoxWidth() + objDst->getBBoxWidth()) / 2;
+	float min_height = (objSrc->getBBoxHeight() + objDst->getBBoxHeight()) / 2;
+
+	float objSrc_x, objSrc_y;
+	float objDst_x, objDst_y;
+
+	objSrc->GetPosition(objSrc_x, objSrc_y);
+	objDst->GetPosition(objDst_x, objDst_y);
+
+	return fabs(objSrc_x - objDst_x) < min_width && fabs(objSrc_y - objDst_y) < min_height;
 }

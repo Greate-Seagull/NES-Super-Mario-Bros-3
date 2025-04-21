@@ -14,11 +14,10 @@ using namespace std;
 #include "Texture.h"
 #include "KeyEventHandler.h"
 #include "Scene.h"
+#include "KeyStateManager.h"
 
 #define MAX_FRAME_RATE 100
 #define KEYBOARD_BUFFER_SIZE 1024
-#define KEYBOARD_STATE_SIZE 256
-
 
 
 /*
@@ -42,10 +41,12 @@ class CGame
 	LPDIRECTINPUT8       di;		// The DirectInput object         
 	LPDIRECTINPUTDEVICE8 didv;		// The keyboard device 
 
-	BYTE  keyStates[KEYBOARD_STATE_SIZE];			// DirectInput keyboard state buffer 
-	DIDEVICEOBJECTDATA keyEvents[KEYBOARD_BUFFER_SIZE];		// Buffered keyboard data
+	//BYTE  keyStates[KEYBOARD_STATE_SIZE];			// DirectInput keyboard state buffer 
+	//DIDEVICEOBJECTDATA keyEvents[KEYBOARD_BUFFER_SIZE];		// Buffered keyboard data
 
-	LPKEYEVENTHANDLER keyHandler;
+	//LPKEYEVENTHANDLER keyHandler;
+	KeyStateManager* keyState;
+
 
 	float cam_x = 0.0f;
 	float cam_y = 0.0f;
@@ -57,9 +58,11 @@ class CGame
 
 	ID3D10SamplerState* pPointSamplerState;
 
+	//Scene Manager
 	unordered_map<int, LPSCENE> scenes;
 	int current_scene;
 	int next_scene = -1;
+	//--------------------------------
 
 	void _ParseSection_SETTINGS(string line);
 	void _ParseSection_SCENES(string line);
@@ -86,11 +89,16 @@ public:
 
 	LPTEXTURE LoadTexture(LPCWSTR texturePath);
 
+	//main
+	void Update(DWORD dt);
+	void Render();
+
 	// Keyboard related functions 
 	void InitKeyboard();
-	int IsKeyDown(int KeyCode);
-	void ProcessKeyboard();
-	void SetKeyHandler(LPKEYEVENTHANDLER handler) { keyHandler = handler; }
+	KeyStateManager* GetKeyboard();
+	//int IsKeyDown(int KeyCode);
+	//void ProcessKeyboard();
+	//void SetKeyHandler(LPKEYEVENTHANDLER handler) { keyHandler = handler; }
 
 
 	ID3D10Device* GetDirect3DDevice() { return this->pD3DDevice; }

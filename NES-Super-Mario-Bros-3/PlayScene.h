@@ -5,7 +5,7 @@
 #include "GameObject.h"
 #include "Brick.h"
 #include "Mario.h"
-#include "Goomba.h"
+#include "Paragoomba.h"
 //#include "Koopas.h"
 
 
@@ -35,13 +35,13 @@ public:
 	virtual void Unload();
 
 	LPGAMEOBJECT GetPlayer() { return player; }
-
+	
 	void Clear();
 	void PurgeDeletedObjects();
 
 	static bool IsGameObjectDeleted(const LPGAMEOBJECT& o);
 
-	void InstantiateObject(LPGAMEOBJECT obj);
+	void Add(LPGAMEOBJECT newObj);
 };
 
 typedef CPlayScene* LPPLAYSCENE;

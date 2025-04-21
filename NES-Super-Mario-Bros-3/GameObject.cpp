@@ -10,11 +10,35 @@
 
 CGameObject::CGameObject()
 {
-	x = y = 0;
-	vx = vy = 0;
-	nx = 1;	
+	x = y = 0;	
 	state = -1;
 	isDeleted = false;
+}
+
+void CGameObject::GetBoundingBox(float& left, float& top, float& right, float& bottom)
+{
+	left = x - (bbox_width / 2);
+	top = y - (bbox_height / 2);
+	right = left + bbox_width;
+	bottom = top + bbox_height;
+}
+
+void CGameObject::Render()
+{
+	CAnimations* animations = CAnimations::GetInstance();
+	animations->Get(aniID)->Render(x, y);
+	//RenderBoundingBox();
+}
+
+void CGameObject::SetState(int state)
+{
+	this->state = state;
+}
+
+void CGameObject::SetBoundingBox(float width, float height)
+{
+	this->bbox_width = width;
+	this->bbox_height = height;
 }
 
 void CGameObject::RenderBoundingBox()
@@ -41,4 +65,9 @@ void CGameObject::RenderBoundingBox()
 CGameObject::~CGameObject()
 {
 
+}
+
+const char* CGameObject::ToString()  
+{  
+   return "Game Object";  
 }

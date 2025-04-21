@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Block.h"
 #include "Animation.h"
@@ -14,10 +14,13 @@ protected:
 public:
 	CDeadStateTrigger(float x, float y, float width, float height) : CGameObject(x, y)
 	{
-		this->width = width;
-		this->height = height;
+		this->width = width; //GameObject có bbox_width
+		this->height = height; //GameObject có bbox_height
+
+		//bbox_width = width;
+		//bbox_height = height;
 	}
 	void Render();
-	void Update(DWORD dt) {}
-	void GetBoundingBox(float& l, float& t, float& r, float& b);
+	void Update(DWORD dt) {} //GameObject co ham update roi! "virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects = NULL) {};"
+	void GetBoundingBox(float& l, float& t, float& r, float& b); //GameObject có GetBoundingBox rồi! "virtual void GetBoundingBox(float &left, float &top, float &right, float &bottom);"
 };

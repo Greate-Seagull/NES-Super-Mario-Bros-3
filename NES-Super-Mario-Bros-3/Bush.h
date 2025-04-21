@@ -33,7 +33,7 @@ public:
 	}
 
 	virtual void Render();
-	void Update(DWORD dt) {}
+	void Update(DWORD dt) {} //GameObject co ham update roi! virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects = NULL) {};
 	void GetBoundingBox(float& l, float& t, float& r, float& b);
 };
 
@@ -45,8 +45,8 @@ public:
 class CMiniBush : public CGameObject {
 public:
 	CMiniBush(float x, float y) : CGameObject(x, y) {}
-	void Render();
-	void Update(DWORD dt) {}
+	void Render(); //GameObject co ham render roi! "virtual void Render();"
+	void Update(DWORD dt) {} //GameObject co ham update roi! "virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects = NULL) {};"
 	void GetBoundingBox(float& l, float& t, float& r, float& b);
 	int IsBlocking() { return 0; }
 };

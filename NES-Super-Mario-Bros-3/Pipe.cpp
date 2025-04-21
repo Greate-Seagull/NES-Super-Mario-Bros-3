@@ -49,15 +49,15 @@ void CPipe::GetBoundingBox(float& l, float& t, float& r, float& b)
 {
 	if (this->face_direction == 1)
 	{
-		l = x - PIPE_BBOX_WIDTH / 2;
-		b = y + cell_height * 1.5;
+		l = x - PIPE_BBOX_WIDTH / 2.0f;
+		b = y + cell_height * 1.5f;
 		r = l + PIPE_BBOX_WIDTH;
 		t = b - height * cell_height;
 	}
 	else if (this->face_direction == -1)
 	{
-		l = x - PIPE_BBOX_WIDTH / 2;
-		t = y - cell_height * 1.5;
+		l = x - PIPE_BBOX_WIDTH / 2.0f;
+		t = y - cell_height * 1.5f;
 		r = l + PIPE_BBOX_WIDTH;
 		b = t + height * cell_height;
 	}

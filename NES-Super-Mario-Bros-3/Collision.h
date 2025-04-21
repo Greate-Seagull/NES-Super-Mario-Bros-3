@@ -66,6 +66,7 @@ public:
 		LPGAMEOBJECT objSrc, 
 		DWORD dt,
 		LPGAMEOBJECT objDest); 
+	bool Overlap(LPGAMEOBJECT objSrc, LPGAMEOBJECT objDst);
 	void Scan(
 		LPGAMEOBJECT objSrc, 
 		DWORD dt, 
@@ -81,7 +82,9 @@ public:
 		int filterX,
 		int filterY);
 
+
 	void Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+	void ProcessOverlap(LPGAMEOBJECT objSrc, vector<LPGAMEOBJECT>* coObjects);
 
 	static CCollision* GetInstance();
 };
