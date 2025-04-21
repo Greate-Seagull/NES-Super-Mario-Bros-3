@@ -12,6 +12,7 @@
 #include "Platform.h"
 #include "QuestionBlock.h"
 #include "Pipe.h"
+#include "Background.h"
 
 #include "SampleKeyEventHandler.h"
 
@@ -109,11 +110,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 
 	switch (object_type)
 	{
-	case -1:
-	{
-		obj = new CBackground(x, y);
-		break;
-	}
+	case NON_OBJECT_TYPE_BACKGROUND: obj = new CBackground(x, y); break;
 	case OBJECT_TYPE_MARIO:
 		if (player!=NULL) 
 		{
@@ -150,8 +147,8 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	case OBJECT_TYPE_QUESTION_BLOCK: obj = new CQuestionBlock(x, y); break;
 	case OBJECT_TYPE_PIPE:
 	{
-
-		obj = new CPipe(x, y);
+		int ani_id = atoi(tokens[3].c_str());
+		obj = new CPipe(x, y, ani_id);
 		break;
 	}
 

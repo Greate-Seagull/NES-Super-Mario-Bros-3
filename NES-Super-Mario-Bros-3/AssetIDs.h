@@ -4,6 +4,8 @@
 // This file contains all IDs of game assets 
 //
 
+#define ID_TEX_BACKGROUND -10
+
 #define ID_TEX_MARIO 0
 #define ID_TEX_ENEMY 10
 #define ID_TEX_MISC 20
@@ -81,6 +83,8 @@
 #define ID_SPRITE_MARIO_SMALL_BRACE_RIGHT (ID_SPRITE_MARIO_SMALL_BRACE + 20)
 
 #pragma endregion 
+
+#define ID_SPRITE_BACKGROUND -10001
 
 #define ID_SPRITE_BRICK 20000
 #define ID_SPRITE_QUESTION_BLOCK (ID_SPRITE_BRICK + 1000)
