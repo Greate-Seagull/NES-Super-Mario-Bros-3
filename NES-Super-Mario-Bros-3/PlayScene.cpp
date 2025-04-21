@@ -47,6 +47,8 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 
 float tempCamPosY = 0;
 
+bool isStartSpawned = false;
+
 void CPlayScene::_ParseSection_SPRITES(string line)
 {
 	vector<string> tokens = split(line);
@@ -183,10 +185,16 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 			DebugOut(L"[ERROR] MARIO object was created before!\n");
 			return;
 		}
+
+		if (isStartSpawned)
+		{
+			CGame::GetInstance()->GetNewPlayerPos(x, y);
+		}
 		obj = new CMario(x,y); 
 		player = (CMario*)obj;  
 
 		DebugOut(L"[INFO] Player object has been created!\n");
+		isStartSpawned = true;
 		break;
 	case OBJECT_TYPE_GOOMBA: obj = new CGoomba(x,y); break;
 	case OBJECT_TYPE_BRICK: obj = new CBrick(x,y); break;
@@ -239,7 +247,11 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		float r = (float)atof(tokens[3].c_str());
 		float b = (float)atof(tokens[4].c_str());
 		int scene_id = atoi(tokens[5].c_str());
-		obj = new CPortal(x, y, r, b, scene_id);
+
+		float new_x = (float)atof(tokens[6].c_str());
+		float new_y = (float)atof(tokens[7].c_str());
+		
+		obj = new CPortal(x, y, r, b, scene_id, new_x, new_y);
 	}
 	break;
 	case OBJECT_TYPE_CONTAINER:
