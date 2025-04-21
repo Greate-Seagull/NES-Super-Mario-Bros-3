@@ -1,0 +1,13 @@
+# id	left	top	right	bottom	texture_id
+[SPRITES]
+-61	91	152	109	177	30
+-62	110	152	128	177	30
+-63	129	152	147	177	30
+
+# ani_id	sprite1_id	time1	sprite2_id	time2	...
+[ANIMATIONS]
+-61	-61	1000
+-62	-62	1000
+-63	-63	1000
+
+#This is NOT an animation of the rewards switching. The rewards switch inside the source code.

@@ -132,6 +132,35 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		background = (CBackground*)obj;
 		break;
 	}
+	case NON_OBJECT_TYPE_ENDING:
+	{
+		float width = (float)atof(tokens[3].c_str());
+		float height = (float)atof(tokens[4].c_str());
+		int sprite_begin = atoi(tokens[5].c_str());
+		int sprite_end = atoi(tokens[6].c_str());
+
+		obj = new CEndLevel(x, y, width, height, sprite_begin, sprite_end);
+		ending = (CEndLevel*)obj;
+		break;
+	}
+	case NON_OBJECT_TYPE_CARD_RANDOM:
+	{
+		int sprite_begin_begin = atoi(tokens[3].c_str());
+		int sprite_middle_begin = atoi(tokens[4].c_str());
+		int sprite_end_begin = atoi(tokens[5].c_str());
+		int sprite_begin_middle = atoi(tokens[6].c_str());
+		int sprite_middle_middle = atoi(tokens[7].c_str());
+		int sprite_end_middle = atoi(tokens[8].c_str());
+		int sprite_begin_end = atoi(tokens[9].c_str());
+		int sprite_middle_end = atoi(tokens[10].c_str());
+		int sprite_end_end = atoi(tokens[11].c_str());
+
+		obj = new CRandomCard(x, y,
+			sprite_begin_begin, sprite_middle_begin, sprite_end_begin,
+			sprite_begin_middle, sprite_middle_middle, sprite_end_middle,
+			sprite_begin_end, sprite_middle_end, sprite_end_end);
+		break;
+	}
 	case DEAD_STATE_TRIGGER:
 	{
 		float width = (float)atof(tokens[3].c_str());
@@ -295,7 +324,8 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	// General object setup
 	obj->SetPosition(x, y);
 
-	if (object_type != NON_OBJECT_TYPE_BACKGROUND)
+	if (object_type != NON_OBJECT_TYPE_BACKGROUND
+		&& object_type != NON_OBJECT_TYPE_ENDING)
 		objects.push_back(obj);
 }
 
@@ -428,6 +458,8 @@ void CPlayScene::Update(DWORD dt)
 void CPlayScene::Render()
 {
 	//if (background) background->Render();
+	
+	if (ending) ending->Render();
 
 	for (int i = 0; i < objects.size(); i++)
 	{

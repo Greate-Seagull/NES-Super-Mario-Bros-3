@@ -12,6 +12,7 @@
 #include "Container.h"
 #include "QuestionBlock.h"
 #include "DeadStateTrigger.h"
+#include "Background.h"
 
 #include "Collision.h"
 
@@ -64,6 +65,8 @@ void CMario::OnCollisionWith(LPCOLLISIONEVENT e)
 		OnCollisionWithDeadTrigger(e);
 	else if (dynamic_cast<CPortal*>(e->obj))
 		OnCollisionWithPortal(e);
+	else if (dynamic_cast<CRandomCard*>(e->obj))
+		OnCollisionWithRandomCard(e);
 }
 
 void CMario::OnCollisionWithGoomba(LPCOLLISIONEVENT e)
@@ -182,6 +185,12 @@ void CMario::OnCollisionWithPortal(LPCOLLISIONEVENT e)
 void CMario::OnCollisionWithDeadTrigger(LPCOLLISIONEVENT e)
 {
 	SetState(MARIO_STATE_DIE);
+}
+
+void CMario::OnCollisionWithRandomCard(LPCOLLISIONEVENT e)
+{
+	CRandomCard* rC = (CRandomCard*)e->obj;
+	rC->Switch(false);
 }
 
 //
