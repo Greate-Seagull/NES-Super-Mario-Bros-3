@@ -129,6 +129,7 @@ class CMario : public CCreature
 	void OnCollisionWithPortal(LPCOLLISIONEVENT e);
 	void OnCollisionWithPlatform(LPCOLLISIONEVENT e);
 	void OnCollisionWithHelpfulObject(LPCOLLISIONEVENT e);
+	void OnCollisionWithBlock(LPCOLLISIONEVENT e);
 
 public:
 	CMario(float x, float y);

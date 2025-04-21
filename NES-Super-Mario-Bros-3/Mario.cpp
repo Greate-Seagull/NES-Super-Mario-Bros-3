@@ -32,10 +32,10 @@ CMario::CMario(float x, float y):
 
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {	
-	/*if(dt > 30)
-		DebugOutTitle(L"time: %d", dt);*/
-	DebugOutTitle(L"Momentum: %d, vx: %f", momentum, fabs(vx));
-	dt = 16;
+	if(dt > 20)
+		DebugOutTitle(L"time: %d", dt);
+	//DebugOutTitle(L"Momentum: %d, vx: %f", momentum, fabs(vx));
+	//dt = 16;
 	InPhase(dt, coObjects);
 }
 
@@ -70,7 +70,9 @@ void CMario::Living(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 
 	Move(dt);
 
+	//Walk();
 	TriggerActions();
+	//One of lagging reason
 	UpdateMomentum(dt);
 	Invulnerable(dt);
 	Carrying();
@@ -87,10 +89,12 @@ void CMario::OnCollisionWith(LPCOLLISIONEVENT e)
 {	
 	if (dynamic_cast<CHarmfulObject*>(e->obj))
 	{
-		if(!is_invulnerable) OnCollisionWithHarmfulObject(e);
+		if (!is_invulnerable) OnCollisionWithHarmfulObject(e);
 	}
 	else if (dynamic_cast<CCoin*>(e->obj))
 		OnCollisionWithCoin(e);
+	else if (dynamic_cast<CBlock*>(e->obj))
+		OnCollisionWithBlock(e);
 	/*else if (dynamic_cast<CBrick*>(e->obj))
 		OnCollisionWithBrick(e);
 	else if (dynamic_cast<CDeadStateTrigger*>(e->obj))
@@ -169,9 +173,22 @@ void CMario::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 
 void CMario::OnCollisionWithHelpfulObject(LPCOLLISIONEVENT e)
 {
-	if (e->ny > 0 || e->nx)
+	Touch(e->obj);
+}
+
+void CMario::OnCollisionWithBlock(LPCOLLISIONEVENT e)
+{	
+	Touch(e->obj);
+
+	if (e->ny)
 	{
-		Touch(e->obj);
+		vy = 0.0f;
+		is_falling = (e->ny > 0);
+	}
+
+	if (e->nx)
+	{
+		vx = 0.0f;		
 	}
 }
 
@@ -202,12 +219,10 @@ void CMario::Render()
 
 	//Render
 	CAnimations::GetInstance()->Get(aniID)->Render(draw_x, draw_y, true);
-	RenderBoundingBox();
+	//RenderBoundingBox();
 
 	if (tail)
 		tail->Render();
-
-	//DebugOutTitle(L"Coins: %d", coin);
 }
 
 void CMario::ChangeAnimation()
@@ -300,7 +315,7 @@ void CMario::ChangeAnimationInLivingState(int &actionID, DWORD &timePerFrame)
 	else
 	{
 		actionID = ID_ANI_RUN;
-		timePerFrame *= (int)((MARIO_SMALL_RUNNING_MAX_VX - abs(vx)) / MARIO_SMALL_RUNNING_MAX_VX);
+		timePerFrame *= (MARIO_SMALL_RUNNING_MAX_VX - abs(vx)) / MARIO_SMALL_RUNNING_MAX_VX;
 	}
 
 	if (weapon)

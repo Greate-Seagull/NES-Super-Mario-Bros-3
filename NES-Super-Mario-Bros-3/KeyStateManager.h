@@ -1,24 +1,24 @@
 #pragma once
 
 #include <d3dx10.h>
+#include <unordered_map>
 
-#define KEYBOARD_STATE_SIZE 256
+using namespace std;
 
 #define VK_S 0x53
 #define VK_A 0x41
-#define VK_1 0x31
-#define VK_2 0x32
-#define VK_3 0x33
 
 class KeyStateManager
 {
 private:
-	bool newKeyState[KEYBOARD_STATE_SIZE];
-	bool oldKeyState[KEYBOARD_STATE_SIZE];
+	unordered_map<int, bool> newKeyState;
+	unordered_map<int, bool> oldKeyState;
+	unordered_map<int, bool> isUpdated;
 public:
 	KeyStateManager();
 
 	void Update();
+	void Refresh(int key);
 
 	bool IsHold(int key);
 	bool IsPressed(int key);

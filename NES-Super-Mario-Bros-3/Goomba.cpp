@@ -147,5 +147,5 @@ void CGoomba::Render()
 {
 	ChangeAnimation();
 	CAnimations::GetInstance()->Get(aniID)->Render(x,y);
-	RenderBoundingBox();
+	//RenderBoundingBox();
 }
