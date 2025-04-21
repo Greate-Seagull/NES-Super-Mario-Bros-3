@@ -57,8 +57,15 @@ void CKoopaTroopa::InPhaseLivingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 void CKoopaTroopa::InPhaseHidingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
 	Hide(dt);
-	if (!IsControlled()) Accelerate(0.0f, GAME_GRAVITY, dt);
-	CCollision::GetInstance()->Process(this, dt, coObjects);
+	if (!IsControlled())
+	{
+		Accelerate(0.0f, GAME_GRAVITY, dt);
+		CCollision::GetInstance()->Process(this, dt, coObjects);
+	}
+	/*else
+	{
+		CCollision::GetInstance()->ProcessOverlap(this, coObjects);
+	}*/
 	Move(dt);
 }
 
@@ -72,8 +79,15 @@ void CKoopaTroopa::InPhaseRollingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects
 void CKoopaTroopa::InPhasePopingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
 	Pop(dt);
-	if (!IsControlled()) Accelerate(0.0f, GAME_GRAVITY, dt);
-	CCollision::GetInstance()->Process(this, dt, coObjects);
+	if (!IsControlled())
+	{
+		Accelerate(0.0f, GAME_GRAVITY, dt);
+		CCollision::GetInstance()->Process(this, dt, coObjects);
+	}
+	//else
+	//{
+	//	CCollision::GetInstance()->ProcessOverlap(this, coObjects);
+	//}
 	Move(dt);
 }
 
@@ -122,8 +136,11 @@ void CKoopaTroopa::OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e)
 		case STATE_LIVE:
 			MeleeAttack(obj);
 			break;
-		case KOOPA_STATE_HIDE:			
+		case KOOPA_STATE_HIDE:
 		case KOOPA_STATE_POP:
+			Destroy(obj);
+			Die();
+			break;
 		case KOOPA_STATE_ROLL:
 			Destroy(obj);
 			break;
@@ -308,7 +325,7 @@ void CKoopaTroopa::ReactionInLivingState(CGameObject* by_another, int action)
 		case ACTION_CARRY:
 			AgainstControl();
 			MeleeAttack(by_another);
-			break;		
+			break;
 		default:
 			MeleeAttack(by_another);
 	}
@@ -342,13 +359,15 @@ void CKoopaTroopa::ReactionInHidingState(CGameObject* by_another, int action)
 			UnderDestructrion(by_another);
 			SetState(KOOPA_STATE_HIDE);
 			break;
-		default:
+		default:			
 			if (CMario* mario = dynamic_cast<CMario*>(by_another)) //mario attacks
 			{
 				float mario_x, mario_y;
 				mario->GetPosition(mario_x, mario_y);
 				nx = (x < mario_x) ? DIRECTION_LEFT : DIRECTION_RIGHT;
 				this->SetState(KOOPA_STATE_ROLL);
+
+				DoPowerless(mario);
 			}
 			else
 			{

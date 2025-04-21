@@ -39,11 +39,8 @@ void CCreature::Carry(CHarmfulObject* another)
 
 void CCreature::Drop()
 {
-	if (weapon)
-	{
-		weapon->Drop();
-		weapon = nullptr;
-	}
+	weapon->Reaction(this, ACTION_DROP);
+	weapon = nullptr;
 }
 
 void CCreature::Recover()
@@ -56,4 +53,9 @@ void CCreature::Die()
 {
 	life = 0.0f;	
 	SetState(STATE_DIE);
+}
+
+void CCreature::DoPowerless(CHarmfulObject* another)
+{
+	another->Reaction(this, ACTION_NOTHING);
 }

@@ -15,7 +15,7 @@ red_koopa_troopa.txt
 #goomba.txt
 #paragoomba.txt
 #wings.txt
-#piranha_plant.txt
+piranha_plant.txt
 #venus_fire_trap.txt
 #fireball.txt
 #
@@ -43,7 +43,7 @@ KOOPA
 #9	300	150
 
 #PIRANHA
-#8	350	150
+8	350	150
 
 #VENUS
 #6	400	150

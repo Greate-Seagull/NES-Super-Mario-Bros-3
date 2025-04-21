@@ -20,8 +20,6 @@ CPiranhaPlant::CPiranhaPlant(float x, float y):
 
 void CPiranhaPlant::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
-	IsLiving();
-
 	dt = 16;
 	InPhase();	
 	LookforMario();
@@ -181,13 +179,11 @@ void CPiranhaPlant::Reaction(CGameObject* by_another, int action)
 {	
 	switch (action)
 	{
-		case ACTION_CARRY:
-			AgainstControl();
-			break;
 		case ACTION_DESTROY:
 			Die();
-			SetState(STATE_DIE);
 			break;
+		case ACTION_CARRY:
+			AgainstControl();
 		default:
 			MeleeAttack(by_another);
 			break;

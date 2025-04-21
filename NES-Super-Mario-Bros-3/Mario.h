@@ -104,6 +104,8 @@ class CMario : public CCreature
 	bool is_falling;	
 	bool is_invulnerable;
 
+	bool want_to_carry;
+
 	float startJumpingPosition;
 
 	int changing_state_time;
@@ -178,7 +180,10 @@ public:
 	void BackJump();
 	void Jump();
 
+	void Carry();
 	void Carrying();
+	void Tosh();
+
 	void Kick();
 	void Kicking(DWORD dt);
 

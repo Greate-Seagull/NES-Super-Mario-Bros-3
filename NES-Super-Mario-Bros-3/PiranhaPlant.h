@@ -42,6 +42,8 @@ public:
 	CPiranhaPlant(float x, float y);
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 
+	virtual int IsCollidable() { return 1; };
+
 	virtual void Render();
 	virtual void ChangeAnimation();
 

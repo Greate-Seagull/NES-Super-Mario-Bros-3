@@ -7,6 +7,8 @@
 
 #define ACTION_TOUCH 10
 #define ACTION_CARRY 11
+#define ACTION_DROP 12
+#define ACTION_NOTHING 13
 
 class CCreature : public CHarmfulObject
 {
@@ -23,4 +25,5 @@ public:
 	virtual void Drop();
 	virtual void Recover();	
 	virtual void Die();
+	virtual void DoPowerless(CHarmfulObject* another);
 };

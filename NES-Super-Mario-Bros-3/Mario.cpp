@@ -100,10 +100,13 @@ void CMario::OnCollisionWith(LPCOLLISIONEVENT e)
 void CMario::Reaction(CGameObject* by_another, int action)
 {
 	switch (action)
-	{
+	{		
 		case ACTION_ATTACK:
 		case ACTION_DESTROY:
 			UnderAttack(by_another);
+			break;
+		case ACTION_NOTHING:
+			Kick();
 			break;
 		case EFFECT_BIGGER:
 			SetState(MARIO_STATE_GAIN_POWER);
@@ -126,9 +129,9 @@ void CMario::OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e)
 		MeleeAttack(enemy);
 		BackJump();
 	}
-	else if (is_boosting)
+	else if (want_to_carry)
 	{
-		Carry(enemy);
+		CCreature::Carry(enemy);
 	}
 	else // hit by Goomba
 	{
@@ -324,21 +327,24 @@ void CMario::TriggerActions()
 {
 	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
 
-	if (keyState->IsPressed(VK_A))
-		Attack();
-	if (keyState->IsHold(VK_A))
-		Run();
-	else
-	{
-		Walk();
-		Kick();
-	}
-
-	if (keyState->IsHold(VK_DOWN) && 
+	if (keyState->IsHold(VK_DOWN) &&
 		!keyState->IsHold(VK_LEFT) && !keyState->IsHold(VK_RIGHT))
 		Sit();
 	else
 		Stand();
+
+	if (keyState->IsPressed(VK_A))
+		Attack();
+	if (keyState->IsHold(VK_A))
+	{
+		Run();
+		Carry();
+	}
+	else
+	{
+		Walk();
+		Tosh();
+	}
 }
 
 void CMario::ComputeAccelerator(float &calculated_ax, float &calculated_ay, DWORD& t)
@@ -438,7 +444,6 @@ void CMario::UnderAttack(CGameObject* by_another)
 
 void CMario::Sit()
 {
-	UntriggerTail();
 
 	if (is_sitting)
 		return;
@@ -448,10 +453,12 @@ void CMario::Sit()
 		return;
 	}	
 
+	UntriggerTail();
 	is_sitting = true;
 
 	y += (bbox_height - MARIO_BIG_SITTING_BBOX_HEIGHT) / 2;
 	bbox_height = MARIO_BIG_SITTING_BBOX_HEIGHT;
+	nz = 0;
 }
 
 void CMario::Stand()
@@ -521,7 +528,7 @@ void CMario::Walk()
 
 void CMario::Attack()
 {
-	if (life < MARIO_LEVEL_RACOON || is_attacking)
+	if (life < MARIO_LEVEL_RACOON || is_attacking || is_sitting)
 		return;
 
 	is_attacking = true;
@@ -593,8 +600,6 @@ void CMario::UntriggerTail()
 	tail = nullptr;
 
 	is_attacking = false;
-
-	nz = 0;
 }
 
 void CMario::BackJump()
@@ -610,14 +615,25 @@ void CMario::Jump()
 {
 }
 
+void CMario::Carry()
+{
+	if (want_to_carry || is_attacking)
+		return;
+
+	want_to_carry = true;
+}
+
 void CMario::Carrying()
 {
-	if (weapon && weapon->IsControlled())
+	if (!weapon)
+		return;
+
+	if (weapon->IsControlled())
 	{
 		float weapon_x, weapon_y;
 
 		weapon_x = x + nx * MARIO_CARRY_OFFSET_X;
-		weapon_y = y + (bbox_height - weapon->getBBoxHeight()) / 4.0f;
+		weapon_y = y + (bbox_height - weapon->getBBoxHeight() - 2.0f) / 4.0f;
 
 		weapon->SetPosition(weapon_x, weapon_y);
 	}
@@ -627,15 +643,23 @@ void CMario::Carrying()
 	}
 }
 
+void CMario::Tosh()
+{
+	want_to_carry = false;
+
+	if (!weapon)
+		return;
+
+	CCreature::Drop();
+}
+
 void CMario::Kick()
 {
-	if (!weapon || is_kicking)
+	if (is_kicking == true)
 		return;
 
 	is_kicking = true;
 	attacking_time = 0;
-	Touch(weapon);
-	CCreature::Drop();
 }
 
 void CMario::Kicking(DWORD dt)
@@ -673,7 +697,6 @@ void CMario::GainingPower(DWORD dt)
 	changing_state_time += dt;
 	if (changing_state_time > action_duration)
 	{
-		nz = 0;
 		SetLevel(life + 1.0f);
 		SetState(STATE_LIVE);
 	}
@@ -684,7 +707,6 @@ void CMario::LosingPower(DWORD dt)
 	changing_state_time += dt;
 	if (changing_state_time > action_duration)
 	{
-		nz = 0;
 		SetLevel(life - 1.0f);
 		SetState(STATE_LIVE);
 		StartInvulnerable();
@@ -798,6 +820,7 @@ void CMario::SetState(int state)
 			ToLosingPowerState();
 			break;
 		case STATE_LIVE:
+			nz = 0;
 			break;
 		case STATE_DIE:
 			ToDyingState();			
