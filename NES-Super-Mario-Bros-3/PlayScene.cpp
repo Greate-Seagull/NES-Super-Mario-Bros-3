@@ -213,9 +213,24 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	case OBJECT_TYPE_QUESTION_BLOCK: obj = new CQuestionBlock(x, y); break;
 	case OBJECT_TYPE_PIPE:
 	{
-		int ani_id = atoi(tokens[3].c_str());
-		int pipe_height = (float)atof(tokens[4].c_str());
-		obj = new CPipe(x, y, ani_id, pipe_height);
+		float cell_width = (float)atof(tokens[3].c_str());
+		float cell_height = (float)atof(tokens[4].c_str());
+		int pipe_height = atoi(tokens[5].c_str());
+
+		int sprite_id_begin_begin = atoi(tokens[6].c_str());
+		int sprite_id_end_begin = atoi(tokens[7].c_str());
+		int sprite_id_begin_end = atoi(tokens[8].c_str());
+		int sprite_id_end_end = atoi(tokens[9].c_str());
+
+		int face_direction = atoi(tokens[10].c_str());
+		int warp_direction = atoi(tokens[11].c_str());
+
+		obj = new CPipe(
+			x, y,
+			cell_width, cell_height, pipe_height, 
+			face_direction, warp_direction, 
+			sprite_id_begin_begin, sprite_id_end_begin, 
+			sprite_id_begin_end, sprite_id_end_end);
 		break;
 	}
 
