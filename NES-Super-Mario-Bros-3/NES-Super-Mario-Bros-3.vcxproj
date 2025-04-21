@@ -132,7 +132,6 @@
     <ClCompile Include="Animations.cpp" />
     <ClCompile Include="Background.cpp" />
     <ClCompile Include="Block.cpp" />
-    <ClCompile Include="Background.cpp" />
     <ClCompile Include="Brick.cpp" />
     <ClCompile Include="BrickParticle.cpp" />
     <ClCompile Include="Bush.cpp" />
@@ -168,7 +167,6 @@
     <ClInclude Include="AssetIDs.h" />
     <ClInclude Include="Background.h" />
     <ClInclude Include="Block.h" />
-    <ClInclude Include="Background.h" />
     <ClInclude Include="Brick.h" />
     <ClInclude Include="BrickParticle.h" />
     <ClInclude Include="Bush.h" />
