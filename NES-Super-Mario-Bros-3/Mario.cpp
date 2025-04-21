@@ -102,32 +102,45 @@ void CMario::OnCollisionWithGoomba(LPCOLLISIONEVENT e)
 
 void CMario::OnCollisionWithQuestionBlock(LPCOLLISIONEVENT e)
 {
-	int getLevel = level;
-	float ex, ey; //position of event's object
-	e->obj->GetPosition(ex, ey);
+	if (e->obj->GetState() == STATE_QUESTION_BLOCK_ON)
+	{
+		int getLevel = level;
+		float ex, ey; //position of event's object
+		e->obj->GetPosition(ex, ey);
 
-	switch (getLevel)
-	{
-	case MARIO_LEVEL_BIG:
-	{
-		if (y - MARIO_BIG_BBOX_HEIGHT / 2 >= ey + QUESTION_BLOCK_BBOX_HEIGHT / 2)
+		switch (getLevel)
 		{
-			e->obj->SetState(STATE_QUESTION_BLOCK_OFF);
-			CQuestionBlock* p = (CQuestionBlock*)e->obj;
-			p->ShakeToggle();
-		}
-		break;
-	}
-	case MARIO_LEVEL_SMALL:
-	{
-		if (y - MARIO_SMALL_BBOX_HEIGHT / 2 >= ey + QUESTION_BLOCK_BBOX_HEIGHT / 2)
+		case MARIO_LEVEL_BIG:
 		{
-			e->obj->SetState(STATE_QUESTION_BLOCK_OFF);
-			CQuestionBlock* p = (CQuestionBlock*)e->obj;
-			p->ShakeToggle();
+			if (y - MARIO_BIG_BBOX_HEIGHT / 2 >= ey + QUESTION_BLOCK_BBOX_HEIGHT / 2)
+			{
+				e->obj->SetState(STATE_QUESTION_BLOCK_OFF);
+				CQuestionBlock* p = (CQuestionBlock*)e->obj;
+				p->ShakeToggle(); //A SIGN FOR OBJECTS TO BE INSTANTIATED
+
+				float cX, cY;
+				e->obj->GetPosition(cX, cY);
+				CCoin* c = new CCoin(cX, cY - QUESTION_BLOCK_BBOX_HEIGHT, true);
+				CGame::GetInstance()->GetCurrentScene()->InstantiateObject(c);
+			}
+			break;
 		}
-		break;
-	}
+		case MARIO_LEVEL_SMALL:
+		{
+			if (y - MARIO_SMALL_BBOX_HEIGHT / 2 >= ey + QUESTION_BLOCK_BBOX_HEIGHT / 2)
+			{
+				e->obj->SetState(STATE_QUESTION_BLOCK_OFF);
+				CQuestionBlock* p = (CQuestionBlock*)e->obj;
+				p->ShakeToggle(); //A SIGN FOR OBJECTS TO BE INSTANTIATED
+
+				float cX, cY;
+				e->obj->GetPosition(cX, cY);
+				CCoin* c = new CCoin(cX, cY - QUESTION_BLOCK_BBOX_HEIGHT, true);
+				CGame::GetInstance()->GetCurrentScene()->InstantiateObject(c);
+			}
+			break;
+		}
+		}
 	}
 }
 
@@ -151,7 +164,6 @@ void CMario::OnCollisionWithBrick(LPCOLLISIONEVENT e)
 void CMario::OnCollisionWithCoin(LPCOLLISIONEVENT e)
 {
 	e->obj->Delete();
-	coin++;
 }
 
 void CMario::OnCollisionWithPortal(LPCOLLISIONEVENT e)
@@ -308,10 +320,6 @@ void CMario::Render()
 		aniId = GetAniIdSmall();
 
 	animations->Get(aniId)->Render(x, y);
-
-	//RenderBoundingBox();
-	
-	DebugOutTitle(L"Coins: %d", coin);
 }
 
 void CMario::SetState(int state)

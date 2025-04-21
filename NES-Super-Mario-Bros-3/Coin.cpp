@@ -8,6 +8,20 @@ void CCoin::Render()
 	//RenderBoundingBox();
 }
 
+void CCoin::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+{
+	if (isToggled)
+	{
+		vy += COIN_ACCELERATION_Y;
+		y += vy * dt;
+	}
+}
+
+bool CCoin::IsUnderOriginal()
+{
+	if (y < originalY) return false;
+}
+
 void CCoin::GetBoundingBox(float& l, float& t, float& r, float& b)
 {
 	l = x - COIN_BBOX_WIDTH / 2;
