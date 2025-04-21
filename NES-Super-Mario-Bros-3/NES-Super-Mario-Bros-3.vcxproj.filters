@@ -99,6 +99,15 @@
     <ClCompile Include="StripedBrick.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Cloud.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MapIcon.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DeadStateTrigger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h">
@@ -192,6 +201,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StripedBrick.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Cloud.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MapIcon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DeadStateTrigger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

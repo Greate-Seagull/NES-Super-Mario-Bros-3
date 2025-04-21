@@ -11,10 +11,19 @@
 #define ID_TEX_MISC 20
 #define ID_TEX_BACKGROUND -10
 
+#pragma region NON OBJECT TYPES
+
 #define NON_OBJECT_TYPE_BACKGROUND -1
 #define NON_OBJECT_TYPE_MINI_BUSH -2
 #define NON_OBJECT_TYPE_BIG_BUSH -3
 #define NON_OBJECT_TYPE_CLOUD -4
+#define NON_OBJECT_TYPE_MAP_ICON -5
+
+#define DEAD_STATE_TRIGGER -99
+
+#pragma endregion
+
+#pragma region OBJECT TYPES
 
 #define OBJECT_TYPE_MARIO	0
 #define OBJECT_TYPE_BRICK	1
@@ -26,6 +35,8 @@
 #define OBJECT_TYPE_PIPE 7
 #define OBJECT_TYPE_CONTAINER 8
 #define OBJECT_TYPE_STRIPED_BRICK 9
+
+#pragma endregion
 
 #define OBJECT_TYPE_PORTAL	50
 

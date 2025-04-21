@@ -139,11 +139,13 @@
     <ClCompile Include="Coin.cpp" />
     <ClCompile Include="Collision.cpp" />
     <ClCompile Include="Container.cpp" />
+    <ClCompile Include="DeadStateTrigger.cpp" />
     <ClCompile Include="debug.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Goomba.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MapIcon.cpp" />
     <ClCompile Include="Mario.cpp" />
     <ClCompile Include="MiniBush.cpp" />
     <ClCompile Include="Pipe.cpp" />
@@ -173,11 +175,13 @@
     <ClInclude Include="Coin.h" />
     <ClInclude Include="Collision.h" />
     <ClInclude Include="Container.h" />
+    <ClInclude Include="DeadStateTrigger.h" />
     <ClInclude Include="debug.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Goomba.h" />
     <ClInclude Include="KeyEventHandler.h" />
+    <ClInclude Include="MapIcon.h" />
     <ClInclude Include="Mario.h" />
     <ClInclude Include="MiniBush.h" />
     <ClInclude Include="Pipe.h" />
