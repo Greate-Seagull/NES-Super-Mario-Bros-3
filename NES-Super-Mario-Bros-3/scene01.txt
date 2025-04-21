@@ -8,11 +8,15 @@ cloud.txt
 questionblock.txt
 pipe.txt
 ground.txt
+background.txt
 #
 [OBJECTS]
 # type	x	y	extra_settings per object type
-# type: 0 = Mario , 1 = Brick, 2 = Goomba, 3 = Koopas
+# type: -1 = Background, 0 = Mario , 1 = Brick, 2 = Goomba, 3 = Koopas
 # See OBJECT_TYPE constants in AssetIDs.h
+
+# BACKGROUND
+-1	1270	-28
 
 # MARIO
 0	20	10
@@ -21,13 +25,6 @@ ground.txt
 1	0	148
 1	0	164
 
-1	0	180
-1	16	180
-1	32	180
-1	48	180
-1	64	180
-1	80	180
-1	96	180
 1	112	180
 1	128	180
 1	144	180
