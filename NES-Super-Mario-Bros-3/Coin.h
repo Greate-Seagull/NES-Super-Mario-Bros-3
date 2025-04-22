@@ -19,6 +19,7 @@ protected:
 	bool isDisappear;
 	float originalY;
 public:
+	CCoin(float x, float y) : CMovableObject(x, y) {}
 	CCoin(float x, float y, bool isToggled) : CMovableObject(x, y)
 	{
 		this->isToggled = isToggled;
