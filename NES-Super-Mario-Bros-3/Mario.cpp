@@ -8,6 +8,7 @@
 #include "Coin.h"
 #include "Brick.h"
 #include "QuestionBlock.h"
+#include "Background.h"
 #include "BrickParticle.h"
 #include "Portal.h"
 #include "Platform.h"
@@ -175,6 +176,14 @@ void CMario::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 void CMario::OnCollisionWithHelpfulObject(LPCOLLISIONEVENT e)
 {
 	Touch(e->obj);
+
+	#pragma region CHECK WHAT HELPFUL OBJECT TYPE MARIO COLLIDES
+	if (dynamic_cast<CRandomCard*>(e->obj))
+	{
+		CRandomCard* rC = (CRandomCard*)e->obj;
+		rC->Switch(false);
+	}
+	#pragma endregion
 }
 
 void CMario::OnCollisionWithBlock(LPCOLLISIONEVENT e)

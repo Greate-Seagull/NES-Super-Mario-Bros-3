@@ -22,6 +22,7 @@ height	240
 12	textures\enemies_up.png
 20	textures\misc.png
 21	textures\stage-tiles.png
+22	textures\misc-2.png
 30	textures\items_left.png
 31	textures\items_right.png
 40	textures\effect_left.png
