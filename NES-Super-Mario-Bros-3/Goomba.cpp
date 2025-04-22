@@ -27,7 +27,7 @@ void CGoomba::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 {
 	if (e->ny)
 	{
-		vy = 0;
+		vy = 0.0f;
 		isOnGround = true;
 	}
 	if (e->nx)
