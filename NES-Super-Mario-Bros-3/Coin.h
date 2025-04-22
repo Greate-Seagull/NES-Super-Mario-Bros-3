@@ -19,7 +19,6 @@ protected:
 	bool isDisappear;
 	float originalY;
 public:
-	CCoin(float x, float y) : CMovableObject(x, y) {}
 	CCoin(float x, float y, bool isToggled) : CMovableObject(x, y)
 	{
 		this->isToggled = isToggled;
@@ -37,6 +36,7 @@ public:
 	void GetBoundingBox(float& l, float& t, float& r, float& b); //GameObject có GetBoundingBox rồi! "virtual void GetBoundingBox(float &left, float &top, float &right, float &bottom);"
 	int IsBlocking() { return 0; }
 
+	bool GetToggled() { return isToggled; }
 	void SetDisappear(bool Disappear) { this->isDisappear = Disappear; }
 	bool GetDisappear() { return isDisappear; }
 	bool IsUnderOriginal();
