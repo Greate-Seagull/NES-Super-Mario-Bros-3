@@ -7,6 +7,7 @@
 #include "Goomba.h"
 #include "Coin.h"
 #include "Brick.h"
+#include "QuestionBlock.h"
 #include "BrickParticle.h"
 #include "Portal.h"
 #include "Platform.h"
@@ -179,6 +180,62 @@ void CMario::OnCollisionWithHelpfulObject(LPCOLLISIONEVENT e)
 void CMario::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 {	
 	Touch(e->obj);
+
+	#pragma region CHECK WHAT BLOCK TYPE MARIO COLLIDES
+	if (dynamic_cast<CQuestionBlock*>(e->obj))
+	{
+		if (e->obj->GetState() == STATE_QUESTION_BLOCK_ON)
+		{
+			float ex, ey; //position of event's object
+			e->obj->GetPosition(ex, ey);
+
+			if (life == MARIO_LEVEL_BIG)
+			{
+				if (y - MARIO_BIG_BBOX_HEIGHT / 2 >= ey + QUESTION_BLOCK_BBOX_HEIGHT / 2)
+				{
+					e->obj->SetState(STATE_QUESTION_BLOCK_OFF);
+					CQuestionBlock* p = (CQuestionBlock*)e->obj;
+					p->ShakeToggle(); //A SIGN FOR OBJECTS TO BE INSTANTIATED
+
+					float cX, cY;
+					e->obj->GetPosition(cX, cY);
+					CCoin* c = new CCoin(cX, cY - QUESTION_BLOCK_BBOX_HEIGHT, true);
+					CGame::GetInstance()->GetCurrentScene()->Add(c);
+				}
+			}
+			else if (life == MARIO_LEVEL_SMALL)
+			{
+				if (y - MARIO_SMALL_BBOX_HEIGHT / 2 >= ey + QUESTION_BLOCK_BBOX_HEIGHT / 2)
+				{
+					e->obj->SetState(STATE_QUESTION_BLOCK_OFF);
+					CQuestionBlock* p = (CQuestionBlock*)e->obj;
+					p->ShakeToggle(); //A SIGN FOR OBJECTS TO BE INSTANTIATED
+
+					float cX, cY;
+					e->obj->GetPosition(cX, cY);
+					CCoin* c = new CCoin(cX, cY - QUESTION_BLOCK_BBOX_HEIGHT, true);
+					CGame::GetInstance()->GetCurrentScene()->Add(c);
+				}
+			}
+		}
+	}
+	if (dynamic_cast<CBrick*>(e->obj))
+	{
+		float eX, eY;
+		e->obj->GetPosition(eX, eY);
+		CBrickParticle* p1 = new CBrickParticle(eX - 8, eY - 8, 1);
+		CBrickParticle* p2 = new CBrickParticle(eX + 8, eY - 8, 2);
+		CBrickParticle* p3 = new CBrickParticle(eX - 8, eY + 8, 3);
+		CBrickParticle* p4 = new CBrickParticle(eX + 8, eY + 8, 4);
+
+		CGame::GetInstance()->GetCurrentScene()->Add(p1);
+		CGame::GetInstance()->GetCurrentScene()->Add(p2);
+		CGame::GetInstance()->GetCurrentScene()->Add(p3);
+		CGame::GetInstance()->GetCurrentScene()->Add(p4);
+
+		e->obj->Delete();
+	}
+	#pragma endregion
 
 	if (e->ny)
 	{
