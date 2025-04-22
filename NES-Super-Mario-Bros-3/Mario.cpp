@@ -153,8 +153,8 @@ void CMario::OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e)
 
 void CMario::OnCollisionWithCoin(LPCOLLISIONEVENT e)
 {
-	e->obj->Delete();
-	//coin++;
+	CCoin* c = (CCoin*)e->obj;
+	c->Collect(this);
 }
 
 void CMario::OnCollisionWithPortal(LPCOLLISIONEVENT e)

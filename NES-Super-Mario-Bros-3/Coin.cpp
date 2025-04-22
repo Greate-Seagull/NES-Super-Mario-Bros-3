@@ -1,4 +1,7 @@
 #include "Coin.h"
+#include "Mario.h"
+
+#define ACTION_COLLECT 0
 
 void CCoin::Render()
 {
@@ -17,9 +20,27 @@ void CCoin::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	}
 }
 
+void CCoin::Reaction(CGameObject* by_another, int action)
+{
+	switch (action)
+	{
+	case ACTION_COLLECT:
+		if (dynamic_cast<CMario*>(by_another)) isDisappear = true;
+		break;
+	}
+}
+
+void CCoin::Collect(CGameObject* obj)
+{
+	if (obj) {
+		this->Reaction(obj, ACTION_COLLECT);
+	}
+}
+
 bool CCoin::IsUnderOriginal()
 {
-	if (y < originalY) return false;
+	if (y <= originalY) return false;
+	else return true;
 }
 
 void CCoin::GetBoundingBox(float& l, float& t, float& r, float& b)

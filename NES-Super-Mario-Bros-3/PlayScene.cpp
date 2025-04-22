@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include "AssetIDs.h"
+#include "debug.h"
 
 #include "PlayScene.h"
 #include "Utils.h"
@@ -472,7 +473,7 @@ void CPlayScene::Render()
 		{
 			CCoin* c = (CCoin*)objects[i];
 			if (c->GetToggled() && !c->IsUnderOriginal()) objects[i]->Render();
-			else if (!c->GetToggled()) objects[i]->Render();
+			else if (!c->GetToggled() && !c->GetDisappear()) objects[i]->Render();
 		}
 		else
 		{

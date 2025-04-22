@@ -4,6 +4,8 @@
 #include "Animation.h"
 #include "Animations.h"
 
+#include "debug.h"
+
 #define ID_ANI_COIN 40000
 
 #define	COIN_WIDTH 10
@@ -19,7 +21,6 @@ protected:
 	bool isDisappear;
 	float originalY;
 public:
-	CCoin(float x, float y) : CMovableObject(x, y) {}
 	CCoin(float x, float y, bool isToggled) : CMovableObject(x, y)
 	{
 		this->isToggled = isToggled;
@@ -37,8 +38,12 @@ public:
 	void GetBoundingBox(float& l, float& t, float& r, float& b); //GameObject có GetBoundingBox rồi! "virtual void GetBoundingBox(float &left, float &top, float &right, float &bottom);"
 	int IsBlocking() { return 0; }
 
+	void Reaction(CGameObject* by_another, int action);
+
 	bool GetToggled() { return isToggled; }
 	void SetDisappear(bool Disappear) { this->isDisappear = Disappear; }
 	bool GetDisappear() { return isDisappear; }
 	bool IsUnderOriginal();
+
+	void Collect(CGameObject* obj);
 };
