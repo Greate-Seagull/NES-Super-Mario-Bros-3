@@ -15,6 +15,7 @@ protected:
 	bool highPower;
 public:
 	CHarmfulObject(float x, float y);
+	virtual int IsCollidable() { return 1; }
 	virtual void MeleeAttack(CGameObject* another);
 	virtual void Destroy(CGameObject* another);
 	virtual void FlyOut(int attack_direction);

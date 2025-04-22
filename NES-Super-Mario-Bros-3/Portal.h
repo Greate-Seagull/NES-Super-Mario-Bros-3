@@ -17,6 +17,8 @@ public:
 	void RenderBoundingBox(void);
 	
 	int GetSceneId() { return scene_id;  }
+
+	virtual int IsCollidable() { return 1; }
 	int IsBlocking() { return 0; }
 
 	void GetNewPlayerPos(float& x, float& y)

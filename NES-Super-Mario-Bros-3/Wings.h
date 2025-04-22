@@ -27,4 +27,5 @@ public:
 	
 	void ChangeAnimation();
 	void Render();
+	virtual int IsCollidable() { return 0; }
 };

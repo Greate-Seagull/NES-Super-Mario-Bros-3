@@ -385,14 +385,15 @@ void CPlayScene::Update(DWORD dt)
 	vector<LPGAMEOBJECT> coObjects;
 	for (size_t i = 1; i < objects.size(); i++)
 	{
-		coObjects.push_back(objects[i]);
+		if (objects[i]->IsCollidable())
+			coObjects.push_back(objects[i]);
 	}
 
 	for (size_t i = 0; i < objects.size(); i++)
 	{
 		objects[i]->Update(dt, &coObjects);
 
-		if (dynamic_cast<CCoin*>(objects[i]))
+		/*if (dynamic_cast<CCoin*>(objects[i]))
 		{
 			CCoin* c = (CCoin*)objects[i];
 			if (c->IsUnderOriginal())
@@ -403,7 +404,7 @@ void CPlayScene::Update(DWORD dt)
 					coin++;
 				}
 			}
-		}
+		}*/
 	}
 
 	// skip the rest if scene was already unloaded (Mario::Update might trigger PlayScene::Unload)

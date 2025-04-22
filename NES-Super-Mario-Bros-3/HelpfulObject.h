@@ -9,5 +9,6 @@ protected:
 	int effect;
 public:
 	CHelpfulObject(float x, float y);
+	virtual int IsCollidable() { return 1; }
 	virtual void LaunchEffect(CCreature* creature);
 };

@@ -31,9 +31,7 @@ CMario::CMario(float x, float y):
 }
 
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
-{	
-	if(dt > 20)
-		DebugOutTitle(L"time: %d", dt);
+{		
 	//DebugOutTitle(L"Momentum: %d, vx: %f", momentum, fabs(vx));
 	//dt = 16;
 	InPhase(dt, coObjects);
@@ -63,7 +61,6 @@ void CMario::Living(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	float calculated_ax, calculated_ay;
 	ComputeAccelerator(calculated_ax, calculated_ay, dt);
 	Accelerate(calculated_ax, calculated_ay, dt);
-
 	CCollision::GetInstance()->Process(this, dt, coObjects);
 	if (this->state != STATE_LIVE) //Check state changed after collision
 		return;
@@ -165,10 +162,15 @@ void CMario::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 {
 	if (e->ny)
 	{
-		vy = 0;
+		vy = 0.0f;
 		ny = 0;
 		is_falling = false;
 	}	
+
+	if (e->nx)
+	{
+		vx = 0.0f;
+	}
 }
 
 void CMario::OnCollisionWithHelpfulObject(LPCOLLISIONEVENT e)

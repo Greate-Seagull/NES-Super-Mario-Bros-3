@@ -321,7 +321,7 @@ LPTEXTURE CGame::LoadTexture(LPCWSTR texturePath)
 void CGame::Update(DWORD dt)
 {
 	keyState->Update();
-	GetCurrentScene()->Update(dt);
+	GetCurrentScene()->Update(dt);	
 }
 
 void CGame::Render()
