@@ -15,6 +15,7 @@ protected:
 	// A play scene has to have player, right? 
 	LPGAMEOBJECT player;
 	LPGAMEOBJECT background;
+	LPGAMEOBJECT ending;
 
 	vector<LPGAMEOBJECT> objects;
 
