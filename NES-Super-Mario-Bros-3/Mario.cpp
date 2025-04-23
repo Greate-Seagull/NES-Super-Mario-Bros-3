@@ -122,7 +122,7 @@ void CMario::Reaction(CGameObject* by_another, int action)
 			//SetLevel(MARIO_LEVEL_BIG);
 			break;
 		case EFFECT_RACOONIZE:
-			SetState(MARIO_STATE_GAIN_POWER);
+			if (life == MARIO_LEVEL_BIG) SetState(MARIO_STATE_GAIN_POWER);
 			//SetLevel(MARIO_LEVEL_RACOON);
 			break;
 	}
