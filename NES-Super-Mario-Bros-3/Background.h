@@ -1,12 +1,12 @@
 #pragma once
 
+#include "Game.h"
+#include "PlayScene.h"
 #include "GameObject.h"
 #include "Animation.h"
 #include "Animations.h"
 
-#include "Game.h"
-
-#define ID_ANI_BACKGROUND 0
+#define ID_ANI_BACKGROUND -10000
 
 #define BACKGROUND_WIDTH 2560
 #define BACKGROUND_HEIGHT 393
@@ -69,7 +69,8 @@ public:
 		this->spriteIdEndEnd = sprite_id_end_end;
 
 		reward = new CReward(x + cellWidth, y - cellHeight);
-		CGame::GetInstance()->GetCurrentScene()->InstantiateObject(reward);
+		LPPLAYSCENE playScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+		playScene->Add(reward);
 	}
 	void Render();
 	void Update(DWORD dt) {}

@@ -13,7 +13,7 @@
 -43001	62	55	77	70	21
 
 #SKY (SPRITE FOR PLATFORM)
-40000	44	91	59	106	21
+50000	44	91	59	106	21
 
 # ani_id	sprite1_id	time1	sprite2_id	time2	...
 [ANIMATIONS]

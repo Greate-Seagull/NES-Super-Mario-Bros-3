@@ -5,15 +5,17 @@
 #include "GameObject.h"
 #include "Brick.h"
 #include "Mario.h"
-#include "Goomba.h"
+#include "Paragoomba.h"
 //#include "Koopas.h"
 
+
+#define CAM_MAX_Y 247.0f
 
 class CPlayScene: public CScene
 {
 protected: 
 	// A play scene has to have player, right? 
-	LPGAMEOBJECT player;
+	CMario* player;
 	LPGAMEOBJECT background;
 	LPGAMEOBJECT ending;
 
@@ -36,13 +38,15 @@ public:
 	virtual void Unload();
 
 	LPGAMEOBJECT GetPlayer() { return player; }
-
+	
 	void Clear();
 	void PurgeDeletedObjects();
 
 	static bool IsGameObjectDeleted(const LPGAMEOBJECT& o);
 
-	void InstantiateObject(LPGAMEOBJECT obj);
+	void Add(LPGAMEOBJECT newObj);
+	vector<LPGAMEOBJECT> Filter();
+	void UpdateCamera();
 };
 
 typedef CPlayScene* LPPLAYSCENE;

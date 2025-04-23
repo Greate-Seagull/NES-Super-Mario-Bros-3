@@ -27,12 +27,8 @@ public:
 		this->spriteIdMiddleEnd = sprite_id_middle_end;
 		this->spriteIdEndEnd = sprite_id_end_end;
 	}
+
 	void Render();
-	void Update(DWORD dt) {}
 	void GetBoundingBox(float& l, float& t, float& r, float& b);
-	int IsDirectionColliable(float nx, float ny) 
-	{
-		if (nx == 0 && ny == -1) return 1;
-		return 0;
-	}
+	virtual int IsCollidable() { return 1; }
 };

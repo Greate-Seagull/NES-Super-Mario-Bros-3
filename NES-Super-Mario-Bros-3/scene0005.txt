@@ -1,9 +1,23 @@
 # list of object assets to load in this scene
 [ASSETS]
+#Priority
+effects.txt
+
+#Objects
 mario.txt
 coin.txt
 cloud.txt
-brick.txt
+
+super_leaf.txt
+super_mushroom.txt
+
+red_koopa_troopa.txt
+#goomba.txt
+#paragoomba.txt
+#wings.txt
+piranha_plant.txt
+#venus_fire_trap.txt
+#fireball.txt
 #
 [OBJECTS]
 # type	x	y	extra_settings per object type
@@ -11,7 +25,28 @@ brick.txt
 # See OBJECT_TYPE constants in AssetIDs.h
 
 # MARIO
-0	120	10
+0	120	150
+
+#SUPER LEAF
+11	250	120
+
+#SUPER MUSHROOM
+10	200	120
+
+KOOPA
+7	200	150
+
+#GOOMBA
+#2	250	150
+
+#GOOMBA
+#9	300	150
+
+#PIRANHA
+8	350	150
+
+#VENUS
+#6	400	150
 
 #COIN
 4	100	120
@@ -20,26 +55,7 @@ brick.txt
 4	160	120
 4	180	120
 
-
-4	100	100
-4	120	100
-4	140	100
-4	160	100
-4	180	100
-
-4	100	80
-4	120	80
-4	140	80
-4	160	80
-4	180	80
-
-
-
-
 #Platform
 5 	100	180	16	15	32	51000	52000	53000
 5	140	140	16	15	26	51000	52000	53000
-
-#Portal 
-50	200	160	216	180	1
 

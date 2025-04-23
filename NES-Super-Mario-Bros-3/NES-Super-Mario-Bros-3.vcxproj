@@ -129,6 +129,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
+    <ClCompile Include="AnimationFrame.cpp" />
     <ClCompile Include="Animations.cpp" />
     <ClCompile Include="Background.cpp" />
     <ClCompile Include="Block.cpp" />
@@ -140,25 +141,39 @@
     <ClCompile Include="Collision.cpp" />
     <ClCompile Include="Container.cpp" />
     <ClCompile Include="DeadStateTrigger.cpp" />
+    <ClCompile Include="Creature.cpp" />
     <ClCompile Include="debug.cpp" />
+    <ClCompile Include="Fireball.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Goomba.cpp" />
+    <ClCompile Include="HarmfulObject.cpp" />
+    <ClCompile Include="HelpfulObject.cpp" />
+    <ClCompile Include="KeyStateManager.cpp" />
+    <ClCompile Include="KoopaTroopa.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MapIcon.cpp" />
     <ClCompile Include="Mario.cpp" />
     <ClCompile Include="Pipe.cpp" />
+    <ClCompile Include="MovableObject.cpp" />
+    <ClCompile Include="Paragoomba.cpp" />
+    <ClCompile Include="PiranhaPlant.cpp" />
     <ClCompile Include="Platform.cpp" />
     <ClCompile Include="PlayScene.cpp" />
     <ClCompile Include="Portal.cpp" />
     <ClCompile Include="QuestionBlock.cpp" />
+    <ClCompile Include="RacoonTail.cpp" />
     <ClCompile Include="SampleKeyEventHandler.cpp" />
     <ClCompile Include="Scence.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="Sprites.cpp" />
     <ClCompile Include="StripedBrick.cpp" />
+    <ClCompile Include="SuperLeaf.cpp" />
+    <ClCompile Include="SuperMushroom.cpp" />
     <ClCompile Include="Textures.cpp" />
     <ClCompile Include="Utils.cpp" />
+    <ClCompile Include="VenusFireTrap.cpp" />
+    <ClCompile Include="Wings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h" />
@@ -175,32 +190,47 @@
     <ClInclude Include="Collision.h" />
     <ClInclude Include="Container.h" />
     <ClInclude Include="DeadStateTrigger.h" />
+    <ClInclude Include="Creature.h" />
     <ClInclude Include="debug.h" />
+    <ClInclude Include="Fireball.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Goomba.h" />
+    <ClInclude Include="HarmfulObject.h" />
+    <ClInclude Include="HelpfulObject.h" />
     <ClInclude Include="KeyEventHandler.h" />
     <ClInclude Include="MapIcon.h" />
+    <ClInclude Include="KeyStateManager.h" />
+    <ClInclude Include="KoopaTroopa.h" />
     <ClInclude Include="Mario.h" />
     <ClInclude Include="Pipe.h" />
+    <ClInclude Include="MovableObject.h" />
+    <ClInclude Include="Paragoomba.h" />
+    <ClInclude Include="PiranhaPlant.h" />
     <ClInclude Include="Platform.h" />
     <ClInclude Include="PlayScene.h" />
     <ClInclude Include="Portal.h" />
     <ClInclude Include="QuestionBlock.h" />
+    <ClInclude Include="RacoonTail.h" />
     <ClInclude Include="SampleKeyEventHandler.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="Sprites.h" />
     <ClInclude Include="StripedBrick.h" />
+    <ClInclude Include="SuperLeaf.h" />
+    <ClInclude Include="SuperMushroom.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Textures.h" />
     <ClInclude Include="Utils.h" />
+    <ClInclude Include="VenusFireTrap.h" />
+    <ClInclude Include="Wings.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="mario.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
+    <None Include="cpp.hint" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

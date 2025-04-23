@@ -1,15 +1,20 @@
 #include "Pipe.h"
 
+#include "Textures.h"
+#include "Game.h"
+
 void CPipe::Render()
 {
 	if (this->height <= 0) return;
 	CSprites* s = CSprites::GetInstance();
 
-	float xx = x - cell_width / 2;
+	//float xx = x - cell_width / 2;
+	float xx = x;
 	
 	if (face_direction == 1) //UP
 	{
-		float yy = y + cell_height;
+		//float yy = y + cell_height;
+		float yy = y;
 
 		for (int i = 1; i < this->height; i++)
 		{
@@ -41,24 +46,52 @@ void CPipe::Render()
 		s->Get(this->spriteIdBeginBegin)->Draw(xx, yy);
 		s->Get(this->spriteIdEndBegin)->Draw(xx + cell_width, yy);
 	}
+}
 
-	//RenderBoundingBox();
+void CPipe::RenderBoundingBox()
+{
+	D3DXVECTOR3 p(x, y, 0);
+	RECT rect;
+
+	LPTEXTURE bbox = CTextures::GetInstance()->Get(ID_TEX_BBOX);
+
+	float l, t, r, b;
+
+	GetBoundingBox(l, t, r, b);
+	rect.left = 0;
+	rect.top = 0;
+	rect.right = (int)r - (int)l;
+	rect.bottom = (int)b - (int)t;
+
+	float cx, cy;
+	CGame::GetInstance()->GetCamPos(cx, cy);
+
+	float xx = x + this->cell_width / 2.0f;
+	float yy = y + this->cell_height / 2.0f - this->bbox_height / 2.0f;
+
+	CGame::GetInstance()->Draw(xx - cx, yy - cy, bbox, nullptr, BBOX_ALPHA, rect.right - 1, rect.bottom - 1);
+	//CGame::GetInstance()->Draw(x - cx, y - cy, bbox, &rect, BBOX_ALPHA);
 }
 
 void CPipe::GetBoundingBox(float& l, float& t, float& r, float& b)
 {
-	if (this->face_direction == 1)
+	/*if (this->face_direction == 1)
 	{
-		l = x - PIPE_BBOX_WIDTH / 2;
-		b = y + cell_height * 1.5;
+		l = x - PIPE_BBOX_WIDTH / 2.0f;
+		b = y + cell_height * 1.5f;
 		r = l + PIPE_BBOX_WIDTH;
 		t = b - height * cell_height;
 	}
 	else if (this->face_direction == -1)
 	{
-		l = x - PIPE_BBOX_WIDTH / 2;
-		t = y - cell_height * 1.5;
+		l = x - PIPE_BBOX_WIDTH / 2.0f;
+		t = y - cell_height * 1.5f;
 		r = l + PIPE_BBOX_WIDTH;
 		b = t + height * cell_height;
-	}
+	}*/
+
+	l = x - cell_width / 2.0f;
+	t = y + cell_height / 2.0f  - bbox_height;
+	r = l + bbox_width;
+	b = t + bbox_height;
 }

@@ -1,36 +1,52 @@
-#pragma once
+﻿#pragma once
 
-#include "GameObject.h"
+#include "MovableObject.h"
 #include "Animation.h"
 #include "Animations.h"
 
-#define ID_ANI_COIN 11000
+#define ID_ANI_COIN 40000
 
 #define	COIN_WIDTH 10
-#define COIN_BBOX_WIDTH 10
-#define COIN_BBOX_HEIGHT 16
+#define COIN_BBOX_WIDTH 10.0f
+#define COIN_BBOX_HEIGHT 16.0f
 
-#define COIN_VELOCITY_Y -0.55f
-#define COIN_ACCELERATION_Y	0.05f
+#define COIN_VELOCITY_Y -0.3f
 
-class CCoin : public CGameObject {
+class CCoin : public CMovableObject {
 protected:
 	bool isToggled;
 	bool isDisappear;
 	float originalY;
 public:
-	CCoin(float x, float y, bool isToggled) : CGameObject(x, y)
+	CCoin(float x, float y) : CMovableObject(x, y) 
+	{
+		isToggled = false;
+		originalY = y;
+		vy = COIN_VELOCITY_Y;
+
+		aniID = ID_ANI_COIN;
+
+		this->SetBoundingBox(COIN_BBOX_WIDTH, COIN_BBOX_HEIGHT);
+	}
+	/*CCoin(float x, float y, bool isToggled) : CMovableObject(x, y)
 	{
 		this->isToggled = isToggled;
 		this->isDisappear = false;
 		originalY = y;
-		if (this->isToggled) vy = COIN_VELOCITY_Y;
-		else vy = 0;
-	}
-	void Render();
+		vy = COIN_VELOCITY_Y;
+
+		aniID = ID_ANI_COIN;
+		
+		this->SetBoundingBox(COIN_BBOX_WIDTH, COIN_BBOX_HEIGHT);
+	}*/
+
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
-	void GetBoundingBox(float& l, float& t, float& r, float& b);
+
+	int IsCollidable() { return isToggled == false; }
 	int IsBlocking() { return 0; }
+	void OnCollisionWith(LPCOLLISIONEVENT e);
+
+	void Reaction(CGameObject* by_another, int action);
 
 	bool GetToggled() { return isToggled; }
 

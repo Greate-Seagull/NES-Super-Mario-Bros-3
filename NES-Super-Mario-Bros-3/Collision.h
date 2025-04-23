@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 #include <vector>
+#include <memory>
 #include <algorithm>
 
 using namespace std;
@@ -43,9 +44,27 @@ struct CCollisionEvent
 	}
 };
 
+class CCollisionEventManager
+{
+	vector<unique_ptr<CCollisionEvent>> co_events;
+	int current_event;
+
+public:
+	CCollisionEventManager();
+
+	void Add(float t, float nx, float ny, float dx, float dy, LPGAMEOBJECT objDest, LPGAMEOBJECT objSrc);
+	void VirtualDelete();
+	void Refresh();
+	LPCOLLISIONEVENT Get(int i);
+	LPCOLLISIONEVENT GetLast();
+	int Size();
+};
+
 class CCollision
 {
 	static CCollision* __instance;
+
+	CCollisionEventManager e_manager;
 public: 
 	static void SweptAABB(
 		float ml,			// move left 
@@ -62,7 +81,7 @@ public:
 		float& nx,
 		float& ny);
 
-	LPCOLLISIONEVENT SweptAABB(
+	/*LPCOLLISIONEVENT SweptAABB(
 		LPGAMEOBJECT objSrc, 
 		DWORD dt,
 		LPGAMEOBJECT objDest); 
@@ -79,9 +98,29 @@ public:
 		LPCOLLISIONEVENT &colY, 
 		int filterBlock,		
 		int filterX,
+		int filterY);*/
+
+	void SweptAABB(
+		LPGAMEOBJECT objSrc,
+		DWORD dt,
+		LPGAMEOBJECT objDest);
+	void Scan(
+		LPGAMEOBJECT objSrc,
+		DWORD dt,
+		vector<LPGAMEOBJECT>* objDests);
+
+	void Filter(
+		LPGAMEOBJECT objSrc,		
+		LPCOLLISIONEVENT& colX,
+		LPCOLLISIONEVENT& colY,
+		int filterBlock,
+		int filterX,
 		int filterY);
 
 	void Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+
+	bool Overlap(LPGAMEOBJECT objSrc, LPGAMEOBJECT objDst);
+	void ProcessOverlap(LPGAMEOBJECT objSrc, vector<LPGAMEOBJECT>* coObjects);
 
 	static CCollision* GetInstance();
 };

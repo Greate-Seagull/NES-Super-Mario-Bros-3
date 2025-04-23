@@ -1,59 +1,99 @@
 #include "QuestionBlock.h"
+#include "Creature.h"
+
+#include "Coin.h"
+#include "SuperMushroom.h"
+#include "SuperLeaf.h"
+
 #include "Collision.h"
+#include "Game.h"
+#include "PlayScene.h"
 
 void CQuestionBlock::Render()
 {
-	CAnimations* animations = CAnimations::GetInstance();
-	if (state == STATE_QUESTION_BLOCK_ON)
-	{
-		animations->Get(ID_ANI_QUESTION_BLOCK_TOGGLE_ON)->Render(x, y);
-	}
-	else if (state == STATE_QUESTION_BLOCK_OFF)
-	{
-		animations->Get(ID_ANI_QUESTION_BLOCK_TOGGLE_OFF)->Render(x, y);
-	}
-}
-
-void CQuestionBlock::GetBoundingBox(float& l, float& t, float& r, float& b)
-{
-	l = x - QUESTION_BLOCK_BBOX_WIDTH / 2;
-	t = y - QUESTION_BLOCK_BBOX_HEIGHT / 2;
-	r = l + QUESTION_BLOCK_BBOX_WIDTH;
-	b = t + QUESTION_BLOCK_BBOX_HEIGHT;
+	aniID = ID_ANI_QUESTION_BLOCK + (state != STATE_LIVE);
+	CAnimations::GetInstance()->Get(aniID)->Render(x, y);
 }
 
 void CQuestionBlock::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
-	if (isToggle)
-	{
-		if (time_elapsed < SHAKE_TIME && !isOverBound)
-		{
-			time_elapsed += dt;
-			this->y -= SHAKE_VELOCITY * dt;
-			return;
-		}
-		else if (time_elapsed >= SHAKE_TIME && !isOverBound)
-		{
-			this->isOverBound = true;
-			return;
-		}
+	InPhase(dt, coObjects);
+}
 
-		if (time_elapsed > 0 && isOverBound)
-		{
-			time_elapsed -= dt;
-			this->y += SHAKE_VELOCITY * dt;
-			return;
-		}
-		else
-		{
-			isToggle = false;
-			this->y = this->y_legacy;
-			time_elapsed = 0;
-		}
+void CQuestionBlock::InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+{
+	switch (state)
+	{
+		case QUESTION_BLOCK_STATE_TOGGLE:
+			Shaking(dt);
+			break;
 	}
 }
 
-void CQuestionBlock::ShakeToggle()
+void CQuestionBlock::Reaction(CGameObject* by_another, int action)
 {
-	this->isToggle = true;
+	if (state == STATE_DIE)
+		return;
+
+	switch (action)
+	{
+		case ACTION_DESTROY:
+			SetState(STATE_DIE);
+			break;
+		case ACTION_TOUCH:
+			SetState(QUESTION_BLOCK_STATE_TOGGLE);
+			break;
+	}
+
+	TriggerItem();
+}
+
+void CQuestionBlock::SetState(int state)
+{
+	if (this->state == state)
+		return;
+
+	this->state = state;
+
+	switch (state)
+	{
+		case QUESTION_BLOCK_STATE_TOGGLE:
+			vy = QUESTION_BLOCK_SHAKE_VY;
+			break;
+		case STATE_DIE:
+			vy = 0.0f;
+			break;
+	}
+}
+
+void CQuestionBlock::TriggerItem()
+{
+	switch (itemID)
+	{
+		case OBJECT_TYPE_COIN:
+			item = new CCoin(x, y);			
+			break;
+		case OBJECT_TYPE_SUPER_MUSHROOM:
+			item = new CSuperMushroom(x, y);
+			break;
+		case OBJECT_TYPE_SUPER_LEAF:
+			item = new CSuperLeaf(x, y);
+			break;
+	}
+
+	item->Reaction(this, ACTION_ATTACK);
+	LPPLAYSCENE ps = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+	ps->Add(item);
+}
+
+void CQuestionBlock::Shaking(DWORD dt)
+{
+	Accelerate(0.0f, GAME_GRAVITY, dt);
+	Move(dt);
+
+	if (y >= origin_y)
+	{
+		y = origin_y;
+		SetState(STATE_DIE);
+	}
 }

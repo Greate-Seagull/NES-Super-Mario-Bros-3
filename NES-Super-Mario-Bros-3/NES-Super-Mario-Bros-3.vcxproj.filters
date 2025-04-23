@@ -75,6 +75,51 @@
     <ClCompile Include="Textures.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MovableObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HarmfulObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Creature.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PiranhaPlant.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="KeyStateManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AnimationFrame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="KoopaTroopa.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Fireball.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VenusFireTrap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Paragoomba.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HelpfulObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Wings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SuperMushroom.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SuperLeaf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RacoonTail.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Background.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -179,6 +224,48 @@
     <ClInclude Include="Utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MovableObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HarmfulObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Creature.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PiranhaPlant.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyStateManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KoopaTroopa.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Fireball.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VenusFireTrap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Paragoomba.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Wings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HelpfulObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SuperMushroom.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SuperLeaf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RacoonTail.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Background.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -221,5 +308,6 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include=".gitignore" />
+    <None Include="cpp.hint" />
   </ItemGroup>
 </Project>

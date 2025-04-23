@@ -1,11 +1,5 @@
 #include "BrickParticle.h"
 
-void CBrickParticle::Render()
-{
-	CAnimations* animations = CAnimations::GetInstance();
-	animations->Get(ID_PARTICLE_ROTATION)->Render(x, y);
-}
-
 void CBrickParticle::GetBoundingBox(float& l, float& t, float& r, float& b)
 {
 	l = 0;
