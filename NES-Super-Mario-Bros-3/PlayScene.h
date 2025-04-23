@@ -44,6 +44,7 @@ public:
 	static bool IsGameObjectDeleted(const LPGAMEOBJECT& o);
 
 	void Add(LPGAMEOBJECT newObj);
+	void GetObjects(vector<LPGAMEOBJECT>& objArray);
 	vector<LPGAMEOBJECT> Filter();
 	void UpdateCamera();
 };
