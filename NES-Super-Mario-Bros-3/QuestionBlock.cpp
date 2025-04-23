@@ -4,6 +4,7 @@
 #include "Coin.h"
 #include "SuperMushroom.h"
 #include "SuperLeaf.h"
+#include "Mario.h"
 
 #include "Collision.h"
 #include "Game.h"
@@ -68,21 +69,32 @@ void CQuestionBlock::SetState(int state)
 
 void CQuestionBlock::TriggerItem()
 {
-	switch (itemID)
+	LPPLAYSCENE ps = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+
+	switch (itemTypeID)
 	{
-		case OBJECT_TYPE_COIN:
+		case OBJECT_TYPE_FIXED:
 			item = new CCoin(x, y);			
 			break;
-		case OBJECT_TYPE_SUPER_MUSHROOM:
-			item = new CSuperMushroom(x, y);
-			break;
-		case OBJECT_TYPE_SUPER_LEAF:
-			item = new CSuperLeaf(x, y);
-			break;
+		case OBJECT_TYPE_LIFE_DEPENDS:
+		{
+			CMario* m = (CMario*)ps->GetPlayer();
+			float playerLife = m->GetLife();
+			
+			if (playerLife == MARIO_LEVEL_SMALL)
+			{
+				item = new CSuperMushroom(x, y);
+				break;
+			}
+			if (playerLife == MARIO_LEVEL_BIG || playerLife == MARIO_LEVEL_RACOON)
+			{
+				item = new CSuperLeaf(x, y);
+				break;
+			}
+		}
 	}
 
 	item->Reaction(this, ACTION_ATTACK);
-	LPPLAYSCENE ps = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
 	ps->Add(item);
 }
 
