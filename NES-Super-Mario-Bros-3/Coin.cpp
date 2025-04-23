@@ -9,7 +9,7 @@ void CCoin::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		Accelerate(0.0f, GAME_GRAVITY, dt);
 		Move(dt);
 
-		if (y > originalY)
+		if (y >= originalY)
 		{
 			Delete();
 		}
