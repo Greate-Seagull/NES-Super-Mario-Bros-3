@@ -19,6 +19,7 @@ stripedbrick.txt
 mapicon.txt
 particle.txt
 levelend.txt
+pbutton.txt
 other.txt
 #
 [OBJECTS]
@@ -155,6 +156,9 @@ other.txt
 10	1898	146
 10	1914	146
 10	1898	130
+
+# PBUTTON
+45	1850	98
 
 # COINS
 40	970	73

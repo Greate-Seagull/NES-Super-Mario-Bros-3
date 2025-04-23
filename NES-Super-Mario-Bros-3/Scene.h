@@ -29,6 +29,7 @@ public:
 	virtual void Render() = 0; 
 
 	virtual void Add(LPGAMEOBJECT newObj) = 0;
+	virtual void GetObjects(vector<LPGAMEOBJECT> &objArray) = 0;
 };
 typedef CScene * LPSCENE;
 

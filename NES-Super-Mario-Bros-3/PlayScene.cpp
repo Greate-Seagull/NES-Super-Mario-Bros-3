@@ -24,6 +24,7 @@
 #include "Cloud.h"
 #include "MapIcon.h"
 #include "BrickParticle.h"
+#include "PButton.h"
 
 #include "SampleKeyEventHandler.h"
 
@@ -56,6 +57,8 @@ float tempCamPosY = 0;
 bool isStartSpawned = false;
 
 int coin = 0;
+
+vector<LPGAMEOBJECT> bricksArchive;
 
 void CPlayScene::_ParseSection_SPRITES(string line)
 {
@@ -237,7 +240,12 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	case OBJECT_TYPE_VENUS_FIRE_TRAP: obj = new CVenusFireTrap(x, y); break;
 	case OBJECT_TYPE_PIRANHA_PLANT: obj = new CPiranhaPlant(x, y); break;
 	case OBJECT_TYPE_RED_KOOPA_TROOPA: obj = new CKoopaTroopa(x, y); break;
-	case OBJECT_TYPE_BRICK: obj = new CBrick(x,y); break;
+	case OBJECT_TYPE_BRICK:
+	{
+		obj = new CBrick(x, y);
+		bricksArchive.push_back((CBrick*)obj);
+		break;
+	}
 	case OBJECT_TYPE_STRIPED_BRICK: obj = new CStripedBrick(x, y); break;
 	case OBJECT_TYPE_COIN: obj = new CCoin(x, y, false); break;
 	case OBJECT_TYPE_SUPER_MUSHROOM: obj = new CSuperMushroom(x, y); break;
@@ -260,6 +268,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		break;
 	}
 	case OBJECT_TYPE_QUESTION_BLOCK: obj = new CQuestionBlock(x, y); break;
+	case OBJECT_TYPE_PBUTTON: obj = new CPButton(x, y); break;
 	case OBJECT_TYPE_PIPE:
 	{
 		float cell_width = (float)atof(tokens[3].c_str());
@@ -505,6 +514,7 @@ void CPlayScene::Clear()
 		delete (*it);
 	}
 	objects.clear();
+	bricksArchive.clear();
 }
 
 /*
@@ -519,6 +529,7 @@ void CPlayScene::Unload()
 		delete objects[i];
 
 	objects.clear();
+	bricksArchive.clear();
 	player = NULL;
 
 	DebugOut(L"[INFO] Scene %d unloaded! \n", id);
@@ -530,6 +541,11 @@ void CPlayScene::Add(LPGAMEOBJECT newObj)
 {
 	if(newObj)
 		objects.push_back(newObj);
+}
+
+void CPlayScene::GetObjects(vector<LPGAMEOBJECT>& objArray)
+{
+	objArray = bricksArchive;
 }
 
 void CPlayScene::PurgeDeletedObjects()

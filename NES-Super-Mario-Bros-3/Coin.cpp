@@ -25,7 +25,7 @@ void CCoin::Reaction(CGameObject* by_another, int action)
 	switch (action)
 	{
 	case ACTION_COLLECT:
-		if (dynamic_cast<CMario*>(by_another)) isDisappear = true;
+		if (dynamic_cast<CMario*>(by_another)) this->Delete();
 		break;
 	}
 }
