@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Block.h"
+#include "QuestionBlock.h"
 #include "Animation.h"
 #include "Animations.h"
 
@@ -10,7 +10,7 @@
 #define BRICK_BBOX_WIDTH 16.0f
 #define BRICK_BBOX_HEIGHT 16.0f
 
-class CBrick : public CBlock {
+class CBrick : public CQuestionBlock {
 public:
 	CBrick(float x, float y);
 	//GameObject co ham update roi! "virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects = NULL) {};"
