@@ -398,7 +398,14 @@ void CPlayScene::Update(DWORD dt)
 
 	for (size_t i = 0; i < process_list.size(); i++)
 	{
-		process_list[i]->Update(dt, &coObjects);
+		if (player->GetState() != STATE_DIE
+			&& player->GetState() != MARIO_STATE_GAIN_POWER
+			&& player->GetState() != MARIO_STATE_LOSE_POWER)
+			process_list[i]->Update(dt, &coObjects);
+		else {
+			if (process_list[i] == player)
+				process_list[i]->Update(dt, &coObjects);
+		}
 	}
 
 	UpdateCamera();
