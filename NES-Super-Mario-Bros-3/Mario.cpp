@@ -755,6 +755,11 @@ void CMario::LosingPower(DWORD dt)
 	}
 }
 
+float CMario::GetLife()
+{
+	return life;
+}
+
 void CMario::SetLife(float l)
 {
 	// Adjust position to avoid falling off platform

@@ -154,6 +154,7 @@ public:
 
 	void Reaction(CGameObject* by_another, int action);
 
+	float GetLife();
 	void SetLife(float l);
 
 	void SetState(int state);
