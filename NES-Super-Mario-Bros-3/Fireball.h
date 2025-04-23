@@ -10,6 +10,7 @@
 #define FIREBALL_SHORT_VY 0.04375f
 #define FIREBALL_LONG_VY 0.02f
 
+#define FIREBALL_RANGE_DISARM 0
 #define FIREBALL_RANGE_SHORT 1
 #define FIREBALL_RANGE_LONG 2
 
@@ -18,11 +19,10 @@
 class CFireball : public CHarmfulObject
 {
 public:
-	CFireball(float x, float y, int shoot_range = FIREBALL_RANGE_SHORT, int nx = 1, int ny = 1);
+	CFireball(float x, float y, int shoot_range = FIREBALL_RANGE_DISARM, int nx = 1, int ny = 1);
 
-	virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
-
-	virtual void Render();
+	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+	void Render();
 
 	virtual void ApplyRange(int range);
 	virtual void ApplyDirection(int nx, int ny);
@@ -31,5 +31,7 @@ public:
 
 	//virtual void OnCollisionWith(LPCOLLISIONEVENT e);
 	//virtual void OnCollisionWithMario(LPCOLLISIONEVENT e);
-	virtual void Reaction(CGameObject* by_another, int action);
+	void Reaction(CGameObject* by_another, int action);
+
+	int IsCollidable();
 };

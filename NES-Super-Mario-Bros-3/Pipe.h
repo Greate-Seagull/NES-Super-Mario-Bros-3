@@ -5,7 +5,7 @@
 #include "Animations.h"
 
 #define PIPE_WIDTH 30.0f
-#define PIPE_BBOX_WIDTH 28.0f
+#define PIPE_BBOX_WIDTH 30.0f
 
 class CPipe : public CBlock {
 protected:
@@ -40,8 +40,13 @@ public:
 		this->spriteIdEndBegin = sprite_id_end_begin;
 		this->spriteIdBeginEnd = sprite_id_begin_end;
 		this->spriteIdEndEnd = sprite_id_end_end;
+
+		this->bbox_height = cell_height * height;
+		this->bbox_width = PIPE_BBOX_WIDTH;
 	}
 	void Render();
+	void RenderBoundingBox();
+
 	void Update(DWORD dt) {} //GameObject co ham update roi! "virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects = NULL) {};"
-	void GetBoundingBox(float& l, float& t, float& r, float& b);
+	void GetBoundingBox(float& left, float& top, float& right, float& bottom);
 };

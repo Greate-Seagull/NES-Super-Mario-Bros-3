@@ -29,6 +29,9 @@ void CSuperMushroom::InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	{
 		case MUSHROOM_STATE_SLEEP:
 			break;
+		case MUSHROOM_STATE_WAKEUP:
+			WakingUp(dt);
+			break;
 		case MUSHROOM_STATE_EMERGE:
 			if (abs(y - start_y) < bbox_height) //emerging
 			{
@@ -61,6 +64,9 @@ void CSuperMushroom::SetState(int state)
 		case MUSHROOM_STATE_SLEEP:
 			ToStateSleeping();
 			break;
+		case MUSHROOM_STATE_WAKEUP:
+			ToStateWakingUp();
+			break;
 		case MUSHROOM_STATE_EMERGE:
 			ToStateEmerging();
 			break;
@@ -77,6 +83,11 @@ void CSuperMushroom::ToStateSleeping()
 {
 	vx = 0.0f;
 	vy = 0.0f;
+}
+
+void CSuperMushroom::ToStateWakingUp()
+{
+	wakeup_time = 0;
 }
 
 void CSuperMushroom::ToStateEmerging()
@@ -97,9 +108,26 @@ void CSuperMushroom::OnCollisionWith(LPCOLLISIONEVENT e)
 	{
 		OnCollisionWithPlatform(e);
 	}
+	else if (dynamic_cast<CBlock*>(e->obj))
+	{
+		OnCollisionWithBlock(e);
+	}
+	else if (dynamic_cast<CMario*>(e->obj))
+	{
+		OnCollisionWithMario(e);
+	}
 }
 
 void CSuperMushroom::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
+{
+	if (e->ny)
+	{
+		vy = 0;
+		isOnGround = true;
+	}
+}
+
+void CSuperMushroom::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 {
 	if (e->ny)
 	{
@@ -112,6 +140,13 @@ void CSuperMushroom::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 	}
 }
 
+void CSuperMushroom::OnCollisionWithMario(LPCOLLISIONEVENT e)
+{
+	CMario* mario = dynamic_cast<CMario*>(e->obj);
+	CHelpfulObject::LaunchEffect(mario);
+	SetState(STATE_DIE);
+}
+
 void CSuperMushroom::Reaction(CGameObject* by_another, int action)
 {
 	LookAwayFromMario();
@@ -119,25 +154,21 @@ void CSuperMushroom::Reaction(CGameObject* by_another, int action)
 	switch (state)
 	{		
 		case MUSHROOM_STATE_SLEEP:
-			Reaction_SleepingState(by_another, action);
+			ReactionInSleepingState(by_another, action);
 			break;
+		case MUSHROOM_STATE_EMERGE:
 		case MUSHROOM_STATE_RUN:
-			Reaction_RunningState(by_another, action);
+			ReactionInRunningState(by_another, action);
 			break;
 	}
 }
 
-void CSuperMushroom::Reaction_SleepingState(CGameObject* by_another, int action)
+void CSuperMushroom::ReactionInSleepingState(CGameObject* by_another, int action)
 {
-	switch (action)
-	{
-		case ACTION_TOUCH:
-			SetState(MUSHROOM_STATE_EMERGE);
-			break;
-	}
+	SetState(MUSHROOM_STATE_WAKEUP);
 }
 
-void CSuperMushroom::Reaction_RunningState(CGameObject* by_another, int action)
+void CSuperMushroom::ReactionInRunningState(CGameObject* by_another, int action)
 {
 	if (CMario* mario = dynamic_cast<CMario*>(by_another))
 	{
@@ -149,7 +180,7 @@ void CSuperMushroom::Reaction_RunningState(CGameObject* by_another, int action)
 void CSuperMushroom::Render()
 {
 	CAnimations::GetInstance()->Get(aniID)->Render(x, y);
-	RenderBoundingBox();
+	//RenderBoundingBox();
 }
 
 void CSuperMushroom::LookAwayFromMario()
@@ -165,4 +196,13 @@ void CSuperMushroom::LookAwayFromMario()
 	//Look away
 	nx = (mario_x <= x) ? DIRECTION_LEFT : DIRECTION_RIGHT;
 	nx = -nx;
+}
+
+void CSuperMushroom::WakingUp(DWORD dt)
+{
+	wakeup_time += dt;
+	if (wakeup_time >= MUSHROOM_WAKEUP_TIME)
+	{
+		SetState(MUSHROOM_STATE_EMERGE);
+	}
 }

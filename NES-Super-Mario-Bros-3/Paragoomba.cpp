@@ -22,10 +22,7 @@ void CParagoomba::InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 			CGoomba::InPhaseLiving(dt, coObjects);
 			break;
 		case STATE_DIE:
-			/*if (GetTickCount64() - die_start > GOOMBA_DIE_TIMEOUT)
-			{
-				this->Delete();
-			}*/
+			CGoomba::InPhaseDying(dt, coObjects);
 			break;
 	}
 }
@@ -58,9 +55,9 @@ void CParagoomba::Reaction_LivingState(CGameObject* by_another, int action)
 			UnderAttack((CHarmfulObject*)by_another);
 			LoseWings();
 			SetState(PARAGOOMBA_STATE_GOOMBA);
+			break;
 		case ACTION_DESTROY:
 			Die();
-			SetState(STATE_DIE);
 			break;
 		case ACTION_TOUCH:
 			MeleeAttack(by_another);
@@ -103,11 +100,12 @@ void CParagoomba::ToStateLiving()
 }
 
 void CParagoomba::ToStateDying()
-{
-	die_start = GetTickCount64();
+{	
+	die_start = 0;
 	y += (bbox_height - PARAGOOMBA_BBOX_DIE_HEIGHT) / 2;
 	bbox_height = PARAGOOMBA_BBOX_DIE_HEIGHT;
 	vx = 0;
+	LoseWings();
 }
 
 void CParagoomba::ChangeAnimation()

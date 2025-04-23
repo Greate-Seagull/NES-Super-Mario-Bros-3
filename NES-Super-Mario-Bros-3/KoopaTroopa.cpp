@@ -94,13 +94,11 @@ void CKoopaTroopa::InPhasePopingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 void CKoopaTroopa::OnCollisionWith(LPCOLLISIONEVENT e)
 {
 	if (dynamic_cast<CPlatform*>(e->obj))
-	{		
 		OnCollisionWithPlatform(e);
-	}
+	else if (dynamic_cast<CBlock*>(e->obj))
+		OnCollisionWithBlock(e);
 	else if (dynamic_cast<CHarmfulObject*>(e->obj))
-	{
 		OnCollisionWithHarmfulObject(e);
-	}
 }
 
 void CKoopaTroopa::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
@@ -127,6 +125,33 @@ void CKoopaTroopa::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 	}
 }
 
+void CKoopaTroopa::OnCollisionWithBlock(LPCOLLISIONEVENT e)
+{
+	switch (state)
+	{
+		case KOOPA_STATE_HIDE:
+			if (e->ny) Bounce();
+			break;
+		case STATE_LIVE:
+			if (e->ny) AwareOfNotFalling();
+			break;
+		case KOOPA_STATE_ROLL:
+			Destroy(e->obj);
+			break;
+		default:			
+			break;
+	}
+
+	if (e->ny) 
+		vy = 0.0f;
+
+	if (e->nx)
+	{
+		nx = -nx;
+		vx = -vx;
+	}
+}
+
 void CKoopaTroopa::OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e)
 {
 	CHarmfulObject* obj = dynamic_cast<CHarmfulObject*>(e->obj);
@@ -138,9 +163,18 @@ void CKoopaTroopa::OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e)
 			break;
 		case KOOPA_STATE_HIDE:
 		case KOOPA_STATE_POP:
-			Destroy(obj);
-			Die();
+		{
+			if (CMario* mario = dynamic_cast<CMario*>(e->obj))
+			{
+				DoPowerless(mario);
+			}
+			else
+			{
+				Destroy(obj);
+				Die();
+			}
 			break;
+		}
 		case KOOPA_STATE_ROLL:
 			Destroy(obj);
 			break;
@@ -198,7 +232,7 @@ void CKoopaTroopa::Render()
 	ChangeAnimation();
 
 	CAnimations::GetInstance()->Get(aniID)->Render(x, y);
-	RenderBoundingBox();
+	//RenderBoundingBox();
 }
 
 void CKoopaTroopa::ChangeAnimation()
@@ -286,6 +320,7 @@ void CKoopaTroopa::SetState(int state)
 			AgainstControl();
 			break;
 		case STATE_DIE:
+			Delete();
 			break;
 	}
 }

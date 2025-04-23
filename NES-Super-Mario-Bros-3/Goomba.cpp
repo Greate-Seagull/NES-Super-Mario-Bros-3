@@ -1,5 +1,7 @@
 #include "Goomba.h"
 #include "Mario.h"
+
+#include "Block.h"
 #include "Platform.h"
 
 CGoomba::CGoomba(float x, float y):
@@ -18,9 +20,11 @@ void CGoomba::OnCollisionWith(LPCOLLISIONEVENT e)
 	//if (!e->obj->IsBlocking()) return; 
 	//if (dynamic_cast<CGoomba*>(e->obj)) return; 
 	if (dynamic_cast<CPlatform*>(e->obj))
-	{
 		OnCollisionWithPlatform(e);
-	}
+	else if (dynamic_cast<CBlock*>(e->obj))
+		OnCollisionWithBlock(e);
+	else if (dynamic_cast<CMario*>(e->obj))
+		OnCollisionWithMario(e);
 }
 
 void CGoomba::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
@@ -33,6 +37,30 @@ void CGoomba::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 	if (e->nx)
 	{
 		vx = -vx;
+	}
+}
+
+void CGoomba::OnCollisionWithBlock(LPCOLLISIONEVENT e)
+{
+	if (e->ny)
+	{
+		vy = 0.0f;
+	}
+	if (e->nx)
+	{
+		vx = -vx;
+	}
+}
+
+void CGoomba::OnCollisionWithMario(LPCOLLISIONEVENT e)
+{
+	if (e->ny > 0)
+	{
+		UnderAttack((CMario*)e->obj);
+	}
+	else
+	{
+		MeleeAttack((CMario*)e->obj);
 	}
 }
 

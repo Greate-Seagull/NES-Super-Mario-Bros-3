@@ -22,7 +22,7 @@
 class CGoomba : public CCreature
 {
 protected:
-	ULONGLONG die_start;
+	int die_start;
 
 public:
 	CGoomba(float x, float y);
@@ -36,6 +36,8 @@ public:
 	//virtual int IsBlocking() { return 0; }
 	virtual void OnCollisionWith(LPCOLLISIONEVENT e);	
 	virtual void OnCollisionWithPlatform(LPCOLLISIONEVENT e);
+	virtual void OnCollisionWithBlock(LPCOLLISIONEVENT e);
+	virtual void OnCollisionWithMario(LPCOLLISIONEVENT e);
 
 	virtual void Reaction(CGameObject* by_another, int action);
 	virtual void Reaction_LivingState(CGameObject* by_another, int action);

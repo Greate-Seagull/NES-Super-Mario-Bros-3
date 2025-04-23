@@ -26,4 +26,5 @@ public:
 	virtual void Recover();	
 	virtual void Die();
 	virtual void DoPowerless(CHarmfulObject* another);
+	virtual void SetLife(float life);
 };

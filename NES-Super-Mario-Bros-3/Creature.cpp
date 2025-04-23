@@ -15,7 +15,7 @@ void CCreature::IsLiving()
 
 void CCreature::UnderAttack(CHarmfulObject* by_another)
 {
-	this->life -= 1;	
+	SetLife(life - 1.0f);
 }
 
 void CCreature::Touch(CGameObject* another)
@@ -45,17 +45,22 @@ void CCreature::Drop()
 
 void CCreature::Recover()
 {
-	life += 1.0f;
+	SetLife(life + 1.0f);
 	SetState(STATE_LIVE);
 }
 
 void CCreature::Die()
 {
-	life = 0.0f;	
+	SetLife(0.0f);
 	SetState(STATE_DIE);
 }
 
 void CCreature::DoPowerless(CHarmfulObject* another)
 {
 	another->Reaction(this, ACTION_NOTHING);
+}
+
+void CCreature::SetLife(float life)
+{
+	this->life = life;
 }

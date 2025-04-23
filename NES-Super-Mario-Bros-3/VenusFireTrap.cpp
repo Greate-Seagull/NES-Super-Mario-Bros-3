@@ -14,6 +14,7 @@ CVenusFireTrap::CVenusFireTrap(float x, float y) :
 
 	mag_size = VENUS_AMMO_LIMIT;
 	assault_mode = false;
+	boomerang = nullptr;
 }
 
 void CVenusFireTrap::ChangeAnimation()
@@ -26,9 +27,9 @@ void CVenusFireTrap::ChangeAnimation()
 		action = ANI_ID_VENUS_SHOOT;
 	}
 
-	int horizontal = (nx < 0) ? ANI_ID_VENUS_LEFT : ANI_ID_VENUS_RIGHT;
+	int horizontal = (nx < 0) ? ID_ANI_DIRECTION_LEFT : ID_ANI_DIRECTION_RIGHT;
 
-	int vertical = (ny < 0) ? ANI_ID_VENUS_UP : ANI_ID_VENUS_DOWN;
+	int vertical = (ny < 0) ? ID_ANI_DIRECTION_UP : ID_ANI_DIRECTION_DOWN;
 
 	aniID = object + action + vertical + horizontal;
 }
@@ -80,6 +81,7 @@ void CVenusFireTrap::Shoot()
 		else
 		{
 			assault_mode = false;
+			Unload();
 		}
 	}
 	//return nullptr;
@@ -115,4 +117,9 @@ void CVenusFireTrap::Reload()
 	{
 		mag_size++;
 	}
+}
+
+void CVenusFireTrap::Unload()
+{
+	boomerang->ApplyRange(FIREBALL_RANGE_DISARM);
 }

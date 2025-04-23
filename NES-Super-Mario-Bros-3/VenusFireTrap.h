@@ -5,7 +5,7 @@
 
 #define VENUS_AMMO_LIMIT 1
 
-#define VENUS_BBOX_HEIGHT 32.0f
+#define VENUS_BBOX_HEIGHT 30.0f
 #define VENUS_BBOX_WIDTH 16.0f
 
 #define VENUS_LOOK_MAX_DISTANCE 145.0f
@@ -16,12 +16,6 @@
 //Actions
 #define ANI_ID_VENUS_LOOK 0
 #define ANI_ID_VENUS_SHOOT 100
-//Vertical direction
-#define ANI_ID_VENUS_DOWN 0	
-#define ANI_ID_VENUS_UP 10	
-//Horizontal direction
-#define ANI_ID_VENUS_LEFT 0	
-#define ANI_ID_VENUS_RIGHT 1
 
 class CVenusFireTrap: public CPiranhaPlant
 {
@@ -43,4 +37,5 @@ public:
 	virtual void Aim();
 	virtual void Shoot();
 	virtual void Reload();
+	virtual void Unload();
 };

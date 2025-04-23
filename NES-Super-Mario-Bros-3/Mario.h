@@ -23,7 +23,7 @@
 #define MARIO_BRAKE_AX 0.0004f
 
 #define MARIO_START_JUMPING_AY -0.015f - GAME_GRAVITY
-#define MARIO_SHARP false
+#define MARIO_START_JUMP_VY -0.25f
 
 #define MARIO_MAX_JUMP_HEIGHT 60.0f
 
@@ -122,6 +122,8 @@ class CMario : public CCreature
 	int momentum;
 	int decrease_momentum_time;
 
+	bool is_flying;
+
 	//int coin; 
 
 	void OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e);
@@ -152,7 +154,7 @@ public:
 
 	void Reaction(CGameObject* by_another, int action);
 
-	void SetLevel(float l);
+	void SetLife(float l);
 
 	void SetState(int state);
 	void ToGainingPowerState();
@@ -196,4 +198,8 @@ public:
 	void LoseRacoonPower();
 
 	void Dying(DWORD dt);
+
+	bool IsFlying() { return is_flying; }
+	void Fly();
+	void Flying();
 };

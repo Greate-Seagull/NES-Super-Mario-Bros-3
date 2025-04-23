@@ -107,7 +107,7 @@ void CPiranhaPlant::SetState(int state) //Start state
 			ToStateHide();
 			break;
 		case STATE_DIE:
-			Die();
+			Delete();
 			break;
 	}
 }
@@ -149,7 +149,7 @@ void CPiranhaPlant::Render()
 
 	animations->Get(aniID)->Render(x, y);
 
-	RenderBoundingBox();
+	//RenderBoundingBox();
 }
 
 void CPiranhaPlant::ChangeAnimation()

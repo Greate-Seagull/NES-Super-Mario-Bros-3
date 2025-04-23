@@ -10,8 +10,7 @@
 #define COIN_BBOX_WIDTH 10.0f
 #define COIN_BBOX_HEIGHT 16.0f
 
-#define COIN_VELOCITY_Y -0.55f
-#define COIN_ACCELERATION_Y	0.05f
+#define COIN_VELOCITY_Y -0.3f
 
 class CCoin : public CMovableObject {
 protected:
@@ -21,7 +20,7 @@ protected:
 public:
 	CCoin(float x, float y) : CMovableObject(x, y) 
 	{
-		this->isDisappear = false;
+		isToggled = false;
 		originalY = y;
 		vy = COIN_VELOCITY_Y;
 
@@ -29,7 +28,7 @@ public:
 
 		this->SetBoundingBox(COIN_BBOX_WIDTH, COIN_BBOX_HEIGHT);
 	}
-	CCoin(float x, float y, bool isToggled) : CMovableObject(x, y)
+	/*CCoin(float x, float y, bool isToggled) : CMovableObject(x, y)
 	{
 		this->isToggled = isToggled;
 		this->isDisappear = false;
@@ -39,12 +38,13 @@ public:
 		aniID = ID_ANI_COIN;
 		
 		this->SetBoundingBox(COIN_BBOX_WIDTH, COIN_BBOX_HEIGHT);
-	}
+	}*/
 
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 
-	int IsCollidable() { return 1; } //Them de lay colliable object
+	int IsCollidable() { return isToggled == false; } //Them de lay colliable object
 	int IsBlocking() { return 0; }
+	void OnCollisionWith(LPCOLLISIONEVENT e);
 
 	void Reaction(CGameObject* by_another, int action);
 

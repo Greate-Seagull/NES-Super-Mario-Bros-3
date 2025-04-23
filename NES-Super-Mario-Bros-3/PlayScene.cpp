@@ -229,7 +229,12 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 
 		break;
 	}
-	case OBJECT_TYPE_QUESTION_BLOCK: obj = new CQuestionBlock(x, y); break;
+	case OBJECT_TYPE_QUESTION_BLOCK: 
+	{
+		int itemID = atoi(tokens[3].c_str());
+		obj = new CQuestionBlock(x, y, itemID);
+		break;
+	}
 	case OBJECT_TYPE_PIPE:
 	{
 		float cell_width = (float)atof(tokens[3].c_str());
@@ -382,48 +387,24 @@ void CPlayScene::Update(DWORD dt)
 	// TO-DO: This is a "dirty" way, need a more organized way 
 	//DebugOutTitle(L"Coin: %d", coin);
 
+	vector<LPGAMEOBJECT> process_list = Filter();
+
 	vector<LPGAMEOBJECT> coObjects;
-	for (size_t i = 1; i < objects.size(); i++)
+	for (size_t i = 0; i < process_list.size(); i++)
 	{
-		if (objects[i]->IsCollidable())
-			coObjects.push_back(objects[i]);
+		if (process_list[i]->IsCollidable())
+			coObjects.push_back(process_list[i]);
 	}
 
-	for (size_t i = 0; i < objects.size(); i++)
+	for (size_t i = 0; i < process_list.size(); i++)
 	{
-		objects[i]->Update(dt, &coObjects);
-
-		/*if (dynamic_cast<CCoin*>(objects[i]))
-		{
-			CCoin* c = (CCoin*)objects[i];
-			if (c->IsUnderOriginal())
-			{
-				if (!c->GetDisappear())
-				{
-					c->SetDisappear(true);
-					coin++;
-				}
-			}
-		}*/
+		process_list[i]->Update(dt, &coObjects);
 	}
+
+	UpdateCamera();
 
 	// skip the rest if scene was already unloaded (Mario::Update might trigger PlayScene::Unload)
 	if (player == NULL) return; 
-
-	// Update camera to follow mario
-	float cx, cy;
-	player->GetPosition(cx, cy);
-
-	CGame *game = CGame::GetInstance();
-	cx -= game->GetBackBufferWidth() / 2;
-	cy -= game->GetBackBufferHeight() / 2;
-
-	if (cx < 0) cx = 0;
-
-	if (GetAsyncKeyState(VK_UP) & 0x8000) tempCamPosY -= 10;
-	if (GetAsyncKeyState(VK_DOWN) & 0x8000) tempCamPosY += 10;
-
-	CGame::GetInstance()->SetCamPos(cx, tempCamPosY /*cy*/);
 
 	PurgeDeletedObjects();
 }
@@ -432,33 +413,11 @@ void CPlayScene::Render()
 {
 	//if (background) background->Render();
 
+	vector<LPGAMEOBJECT> process_list = Filter();
+
 	for (int i = 0; i < objects.size(); i++)
 	{
-		if (dynamic_cast<CMario*>(objects[i]) ||
-			dynamic_cast<CPlatform*>(objects[i]) ||
-			dynamic_cast<CDeadStateTrigger*>(objects[i]))
-			objects[i]->Render();
-		else if (dynamic_cast<CCoin*>(objects[i]))
-		{
-			CCoin* c = (CCoin*)objects[i];
-			if (!c->IsUnderOriginal()) objects[i]->Render();
-		}
-		else
-		{
-			float posX, posY;
-			objects[i]->GetPosition(posX, posY);
-
-			float posCamX, posCamY;
-			CGame::GetInstance()->GetCamPos(posCamX, posCamY);
-			if (player)
-			{
-				if (posX > posCamX - OFFSET && posX < posCamX + SCREEN_WIDTH + OFFSET
-					&& posY > posCamY - OFFSET && posY < posCamY + SCREEN_HEIGHT + OFFSET)
-				{
-					objects[i]->Render();
-				}
-			}
-		}
+		objects[i]->Render();
 	}
 }
 
@@ -498,6 +457,50 @@ void CPlayScene::Add(LPGAMEOBJECT newObj)
 {
 	if(newObj)
 		objects.push_back(newObj);
+}
+
+vector<LPGAMEOBJECT> CPlayScene::Filter()
+{
+	CGame* game = CGame::GetInstance();
+
+	vector<LPGAMEOBJECT> process_list;
+	for (size_t i = 1; i < objects.size(); i++)
+	{
+		if (game->IsInCam(objects[i]))
+			process_list.push_back(objects[i]);
+	}
+
+	return process_list;
+}
+
+void CPlayScene::UpdateCamera()
+{
+	// Update camera to follow mario
+	CGame* game = CGame::GetInstance();
+
+	float cx, cy;
+	player->GetPosition(cx, cy);
+
+	float player_bbox_height = player->getBBoxHeight();
+
+	cx = cx - game->GetBackBufferWidth() / 2.0f;
+	cx = fmax(0.0f, cx);
+
+	if (player->IsFlying())
+	{
+		cy = cy - game->GetBackBufferHeight() / 2.0f;
+		cy = fmin(CAM_MAX_Y, cy);
+	}
+	else
+	{
+		cy = CAM_MAX_Y;
+		//cy = cy + player_bbox_height / 2.0f + 16.0f - game->GetBackBufferHeight();
+	}
+
+	/*if (GetAsyncKeyState(VK_UP) & 0x8000) cy -= 10;
+	if (GetAsyncKeyState(VK_DOWN) & 0x8000) cy += 10;*/
+
+	CGame::GetInstance()->SetCamPos(cx, cy);
 }
 
 void CPlayScene::PurgeDeletedObjects()

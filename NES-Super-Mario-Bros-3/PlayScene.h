@@ -9,11 +9,13 @@
 //#include "Koopas.h"
 
 
+#define CAM_MAX_Y 247.0f
+
 class CPlayScene: public CScene
 {
 protected: 
 	// A play scene has to have player, right? 
-	LPGAMEOBJECT player;
+	CMario* player;
 	LPGAMEOBJECT background;
 
 	vector<LPGAMEOBJECT> objects;
@@ -42,6 +44,8 @@ public:
 	static bool IsGameObjectDeleted(const LPGAMEOBJECT& o);
 
 	void Add(LPGAMEOBJECT newObj);
+	vector<LPGAMEOBJECT> Filter();
+	void UpdateCamera();
 };
 
 typedef CPlayScene* LPPLAYSCENE;

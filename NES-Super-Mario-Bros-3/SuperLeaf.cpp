@@ -146,7 +146,7 @@ void CSuperLeaf::Render()
 {
 	ChangeAnimation();
 	CAnimations::GetInstance()->Get(aniID)->Render(x, y);
-	RenderBoundingBox();
+	//RenderBoundingBox();
 }
 
 void CSuperLeaf::Oscillate(DWORD dt)

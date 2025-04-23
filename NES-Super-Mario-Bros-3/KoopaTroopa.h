@@ -56,6 +56,7 @@ public:
 	virtual int IsCollidable() { return 1; };
 	virtual void OnCollisionWith(LPCOLLISIONEVENT e);
 	virtual void OnCollisionWithPlatform(LPCOLLISIONEVENT e);
+	virtual void OnCollisionWithBlock(LPCOLLISIONEVENT e);
 	virtual void OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e);
 
 	virtual void Reaction(CGameObject* by_another, int action);
