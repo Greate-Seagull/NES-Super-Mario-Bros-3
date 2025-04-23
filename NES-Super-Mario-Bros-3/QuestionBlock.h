@@ -17,19 +17,22 @@
 
 #define ID_ANI_QUESTION_BLOCK 12000
 
+#define OBJECT_TYPE_FIXED 0
+#define OBJECT_TYPE_LIFE_DEPENDS 1
+
 class CQuestionBlock : public CBlock {
 protected:
 	//Containing
-	int itemID;
+	int itemTypeID;
 	CGameObject* item;
 
 	//Shaking
 	float origin_y;
 
 public:
-	CQuestionBlock(float x, float y, int itemID = OBJECT_TYPE_COIN) : CBlock(x, y)
+	CQuestionBlock(float x, float y, int itemTypeID = OBJECT_TYPE_FIXED) : CBlock(x, y)
 	{
-		this->itemID = itemID;
+		this->itemTypeID = itemTypeID;
 
 		this->origin_y = y;
 
