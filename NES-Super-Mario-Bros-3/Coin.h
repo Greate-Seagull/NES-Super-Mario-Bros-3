@@ -48,6 +48,8 @@ public:
 
 	void Reaction(CGameObject* by_another, int action);
 
+	bool GetToggled() { return isToggled; }
+
 	void SetDisappear(bool Disappear) { this->isDisappear = Disappear; }
 	bool GetDisappear() { return isDisappear; }
 	bool IsUnderOriginal();
