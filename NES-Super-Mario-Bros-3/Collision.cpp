@@ -1,5 +1,6 @@
 #include "Collision.h"
 #include "GameObject.h"
+#include "KoopaTroopa.h"
 
 #include "debug.h"
 
@@ -122,7 +123,262 @@ void CCollision::SweptAABB(
 /*
 	Extension of original SweptAABB to deal with two moving objects
 */
-LPCOLLISIONEVENT CCollision::SweptAABB(LPGAMEOBJECT objSrc, DWORD dt, LPGAMEOBJECT objDest)
+
+//Origin
+
+//LPCOLLISIONEVENT CCollision::SweptAABB(LPGAMEOBJECT objSrc, DWORD dt, LPGAMEOBJECT objDest)
+//{
+//	float sl, st, sr, sb;		// static object bbox
+//	float ml, mt, mr, mb;		// moving object bbox
+//	float t, nx, ny;
+//
+//	float mvx, mvy;
+//	objSrc->GetSpeed(mvx, mvy);
+//	float mdx = mvx * dt;
+//	float mdy = mvy * dt;
+//
+//	float svx, svy;
+//	objDest->GetSpeed(svx, svy);
+//	float sdx = svx * dt;
+//	float sdy = svy * dt;
+//
+//	//
+//	// NOTE: new m speed = original m speed - collide object speed
+//	// 
+//	float dx = mdx - sdx;
+//	float dy = mdy - sdy;
+//
+//	objSrc->GetBoundingBox(ml, mt, mr, mb);
+//	objDest->GetBoundingBox(sl, st, sr, sb);
+//
+//	SweptAABB(
+//		ml, mt, mr, mb,
+//		dx, dy,
+//		sl, st, sr, sb,
+//		t, nx, ny
+//	);
+//
+//	CCollisionEvent* e = new CCollisionEvent(t, nx, ny, dx, dy, objDest, objSrc);
+//	return e;
+//}
+//
+///*
+//	Calculate potential collisions with the list of colliable objects
+//
+//	coObjects: the list of colliable objects
+//	coEvents: list of potential collisions
+//*/
+//void CCollision::Scan(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* objDests, vector<LPCOLLISIONEVENT>& coEvents)
+//{
+//	for (UINT i = 0; i < objDests->size(); i++)
+//	{
+//		LPCOLLISIONEVENT e = SweptAABB(objSrc, dt, objDests->at(i));
+//
+//		if (e->WasCollided() == 1)
+//			coEvents.push_back(e);
+//		else
+//			delete e;
+//	}
+//
+//	//std::sort(coEvents.begin(), coEvents.end(), CCollisionEvent::compare);
+//}
+//
+//void CCollision::Filter( LPGAMEOBJECT objSrc,
+//	vector<LPCOLLISIONEVENT>& coEvents,
+//	LPCOLLISIONEVENT &colX,
+//	LPCOLLISIONEVENT &colY,
+//	int filterBlock = 1,		// 1 = only filter block collisions, 0 = filter all collisions 
+//	int filterX = 1,			// 1 = process events on X-axis, 0 = skip events on X 
+//	int filterY = 1)			// 1 = process events on Y-axis, 0 = skip events on Y
+//{
+//	float min_tx, min_ty;
+//
+//	min_tx = 1.0f;
+//	min_ty = 1.0f;
+//	int min_ix = -1;
+//	int min_iy = -1;
+//
+//	for (UINT i = 0; i < coEvents.size(); i++)
+//	{
+//		LPCOLLISIONEVENT c = coEvents[i];
+//		if (c->isDeleted) continue;
+//		if (c->obj->IsDeleted()) continue; 
+//
+//		// ignore collision event with object having IsBlocking = 0 (like coin, mushroom, etc)
+//		if (filterBlock == 1 && !c->obj->IsBlocking()) 
+//		{
+//			continue;
+//		}
+//
+//		if (c->t < min_tx && c->nx != 0 && filterX == 1) {
+//			min_tx = c->t; min_ix = i;
+//		}
+//
+//		if (c->t < min_ty && c->ny != 0 && filterY == 1) {
+//			min_ty = c->t; min_iy = i;
+//		}
+//	}
+//
+//	if (min_ix >= 0) colX = coEvents[min_ix];
+//	if (min_iy >= 0) colY = coEvents[min_iy];
+//}
+//
+///*
+//*  Simple/Sample collision framework 
+//*  NOTE: Student might need to improve this based on game logic 
+//*/
+//void CCollision::Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* coObjects) //Adjust to not move object if no collision
+//{
+//	vector<LPCOLLISIONEVENT> coEvents;
+//	LPCOLLISIONEVENT colX = NULL; 
+//	LPCOLLISIONEVENT colY = NULL;
+//
+//	coEvents.clear();
+//
+//	if (objSrc->IsCollidable())
+//	{
+//		Scan(objSrc, dt, coObjects, coEvents);
+//	}
+//
+//	// No collision detected
+//	if (coEvents.size() == 0)
+//	{
+//		objSrc->OnNoCollision(dt);
+//	}
+//	else
+//	{
+//		Filter(objSrc, coEvents, colX, colY);
+//
+//		float x, y, vx, vy, dx, dy;
+//		objSrc->GetPosition(x, y);
+//		objSrc->GetSpeed(vx, vy);
+//		dx = vx * dt;
+//		dy = vy * dt;
+//
+//		if (colX != NULL && colY != NULL) 
+//		{
+//			if (colY->t < colX->t)	// was collision on Y first ?
+//			{
+//				y += colY->t * dy + colY->ny * BLOCK_PUSH_FACTOR;
+//				objSrc->SetPosition(x, y);
+//
+//				objSrc->OnCollisionWith(colY);
+//
+//				objSrc->GetPosition(x, y);
+//				//
+//				// see if after correction on Y, is there still a collision on X ? 
+//				//
+//				LPCOLLISIONEVENT colX_other = NULL;
+//
+//				//
+//				// check again if there is true collision on X 
+//				//
+//				colX->isDeleted = true;		// remove current collision event on X
+//
+//				// replace with a new collision event using corrected location 
+//				coEvents.push_back(SweptAABB(objSrc, dt, colX->obj));
+//
+//				// re-filter on X only
+//				Filter(objSrc, coEvents, colX_other, colY, /*filterBlock = */ 1, 1, /*filterY=*/0);
+//
+//				if (colX_other != NULL)
+//				{
+//					x += colX_other->t * dx +colX_other->nx * BLOCK_PUSH_FACTOR;	
+//
+//					objSrc->SetPosition(x, y);
+//
+//					objSrc->OnCollisionWith(colX_other);
+//				}
+//				/*else
+//				{
+//					x += dx;
+//				}*/
+//			}
+//			else // collision on X first
+//			{
+//				x += colX->t * dx + colX->nx * BLOCK_PUSH_FACTOR;
+//				
+//				objSrc->SetPosition(x, y);
+//
+//				objSrc->OnCollisionWith(colX);
+//
+//				objSrc->GetPosition(x, y);
+//				//
+//				// see if after correction on X, is there still a collision on Y ? 
+//				//
+//				LPCOLLISIONEVENT colY_other = NULL;
+//
+//				//
+//				// check again if there is true collision on Y
+//				//
+//				colY->isDeleted = true;		// remove current collision event on Y
+//
+//				// replace with a new collision event using corrected location 
+//				coEvents.push_back(SweptAABB(objSrc, dt, colY->obj));
+//
+//				// re-filter on Y only
+//				Filter(objSrc, coEvents, colX, colY_other, /*filterBlock = */ 1, /*filterX=*/0, /*filterY=*/1);
+//
+//				if (colY_other != NULL)
+//				{
+//					y += colY_other->t * dy + colY_other->ny * BLOCK_PUSH_FACTOR;
+//
+//					objSrc->SetPosition(x, y);
+//
+//					objSrc->OnCollisionWith(colY_other);
+//				}
+//				/*else
+//				{
+//					y += dy;
+//				}*/
+//			}
+//		}
+//		else if (colX != NULL)
+//		{
+//			x += colX->t * dx + colX->nx * BLOCK_PUSH_FACTOR;
+//			//y += dy;
+//			objSrc->SetPosition(x, y); //Can be commented
+//
+//			objSrc->OnCollisionWith(colX);
+//		}
+//		else if (colY != NULL)
+//		{
+//			//x += dx;
+//			y += colY->t * dy + colY->ny * BLOCK_PUSH_FACTOR;
+//
+//			objSrc->SetPosition(x, y); //Can be commented
+//
+//			objSrc->OnCollisionWith(colY);
+//		}
+//		//else // both colX & colY are NULL 
+//		//{
+//		//	x += dx;
+//		//	y += dy;
+//		//}
+//		
+//		//objSrc->SetPosition(x, y);
+//	}
+//
+//
+//	//
+//	// Scan all non-blocking collisions for further collision logic
+//	//
+//	for (UINT i = 0; i < coEvents.size(); i++)
+//	{
+//		LPCOLLISIONEVENT e = coEvents[i];
+//		if (e->isDeleted) continue;
+//		if (e->obj->IsBlocking()) continue;  // blocking collisions were handled already, skip them
+//
+//		objSrc->OnCollisionWith(e);			
+//	}
+//
+//
+//	for (UINT i = 0; i < coEvents.size(); i++) delete coEvents[i];
+//}
+
+//New version
+
+void CCollision::SweptAABB(LPGAMEOBJECT objSrc, DWORD dt, LPGAMEOBJECT objDest)
 {
 	float sl, st, sr, sb;		// static object bbox
 	float ml, mt, mr, mb;		// moving object bbox
@@ -154,8 +410,7 @@ LPCOLLISIONEVENT CCollision::SweptAABB(LPGAMEOBJECT objSrc, DWORD dt, LPGAMEOBJE
 		t, nx, ny
 	);
 
-	CCollisionEvent* e = new CCollisionEvent(t, nx, ny, dx, dy, objDest, objSrc);
-	return e;
+	e_manager.Add(t, nx, ny, dx, dy, objDest, objSrc);
 }
 
 /*
@@ -164,25 +419,23 @@ LPCOLLISIONEVENT CCollision::SweptAABB(LPGAMEOBJECT objSrc, DWORD dt, LPGAMEOBJE
 	coObjects: the list of colliable objects
 	coEvents: list of potential collisions
 */
-void CCollision::Scan(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* objDests, vector<LPCOLLISIONEVENT>& coEvents)
+void CCollision::Scan(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* objDests)
 {
 	for (UINT i = 0; i < objDests->size(); i++)
 	{
-		LPCOLLISIONEVENT e = SweptAABB(objSrc, dt, objDests->at(i));
+		SweptAABB(objSrc, dt, objDests->at(i));
+		LPCOLLISIONEVENT e = e_manager.GetLast();
 
-		if (e->WasCollided()==1)
-			coEvents.push_back(e);
-		else
-			delete e;
+		if (e->WasCollided() != 1)
+			e_manager.VirtualDelete();
 	}
 
 	//std::sort(coEvents.begin(), coEvents.end(), CCollisionEvent::compare);
 }
 
-void CCollision::Filter( LPGAMEOBJECT objSrc,
-	vector<LPCOLLISIONEVENT>& coEvents,
-	LPCOLLISIONEVENT &colX,
-	LPCOLLISIONEVENT &colY,
+void CCollision::Filter(LPGAMEOBJECT objSrc,
+	LPCOLLISIONEVENT& colX,
+	LPCOLLISIONEVENT& colY,
 	int filterBlock = 1,		// 1 = only filter block collisions, 0 = filter all collisions 
 	int filterX = 1,			// 1 = process events on X-axis, 0 = skip events on X 
 	int filterY = 1)			// 1 = process events on Y-axis, 0 = skip events on Y
@@ -194,14 +447,14 @@ void CCollision::Filter( LPGAMEOBJECT objSrc,
 	int min_ix = -1;
 	int min_iy = -1;
 
-	for (UINT i = 0; i < coEvents.size(); i++)
+	for (UINT i = 0; i < e_manager.Size(); i++)
 	{
-		LPCOLLISIONEVENT c = coEvents[i];
+		LPCOLLISIONEVENT c = e_manager.Get(i);
 		if (c->isDeleted) continue;
-		if (c->obj->IsDeleted()) continue; 
+		if (c->obj->IsDeleted()) continue;
 
 		// ignore collision event with object having IsBlocking = 0 (like coin, mushroom, etc)
-		if (filterBlock == 1 && !c->obj->IsBlocking()) 
+		if (filterBlock == 1 && !c->obj->IsBlocking())
 		{
 			continue;
 		}
@@ -215,35 +468,32 @@ void CCollision::Filter( LPGAMEOBJECT objSrc,
 		}
 	}
 
-	if (min_ix >= 0) colX = coEvents[min_ix];
-	if (min_iy >= 0) colY = coEvents[min_iy];
+	if (min_ix >= 0) colX = e_manager.Get(min_ix);
+	if (min_iy >= 0) colY = e_manager.Get(min_iy);
 }
 
 /*
-*  Simple/Sample collision framework 
-*  NOTE: Student might need to improve this based on game logic 
+*  Simple/Sample collision framework
+*  NOTE: Student might need to improve this based on game logic
 */
-void CCollision::Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+void CCollision::Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* coObjects) //Adjust to not move object if no collision
 {
-	vector<LPCOLLISIONEVENT> coEvents;
-	LPCOLLISIONEVENT colX = NULL; 
+	LPCOLLISIONEVENT colX = NULL;
 	LPCOLLISIONEVENT colY = NULL;
-
-	coEvents.clear();
 
 	if (objSrc->IsCollidable())
 	{
-		Scan(objSrc, dt, coObjects, coEvents);
+		Scan(objSrc, dt, coObjects);
 	}
 
 	// No collision detected
-	if (coEvents.size() == 0)
+	if (e_manager.Size() == 0)
 	{
 		objSrc->OnNoCollision(dt);
 	}
 	else
 	{
-		Filter(objSrc, coEvents, colX, colY);
+		Filter(objSrc, colX, colY);
 
 		float x, y, vx, vy, dx, dy;
 		objSrc->GetPosition(x, y);
@@ -251,7 +501,7 @@ void CCollision::Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* co
 		dx = vx * dt;
 		dy = vy * dt;
 
-		if (colX != NULL && colY != NULL) 
+		if (colX != NULL && colY != NULL)
 		{
 			if (colY->t < colX->t)	// was collision on Y first ?
 			{
@@ -260,6 +510,7 @@ void CCollision::Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* co
 
 				objSrc->OnCollisionWith(colY);
 
+				objSrc->GetPosition(x, y);
 				//
 				// see if after correction on Y, is there still a collision on X ? 
 				//
@@ -271,28 +522,33 @@ void CCollision::Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* co
 				colX->isDeleted = true;		// remove current collision event on X
 
 				// replace with a new collision event using corrected location 
-				coEvents.push_back(SweptAABB(objSrc, dt, colX->obj));
+				SweptAABB(objSrc, dt, colX->obj);
 
 				// re-filter on X only
-				Filter(objSrc, coEvents, colX_other, colY, /*filterBlock = */ 1, 1, /*filterY=*/0);
+				Filter(objSrc, colX_other, colY, /*filterBlock = */ 1, 1, /*filterY=*/0);
 
 				if (colX_other != NULL)
 				{
-					x += colX_other->t * dx +colX_other->nx * BLOCK_PUSH_FACTOR;
+					x += colX_other->t * dx + colX_other->nx * BLOCK_PUSH_FACTOR;
+
+					objSrc->SetPosition(x, y);
+
 					objSrc->OnCollisionWith(colX_other);
 				}
-				else
+				/*else
 				{
 					x += dx;
-				}
+				}*/
 			}
 			else // collision on X first
 			{
 				x += colX->t * dx + colX->nx * BLOCK_PUSH_FACTOR;
+
 				objSrc->SetPosition(x, y);
 
 				objSrc->OnCollisionWith(colX);
 
+				objSrc->GetPosition(x, y);
 				//
 				// see if after correction on X, is there still a collision on Y ? 
 				//
@@ -304,57 +560,147 @@ void CCollision::Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* co
 				colY->isDeleted = true;		// remove current collision event on Y
 
 				// replace with a new collision event using corrected location 
-				coEvents.push_back(SweptAABB(objSrc, dt, colY->obj));
+				SweptAABB(objSrc, dt, colY->obj);
 
 				// re-filter on Y only
-				Filter(objSrc, coEvents, colX, colY_other, /*filterBlock = */ 1, /*filterX=*/0, /*filterY=*/1);
+				Filter(objSrc, colX, colY_other, /*filterBlock = */ 1, /*filterX=*/0, /*filterY=*/1);
 
 				if (colY_other != NULL)
 				{
 					y += colY_other->t * dy + colY_other->ny * BLOCK_PUSH_FACTOR;
+
+					objSrc->SetPosition(x, y);
+
 					objSrc->OnCollisionWith(colY_other);
 				}
-				else
+				/*else
 				{
 					y += dy;
-				}
+				}*/
 			}
 		}
-		else
-		if (colX != NULL)
+		else if (colX != NULL)
 		{
 			x += colX->t * dx + colX->nx * BLOCK_PUSH_FACTOR;
-			y += dy;
+			//y += dy;
+			objSrc->SetPosition(x, y); //Can be commented
+
 			objSrc->OnCollisionWith(colX);
 		}
-		else 
-			if (colY != NULL)
-			{
-				x += dx;
-				y += colY->t * dy + colY->ny * BLOCK_PUSH_FACTOR;
-				objSrc->OnCollisionWith(colY);
-			}
-			else // both colX & colY are NULL 
-			{
-				x += dx;
-				y += dy;
-			}
+		else if (colY != NULL)
+		{
+			//x += dx;
+			y += colY->t * dy + colY->ny * BLOCK_PUSH_FACTOR;
 
-		objSrc->SetPosition(x, y);
+			objSrc->SetPosition(x, y); //Can be commented
+
+			objSrc->OnCollisionWith(colY);
+		}
+		//else // both colX & colY are NULL 
+		//{
+		//	x += dx;
+		//	y += dy;
+		//}
+
+		//objSrc->SetPosition(x, y);
 	}
+
 
 	//
 	// Scan all non-blocking collisions for further collision logic
 	//
-	for (UINT i = 0; i < coEvents.size(); i++)
+	for (UINT i = 0; i < e_manager.Size(); i++)
 	{
-		LPCOLLISIONEVENT e = coEvents[i];
+		LPCOLLISIONEVENT e = e_manager.Get(i);
 		if (e->isDeleted) continue;
 		if (e->obj->IsBlocking()) continue;  // blocking collisions were handled already, skip them
 
-		objSrc->OnCollisionWith(e);			
+		objSrc->OnCollisionWith(e);
 	}
 
+	e_manager.Refresh();
+}
 
-	for (UINT i = 0; i < coEvents.size(); i++) delete coEvents[i];
+void CCollision::ProcessOverlap(LPGAMEOBJECT objSrc, vector<LPGAMEOBJECT>* coObjects)
+{
+	for (UINT i = 0; i < coObjects->size(); i++)
+	{
+		if (Overlap(objSrc, coObjects->at(i)))
+		{
+			CCollisionEvent* e = new CCollisionEvent(-1, 0, 0, 0, 0, coObjects->at(i), objSrc);
+			objSrc->OnCollisionWith(e);
+		}
+	}
+}
+
+bool CCollision::Overlap(LPGAMEOBJECT objSrc, LPGAMEOBJECT objDst)
+{
+	float min_width = (objSrc->getBBoxWidth() + objDst->getBBoxWidth()) / 2;
+	float min_height = (objSrc->getBBoxHeight() + objDst->getBBoxHeight()) / 2;
+
+	float objSrc_x, objSrc_y;
+	float objDst_x, objDst_y;
+
+	objSrc->GetPosition(objSrc_x, objSrc_y);
+	objDst->GetPosition(objDst_x, objDst_y);
+
+	return fabs(objSrc_x - objDst_x) < min_width && fabs(objSrc_y - objDst_y) < min_height;
+}
+
+CCollisionEventManager::CCollisionEventManager()
+{
+	current_event = 0;
+}
+
+void CCollisionEventManager::Add(float t, float nx, float ny, float dx, float dy, LPGAMEOBJECT objDest, LPGAMEOBJECT objSrc)
+{
+	if (current_event >= co_events.size())
+	{
+		co_events.push_back(make_unique<CCollisionEvent>(t, nx, ny, dx, dy, objDest, objSrc));		
+	}
+	else
+	{
+		auto& new_e = co_events.at(current_event);
+		new_e->t = t;
+		new_e->nx = nx;
+		new_e->ny = ny;
+		new_e->dx = dx;
+		new_e->dy = dy;
+		new_e->obj = objDest;
+		new_e->src_obj = objSrc;
+		new_e->isDeleted = false;
+	}
+
+	current_event++;
+}
+
+void CCollisionEventManager::VirtualDelete()
+{
+	current_event = max(0, current_event - 1);
+}
+
+void CCollisionEventManager::Refresh()
+{
+	current_event = 0;
+}
+
+LPCOLLISIONEVENT CCollisionEventManager::Get(int i)
+{
+	if (i < 0 || i >= current_event)
+		return nullptr;
+
+	return co_events[i].get();
+}
+
+LPCOLLISIONEVENT CCollisionEventManager::GetLast()
+{
+	if (current_event == 0)
+		return nullptr;
+
+	return co_events[current_event - 1].get();
+}
+
+int CCollisionEventManager::Size()
+{
+	return current_event;
 }

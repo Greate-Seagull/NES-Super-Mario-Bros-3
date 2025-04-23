@@ -1,40 +1,50 @@
-#pragma once
+﻿#pragma once
 
 #include "Block.h"
+
+#include "AssetIDs.h"
 #include "Animation.h"
 #include "Animations.h"
 
 #include "debug.h"
 
-#define QUESTION_BLOCK_WIDTH 16
-#define QUESTION_BLOCK_BBOX_WIDTH 16
-#define QUESTION_BLOCK_BBOX_HEIGHT 16
+#define QUESTION_BLOCK_BBOX_WIDTH 16.0f
+#define QUESTION_BLOCK_BBOX_HEIGHT 16.0f
 
-#define SHAKE_VELOCITY 0.1f
-#define SHAKE_TIME 50
+#define QUESTION_BLOCK_SHAKE_VY -0.16f
 
-#define STATE_QUESTION_BLOCK_ON 1
-#define STATE_QUESTION_BLOCK_OFF 0
+#define QUESTION_BLOCK_STATE_TOGGLE 10
 
-#define ID_ANI_QUESTION_BLOCK_TOGGLE_ON 12000
-#define ID_ANI_QUESTION_BLOCK_TOGGLE_OFF 12001
+#define ID_ANI_QUESTION_BLOCK 12000
 
 class CQuestionBlock : public CBlock {
 protected:
-	float y_legacy;
+	//Containing
+	int itemID;
+	CGameObject* item;
 
-	float time_elapsed = 0.0f;
-	bool isToggle = false;
-	bool isOverBound = false;
+	//Shaking
+	float origin_y;
+
 public:
-	CQuestionBlock(float x, float y) : CBlock(x, y)
+	CQuestionBlock(float x, float y, int itemID = OBJECT_TYPE_COIN) : CBlock(x, y)
 	{
-		this->y_legacy = y;
-		SetState(STATE_QUESTION_BLOCK_ON);
-	}
-	void Render();
-	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
-	void GetBoundingBox(float& l, float& t, float& r, float& b);
+		this->itemID = itemID;
 
-	void ShakeToggle();
+		this->origin_y = y;
+
+		SetState(STATE_LIVE);
+		SetBoundingBox(QUESTION_BLOCK_BBOX_WIDTH, QUESTION_BLOCK_BBOX_HEIGHT);
+	}
+
+	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+	void InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+
+	void Render();
+	void Reaction(CGameObject* by_another, int action);
+	void SetState(int state);
+
+	void TriggerItem();
+
+	void Shaking(DWORD dt);
 };

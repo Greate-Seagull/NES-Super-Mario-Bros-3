@@ -7,8 +7,8 @@ CPortal::CPortal(float l, float t, float r, float b, int scene_id, float new_x, 
 	this->scene_id = scene_id;
 	x = l; 
 	y = t;
-	width = r - l;
-	height = b - t;
+	bbox_width = r - l;
+	bbox_height = b - t;
 
 	this->new_x = new_x;
 	this->new_y = new_y;
@@ -38,12 +38,4 @@ void CPortal::RenderBoundingBox()
 void CPortal::Render()
 {
 	RenderBoundingBox();
-}
-
-void CPortal::GetBoundingBox(float &l, float &t, float &r, float &b)
-{
-	l = x - width/2;
-	t = y - height/2;
-	r = x + width/2;
-	b = y + height/2;
 }

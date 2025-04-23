@@ -27,10 +27,10 @@ public:
 	}
 
 	virtual void Render();
-	void Update(DWORD dt) {}
 	virtual void GetBoundingBox(float& l, float& t, float& r, float& b);
 	void RenderBoundingBox();
 
+	virtual int IsCollidable() { return 1; }
 	virtual int IsDirectionColliable(float nx, float ny);
 };
 

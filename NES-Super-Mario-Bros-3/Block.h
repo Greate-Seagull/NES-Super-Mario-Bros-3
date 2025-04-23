@@ -1,12 +1,12 @@
 #pragma once
 
-#include "GameObject.h"
+#include "MovableObject.h"
 
-class CBlock : public CGameObject
+class CBlock : public CMovableObject
 {
 public:
-	CBlock(float x, float y) : CGameObject(x, y) {}
-	virtual void Render() = 0;
-	void Update(DWORD dt) {}
-	virtual void GetBoundingBox(float& l, float& t, float& r, float& b) = 0;
+	CBlock(float x, float y) : CMovableObject(x, y) {}
+	virtual int IsCollidable() { return 1; }
+	//GameObject co ham update roi! "virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects = NULL) {};"
+	//GameObject co ham render roi! "virtual void Render();"
 };

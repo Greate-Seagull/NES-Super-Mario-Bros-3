@@ -1,31 +1,45 @@
 #include "Coin.h"
 
-void CCoin::Render()
-{
-	CAnimations* animations = CAnimations::GetInstance();
-	animations->Get(ID_ANI_COIN)->Render(x, y);
-
-	//RenderBoundingBox();
-}
+#include "Mario.h"
 
 void CCoin::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
 	if (isToggled)
 	{
-		vy += COIN_ACCELERATION_Y;
-		y += vy * dt;
+		Accelerate(0.0f, GAME_GRAVITY, dt);
+		Move(dt);
+
+		if (y > originalY)
+		{
+			Delete();
+		}
+	}
+	else
+	{
+		CCollision::GetInstance()->ProcessOverlap(this, coObjects);
+	}
+}
+
+void CCoin::OnCollisionWith(LPCOLLISIONEVENT e)
+{
+	if (dynamic_cast<CMario*>(e->obj))
+		Delete();
+}
+
+void CCoin::Reaction(CGameObject* by_another, int action)
+{
+	switch (action)
+	{
+		case ACTION_ATTACK:
+			isToggled = true;
+			break;
+		default:
+			Delete();
+			break;
 	}
 }
 
 bool CCoin::IsUnderOriginal()
 {
 	if (y < originalY) return false;
-}
-
-void CCoin::GetBoundingBox(float& l, float& t, float& r, float& b)
-{
-	l = x - COIN_BBOX_WIDTH / 2;
-	t = y - COIN_BBOX_HEIGHT / 2;
-	r = l + COIN_BBOX_WIDTH;
-	b = t + COIN_BBOX_HEIGHT;
 }

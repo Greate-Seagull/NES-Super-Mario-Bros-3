@@ -11,10 +11,13 @@
 #include "DeadStateTrigger.h"
 #include "Coin.h"
 #include "Platform.h"
+#include "VenusFireTrap.h"
+#include "KoopaTroopa.h"
+#include "SuperMushroom.h"
+#include "SuperLeaf.h"
 #include "QuestionBlock.h"
 #include "Pipe.h"
 #include "Container.h"
-#include "Background.h"
 #include "Bush.h"
 #include "StripedBrick.h"
 #include "Cloud.h"
@@ -29,8 +32,8 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 	CScene(id, filePath)
 {
 	player = NULL;
-	background = NULL;
-	key_handler = new CSampleKeyHandler(this);
+	//key_handler = new CSampleKeyHandler(this);
+	background = NULL;	
 }
 
 
@@ -70,9 +73,8 @@ void CPlayScene::_ParseSection_SPRITES(string line)
 	if (tex == NULL)
 	{
 		DebugOut(L"[ERROR] Texture ID %d not found!\n", texID);
-		return; 
+		return;
 	}
-
 	CSprites::GetInstance()->Add(ID, l, t, r, b, tex);
 }
 
@@ -201,10 +203,15 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		isStartSpawned = true;
 		break;
 	case OBJECT_TYPE_GOOMBA: obj = new CGoomba(x,y); break;
+	case OBJECT_TYPE_PARAGOOMBA: obj = new CParagoomba(x,y); break;
+	case OBJECT_TYPE_VENUS_FIRE_TRAP: obj = new CVenusFireTrap(x, y); break;
+	case OBJECT_TYPE_PIRANHA_PLANT: obj = new CPiranhaPlant(x, y); break;
+	case OBJECT_TYPE_RED_KOOPA_TROOPA: obj = new CKoopaTroopa(x, y); break;
 	case OBJECT_TYPE_BRICK: obj = new CBrick(x,y); break;
 	case OBJECT_TYPE_STRIPED_BRICK: obj = new CStripedBrick(x, y); break;
-	case OBJECT_TYPE_COIN: obj = new CCoin(x, y, false); break;
-
+	case OBJECT_TYPE_COIN: obj = new CCoin(x, y); break;
+	case OBJECT_TYPE_SUPER_MUSHROOM: obj = new CSuperMushroom(x, y); break;
+	case OBJECT_TYPE_SUPER_LEAF: obj = new CSuperLeaf(x, y); break;
 	case OBJECT_TYPE_PLATFORM:
 	{
 		float cell_width = (float)atof(tokens[3].c_str());
@@ -222,7 +229,12 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 
 		break;
 	}
-	case OBJECT_TYPE_QUESTION_BLOCK: obj = new CQuestionBlock(x, y); break;
+	case OBJECT_TYPE_QUESTION_BLOCK: 
+	{
+		int itemID = atoi(tokens[3].c_str());
+		obj = new CQuestionBlock(x, y, itemID);
+		break;
+	}
 	case OBJECT_TYPE_PIPE:
 	{
 		float cell_width = (float)atof(tokens[3].c_str());
@@ -299,11 +311,6 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		objects.push_back(obj);
 }
 
-void CPlayScene::InstantiateObject(LPGAMEOBJECT obj)
-{
-	objects.push_back(obj);
-}
-
 void CPlayScene::LoadAssets(LPCWSTR assetFile)
 {
 	DebugOut(L"[INFO] Start loading assets from : %s \n", assetFile);
@@ -378,49 +385,26 @@ void CPlayScene::Update(DWORD dt)
 {
 	// We know that Mario is the first object in the list hence we won't add him into the colliable object list
 	// TO-DO: This is a "dirty" way, need a more organized way 
-	DebugOutTitle(L"Coin: %d", coin);
+	//DebugOutTitle(L"Coin: %d", coin);
+
+	vector<LPGAMEOBJECT> process_list = Filter();
 
 	vector<LPGAMEOBJECT> coObjects;
-	for (size_t i = 1; i < objects.size(); i++)
+	for (size_t i = 0; i < process_list.size(); i++)
 	{
-		coObjects.push_back(objects[i]);
+		if (process_list[i]->IsCollidable())
+			coObjects.push_back(process_list[i]);
 	}
 
-	for (size_t i = 0; i < objects.size(); i++)
+	for (size_t i = 0; i < process_list.size(); i++)
 	{
-		objects[i]->Update(dt, &coObjects);
-
-		if (dynamic_cast<CCoin*>(objects[i]))
-		{
-			CCoin* c = (CCoin*)objects[i];
-			if (c->GetToggled() && c->IsUnderOriginal())
-			{
-				if (!c->GetDisappear())
-				{
-					c->SetDisappear(true);
-					coin++;
-				}
-			}
-		}
+		process_list[i]->Update(dt, &coObjects);
 	}
+
+	UpdateCamera();
 
 	// skip the rest if scene was already unloaded (Mario::Update might trigger PlayScene::Unload)
 	if (player == NULL) return; 
-
-	// Update camera to follow mario
-	float cx, cy;
-	player->GetPosition(cx, cy);
-
-	CGame *game = CGame::GetInstance();
-	cx -= game->GetBackBufferWidth() / 2;
-	cy -= game->GetBackBufferHeight() / 2;
-
-	if (cx < 0) cx = 0;
-
-	if (GetAsyncKeyState(VK_UP) & 0x8000) tempCamPosY -= 10;
-	if (GetAsyncKeyState(VK_DOWN) & 0x8000) tempCamPosY += 10;
-
-	CGame::GetInstance()->SetCamPos(cx, tempCamPosY /*cy*/);
 
 	PurgeDeletedObjects();
 }
@@ -429,34 +413,11 @@ void CPlayScene::Render()
 {
 	//if (background) background->Render();
 
+	vector<LPGAMEOBJECT> process_list = Filter();
+
 	for (int i = 0; i < objects.size(); i++)
 	{
-		if (dynamic_cast<CMario*>(objects[i]) ||
-			dynamic_cast<CPlatform*>(objects[i]) ||
-			dynamic_cast<CDeadStateTrigger*>(objects[i]))
-			objects[i]->Render();
-		else if (dynamic_cast<CCoin*>(objects[i]))
-		{
-			CCoin* c = (CCoin*)objects[i];
-			if (c->GetToggled() && !c->IsUnderOriginal()) objects[i]->Render();
-			else if (!c->GetToggled()) objects[i]->Render();
-		}
-		else
-		{
-			float posX, posY;
-			objects[i]->GetPosition(posX, posY);
-
-			float posCamX, posCamY;
-			CGame::GetInstance()->GetCamPos(posCamX, posCamY);
-			if (player)
-			{
-				if (posX > posCamX - OFFSET && posX < posCamX + SCREEN_WIDTH + OFFSET
-					&& posY > posCamY - OFFSET && posY < posCamY + SCREEN_HEIGHT + OFFSET)
-				{
-					objects[i]->Render();
-				}
-			}
-		}
+		objects[i]->Render();
 	}
 }
 
@@ -491,6 +452,56 @@ void CPlayScene::Unload()
 }
 
 bool CPlayScene::IsGameObjectDeleted(const LPGAMEOBJECT& o) { return o == NULL; }
+
+void CPlayScene::Add(LPGAMEOBJECT newObj)
+{
+	if(newObj)
+		objects.push_back(newObj);
+}
+
+vector<LPGAMEOBJECT> CPlayScene::Filter()
+{
+	CGame* game = CGame::GetInstance();
+
+	vector<LPGAMEOBJECT> process_list;
+	for (size_t i = 1; i < objects.size(); i++)
+	{
+		if (game->IsInCam(objects[i]))
+			process_list.push_back(objects[i]);
+	}
+
+	return process_list;
+}
+
+void CPlayScene::UpdateCamera()
+{
+	// Update camera to follow mario
+	CGame* game = CGame::GetInstance();
+
+	float cx, cy;
+	player->GetPosition(cx, cy);
+
+	float player_bbox_height = player->getBBoxHeight();
+
+	cx = cx - game->GetBackBufferWidth() / 2.0f;
+	cx = fmax(0.0f, cx);
+
+	if (player->IsFlying())
+	{
+		cy = cy - game->GetBackBufferHeight() / 2.0f;
+		cy = fmin(CAM_MAX_Y, cy);
+	}
+	else
+	{
+		cy = CAM_MAX_Y;
+		//cy = cy + player_bbox_height / 2.0f + 16.0f - game->GetBackBufferHeight();
+	}
+
+	/*if (GetAsyncKeyState(VK_UP) & 0x8000) cy -= 10;
+	if (GetAsyncKeyState(VK_DOWN) & 0x8000) cy += 10;*/
+
+	CGame::GetInstance()->SetCamPos(cx, cy);
+}
 
 void CPlayScene::PurgeDeletedObjects()
 {
