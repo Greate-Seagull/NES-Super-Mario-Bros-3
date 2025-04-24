@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Block.h"
+#include "BrickParticle.h"
 #include "Animation.h"
 #include "Animations.h"
 
@@ -39,5 +40,6 @@ public:
 
 	void TriggerItem();
 
+	void BrickBursting();
 	void Shaking(DWORD dt);
 };

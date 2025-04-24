@@ -98,7 +98,7 @@ void CPButton::Reaction_Coin_To_Brick()
 		{
 			float bX, bY;
 			coinsArchive[i]->GetPosition(bX, bY);
-			coinsArchive[i]->Delete();
+			if (!coinsArchive[i]->IsDeleted()) coinsArchive[i]->Delete();
 
 			CBrick* b = new CBrick(bX, bY, ITEM_TYPE_NOTHING);
 			bricksArchive.push_back(b);

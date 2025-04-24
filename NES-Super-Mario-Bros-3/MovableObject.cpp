@@ -1,4 +1,5 @@
 #include "MovableObject.h"
+#include "debug.h"
 
 CMovableObject::CMovableObject(float x, float y):
 	CGameObject(x, y)

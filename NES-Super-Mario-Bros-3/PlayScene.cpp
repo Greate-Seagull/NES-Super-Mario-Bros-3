@@ -484,8 +484,11 @@ vector<LPGAMEOBJECT> CPlayScene::Filter()
 	vector<LPGAMEOBJECT> process_list;
 	for (size_t i = 1; i < objects.size(); i++)
 	{
-		if (game->IsInCam(objects[i]))
-			process_list.push_back(objects[i]);
+		if (dynamic_cast<CBrickParticle*>(objects[i])) process_list.push_back(objects[i]);
+		else {
+			if (game->IsInCam(objects[i]))
+				process_list.push_back(objects[i]);
+		}
 	}
 
 	return process_list;

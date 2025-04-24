@@ -54,7 +54,12 @@ void CBrick::Reaction(CGameObject* by_another, int action)
 	switch (action)
 	{
 	case ACTION_DESTROY:
-		this->Delete();
+		if (itemID == OBJECT_TYPE_PBUTTON) SetState(BRICK_STATE_TOGGLE);
+		else
+		{
+			BrickBursting();
+			this->Delete();
+		}
 		break;
 	case ACTION_TOUCH:
 		SetState(BRICK_STATE_TOGGLE);
@@ -98,6 +103,21 @@ void CBrick::TriggerItem()
 	item->Reaction(this, ACTION_ATTACK);
 	LPPLAYSCENE ps = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
 	ps->Add(item);
+}
+
+void CBrick::BrickBursting()
+{
+	LPPLAYSCENE ps = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+
+	CBrickParticle* p1 = new CBrickParticle(x, y, 1);
+	CBrickParticle* p2 = new CBrickParticle(x, y, 2);
+	CBrickParticle* p3 = new CBrickParticle(x, y, 3);
+	CBrickParticle* p4 = new CBrickParticle(x, y, 4);
+
+	ps->Add(p1);
+	ps->Add(p2);
+	ps->Add(p3);
+	ps->Add(p4);
 }
 
 void CBrick::Shaking(DWORD dt)
