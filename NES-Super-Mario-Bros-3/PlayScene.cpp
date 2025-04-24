@@ -142,7 +142,6 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		int sprite_end = atoi(tokens[6].c_str());
 
 		obj = new CEndLevel(x, y, width, height, sprite_begin, sprite_end);
-		ending = (CEndLevel*)obj;
 		break;
 	}
 	case NON_OBJECT_TYPE_CARD_RANDOM:
@@ -246,13 +245,14 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		float cell_width = (float)atof(tokens[3].c_str());
 		float cell_height = (float)atof(tokens[4].c_str());
 		int length = atoi(tokens[5].c_str());
-		int sprite_begin = atoi(tokens[6].c_str());
-		int sprite_middle = atoi(tokens[7].c_str());
-		int sprite_end = atoi(tokens[8].c_str());
+		int type = atoi(tokens[6].c_str());
+		int sprite_begin = atoi(tokens[7].c_str());
+		int sprite_middle = atoi(tokens[8].c_str());
+		int sprite_end = atoi(tokens[9].c_str());
 
 		obj = new CPlatform(
 			x, y,
-			cell_width, cell_height, length,
+			cell_width, cell_height, length, type,
 			sprite_begin, sprite_middle, sprite_end
 		);
 
@@ -336,8 +336,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	// General object setup
 	obj->SetPosition(x, y);
 
-	if (object_type != NON_OBJECT_TYPE_BACKGROUND
-		&& object_type != NON_OBJECT_TYPE_ENDING)
+	if (object_type != NON_OBJECT_TYPE_BACKGROUND)
 		objects.push_back(obj);
 }
 
@@ -417,18 +416,17 @@ void CPlayScene::Update(DWORD dt)
 	// TO-DO: This is a "dirty" way, need a more organized way 
 	//DebugOutTitle(L"Coin: %d", coin);
 
-	vector<LPGAMEOBJECT> process_list = Filter();
-
+	vector<LPGAMEOBJECT> collision_range_list = FilterByPlayer();
 	vector<LPGAMEOBJECT> coObjects;
-	for (size_t i = 0; i < process_list.size(); i++)
+	for (size_t i = 0; i < collision_range_list.size(); i++)
 	{
-		if (process_list[i]->IsCollidable())
-			coObjects.push_back(process_list[i]);
+		if (collision_range_list[i]->IsCollidable())
+			coObjects.push_back(collision_range_list[i]);
 	}
 
-	for (size_t i = 0; i < process_list.size(); i++)
+	for (size_t i = 0; i < collision_range_list.size(); i++)
 	{
-		process_list[i]->Update(dt, &coObjects);
+		collision_range_list[i]->Update(dt, &coObjects);
 	}
 
 	UpdateCamera();
@@ -442,14 +440,12 @@ void CPlayScene::Update(DWORD dt)
 void CPlayScene::Render()
 {
 	//if (background) background->Render();
-	
-	if (ending) ending->Render();
 
-	vector<LPGAMEOBJECT> process_list = Filter();
+	vector<LPGAMEOBJECT> process_list = FilterByCam();
 
-	for (int i = 0; i < objects.size(); i++)
+	for (int i = 0; i < process_list.size(); i++)
 	{
-		objects[i]->Render();
+		process_list[i]->Render();
 	}
 }
 
@@ -491,14 +487,56 @@ void CPlayScene::Add(LPGAMEOBJECT newObj)
 		objects.push_back(newObj);
 }
 
-vector<LPGAMEOBJECT> CPlayScene::Filter()
+bool CPlayScene::IsInRange(LPGAMEOBJECT obj, float start_x, float end_x, float start_y, float end_y)
 {
-	CGame* game = CGame::GetInstance();
+	float left, top, right, bottom;
+	obj->GetBoundingBox(left, top, right, bottom);
+
+	bool horizontally_inside = (left <= end_x) && (right >= start_x);
+	bool vertically_inside = (top <= end_y) && (bottom >= start_y);
+
+	return horizontally_inside && vertically_inside;
+
+	//return !(left > max_x || right < min_x || top > max_y || bottom < min_y);
+}
+
+vector<LPGAMEOBJECT> CPlayScene::FilterByPlayer(float range)
+{
+	float player_x, player_y;
+	player->GetPosition(player_x, player_y);
+
+	float range_width = range;
+	float range_height = range;
+
+	float start_x = player_x - range_width, end_x = player_x + range_width;
+	float start_y = player_y - range_height, end_y = player_y + range_height;
 
 	vector<LPGAMEOBJECT> process_list;
-	for (size_t i = 1; i < objects.size(); i++)
+	for (size_t i = 0; i < objects.size(); i++)
 	{
-		if (game->IsInCam(objects[i]))
+		if (IsInRange(objects[i], start_x, end_x, start_y, end_y))
+			process_list.push_back(objects[i]);
+	}
+
+	return process_list;
+}
+
+vector<LPGAMEOBJECT> CPlayScene::FilterByCam()
+{
+	CGame* game = CGame::GetInstance();
+	
+	float start_x, end_x, start_y, end_y;
+	game->GetCamPos(start_x, start_y);
+	end_x = start_x + game->GetBackBufferWidth();
+	end_y = start_y + game->GetBackBufferHeight();
+
+	/*end_x = start_x + 256.0f;
+	end_y = start_y + 192.0f;*/
+
+	vector<LPGAMEOBJECT> process_list;
+	for (size_t i = 0; i < objects.size(); i++)
+	{
+		if (IsInRange(objects[i], start_x, end_x, start_y, end_y))
 			process_list.push_back(objects[i]);
 	}
 

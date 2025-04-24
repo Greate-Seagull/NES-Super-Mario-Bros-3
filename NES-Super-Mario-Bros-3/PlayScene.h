@@ -10,6 +10,7 @@
 
 
 #define CAM_MAX_Y 247.0f
+#define COLLISION_RANGE 275.0f
 
 class CPlayScene: public CScene
 {
@@ -17,7 +18,6 @@ protected:
 	// A play scene has to have player, right? 
 	CMario* player;
 	LPGAMEOBJECT background;
-	LPGAMEOBJECT ending;
 
 	vector<LPGAMEOBJECT> objects;
 
@@ -45,7 +45,9 @@ public:
 	static bool IsGameObjectDeleted(const LPGAMEOBJECT& o);
 
 	void Add(LPGAMEOBJECT newObj);
-	vector<LPGAMEOBJECT> Filter();
+	bool IsInRange(LPGAMEOBJECT obj, float start_x, float end_x, float start_y, float end_y);
+	vector<LPGAMEOBJECT> FilterByPlayer(float range = COLLISION_RANGE);
+	vector<LPGAMEOBJECT> FilterByCam();
 	void UpdateCamera();
 };
 

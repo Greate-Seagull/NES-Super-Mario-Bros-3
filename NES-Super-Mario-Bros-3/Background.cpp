@@ -7,12 +7,6 @@
 
 #define REWARD_OFFSET_MAXIMUM_TIME 4
 
-void CBackground::Render()
-{
-	CAnimations* animations = CAnimations::GetInstance();
-	animations->Get(ID_ANI_BACKGROUND)->Render(x, y);
-}
-
 void CBackground::GetBoundingBox(float& l, float& t, float& r, float& b) {
 	l = 0;
 	t = 0;
@@ -37,14 +31,14 @@ void CEndLevel::Render()
 		}
 
 		yy -= cell_height;
-	}
+	}	
 }
 
-void CEndLevel::GetBoundingBox(float& l, float& t, float& r, float& b) {
-	l = 0;
-	t = 0;
-	r = 0;
-	b = 0;
+void CEndLevel::GetBoundingBox(float& left, float& top, float& right, float& bottom) {
+	left = x - cell_width / 2.0f;
+	bottom = y + cell_height / 2.0f;
+	right = left + bbox_width;
+	top = bottom - bbox_height;
 }
 
 void CRandomCard::Render()

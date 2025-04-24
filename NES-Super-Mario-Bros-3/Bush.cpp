@@ -42,22 +42,15 @@ void CBigBush::Render()
 
 void CBigBush::GetBoundingBox(float& l, float& t, float& r, float& b)
 {
-	l = 0;
-	t = 0;
-	r = 0;
-	b = 0;
+	l = x - this->cellWidth / 2.0f;
+	b = y + this->cellHeight / 2.0f;
+	r = l + this->cellWidth * 2.0f;
+	t = b - this->cellHeight * this->height;
 }
 
-void CMiniBush::Render()
+CMiniBush::CMiniBush(float x, float y)
 {
-	CAnimations* animations = CAnimations::GetInstance();
-	animations->Get(ID_ANI_MINI_BUSH)->Render(x, y);
-}
+	SetBoundingBox(BUSH_BBOX_WIDTH, BUSH_BBOX_HEIGHT);
 
-void CMiniBush::GetBoundingBox(float& l, float& t, float& r, float& b)
-{
-	l = 0;
-	t = 0;
-	r = 0;
-	b = 0;
+	aniID = ID_ANI_MINI_BUSH;
 }

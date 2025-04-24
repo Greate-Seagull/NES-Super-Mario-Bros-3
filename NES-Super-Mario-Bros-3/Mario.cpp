@@ -489,13 +489,13 @@ void CMario::UnderAttack(CGameObject* by_another)
 
 void CMario::Sit()
 {
-	if (is_sitting)
-		return;
 	if (life == MARIO_LEVEL_SMALL || weapon) //Cannot sit
 	{
 		Stand();
 		return;
 	}	
+	if (is_sitting)
+		return;
 
 	UntriggerTail();
 	is_sitting = true;

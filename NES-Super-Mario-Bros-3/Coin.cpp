@@ -16,7 +16,7 @@ void CCoin::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	}
 	else
 	{
-		CCollision::GetInstance()->ProcessOverlap(this, coObjects);
+		//CCollision::GetInstance()->ProcessOverlap(this, coObjects);
 	}
 }
 

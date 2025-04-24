@@ -13,9 +13,7 @@
 
 class CBackground : public CGameObject {
 public:
-	CBackground(float x, float y) : CGameObject(x, y) {}
-	void Render();
-	void Update(DWORD dt) {}
+	CBackground(float x, float y) : CGameObject(x, y) { aniID = ID_ANI_BACKGROUND; }
 	void GetBoundingBox(float& l, float& t, float& r, float& b);
 };
 
@@ -96,14 +94,16 @@ public:
 		int sprite_id_begin, int sprite_id_end)
 		: CGameObject(x, y)
 	{
-		this->cell_width = 16;
-		this->cell_height = 16;
+		this->cell_width = 16.0f;
+		this->cell_height = 16.0f;
 		this->width = width;
 		this->height = height;
 		this->spriteIdBegin = sprite_id_begin;
 		this->spriteIdEnd = sprite_id_end;
+
+		this->bbox_width = cell_width * this->width;
+		this->bbox_height = cell_height * this->height;
 	}
 	void Render();
-	void Update(DWORD dt) {}
-	void GetBoundingBox(float& l, float& t, float& r, float& b);
+	void GetBoundingBox(float& left, float& top, float& right, float& bottom);
 };
