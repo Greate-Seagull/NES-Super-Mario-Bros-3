@@ -259,11 +259,12 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 
 		int face_direction = atoi(tokens[10].c_str());
 		int warp_direction = atoi(tokens[11].c_str());
+		int scene_destination = atoi(tokens[12].c_str());
 
 		obj = new CPipe(
 			x, y,
 			cell_width, cell_height, pipe_height, 
-			face_direction, warp_direction, 
+			face_direction, warp_direction, scene_destination, 
 			sprite_id_begin_begin, sprite_id_end_begin, 
 			sprite_id_begin_end, sprite_id_end_end);
 		break;

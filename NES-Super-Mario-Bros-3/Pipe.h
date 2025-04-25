@@ -11,6 +11,7 @@ class CPipe : public CBlock {
 protected:
 	int face_direction;
 	int warp_direction;
+	int scene_destination;
 
 	int spriteIdBeginBegin, spriteIdEndBegin;
 	int spriteIdBeginEnd, spriteIdEndEnd;
@@ -26,7 +27,7 @@ public:
 	}*/
 	CPipe(float x, float y,
 		float cell_width, float cell_height, float height,
-		int faceDirection, int warpDirection,
+		int faceDirection, int warpDirection, int scene_destination,
 		int sprite_id_begin_begin, int sprite_id_end_begin,
 		int sprite_id_begin_end, int sprite_id_end_end)
 		: CBlock(x, y)
@@ -34,8 +35,11 @@ public:
 		this->cell_width = cell_width;
 		this->cell_height = cell_height;
 		this->height = height;
+
 		this->face_direction = faceDirection;
 		this->warp_direction = warpDirection;
+		this->scene_destination = scene_destination;
+
 		this->spriteIdBeginBegin = sprite_id_begin_begin;
 		this->spriteIdEndBegin = sprite_id_end_begin;
 		this->spriteIdBeginEnd = sprite_id_begin_end;
@@ -49,4 +53,8 @@ public:
 
 	void Update(DWORD dt) {} //GameObject co ham update roi! "virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects = NULL) {};"
 	void GetBoundingBox(float& left, float& top, float& right, float& bottom);
+
+	void Reaction(CGameObject* by_another, int action);
+
+	int GetWarpDirection() { return warp_direction; }
 };

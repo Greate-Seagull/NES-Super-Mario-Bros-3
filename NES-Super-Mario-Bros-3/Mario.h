@@ -27,6 +27,8 @@
 
 #define MARIO_MAX_JUMP_HEIGHT 60.0f
 
+#define MARIO_PIPE_ENTRY_SPEED 0.1f
+
 #define MARIO_BIG_TRANSFORM_TIME 600
 #define MARIO_RACOON_TRANSFORM_TIME 350
 #define MARIO_SMALL_TRANSFORM_TIME 700
@@ -44,6 +46,9 @@
 //state
 #define MARIO_STATE_GAIN_POWER 10
 #define MARIO_STATE_LOSE_POWER 11
+
+#define MARIO_PIPE_ENTRY_DOWN 20
+#define MARIO_PIPE_ENTRY_UP 21
 
 #define MARIO_ACCEL_WALK_X	0.0005f
 #define MARIO_ACCEL_RUN_X	0.0007f
@@ -80,6 +85,10 @@
 #define ID_ANI_RIGHT 1
 #define ID_ANI_FRONT 2
 #define ID_ANI_BEHIND 3
+// PIPE ANIMATION
+#define ID_ANI_PIPE_SMALL 70
+#define ID_ANI_PIPE_BIG 1200
+#define ID_ANI_PIPE_RACOON 2200
 
 #pragma endregion
 
@@ -189,6 +198,10 @@ public:
 
 	void Kick();
 	void Kicking(DWORD dt);
+
+	void PipeEntry(int warp_direction, int scene_destination);
+	void PipeEntryUp(DWORD dt);
+	void PipeEntryDown(DWORD dt);
 
 	void StartInvulnerable();
 	void Invulnerable(DWORD dt);
