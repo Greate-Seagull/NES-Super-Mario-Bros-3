@@ -85,10 +85,8 @@
 #define ID_ANI_RIGHT 1
 #define ID_ANI_FRONT 2
 #define ID_ANI_BEHIND 3
-// PIPE ANIMATION
-#define ID_ANI_PIPE_SMALL 70
-#define ID_ANI_PIPE_BIG 1200
-#define ID_ANI_PIPE_RACOON 2200
+// PIPE ACTION
+#define ID_ANI_PIPE_ENTER 150
 
 #pragma endregion
 

@@ -254,44 +254,43 @@ void CMario::Render()
 
 void CMario::ChangeAnimation()
 {
-	if (state == MARIO_PIPE_ENTRY_DOWN || state == MARIO_PIPE_ENTRY_UP)
+	int level = ID_ANI_SMALL;
+	if (life == MARIO_LEVEL_RACOON)
 	{
-		if (life == MARIO_LEVEL_SMALL) aniID = ID_ANI_PIPE_SMALL;
-		else if (life == MARIO_LEVEL_BIG) aniID = ID_ANI_PIPE_BIG;
-		else if (life == MARIO_LEVEL_RACOON) aniID = ID_ANI_PIPE_RACOON;
+		level = ID_ANI_RACOON;
 	}
-	else
+	else if (life == MARIO_LEVEL_BIG)
 	{
+		level = ID_ANI_BIG;
+	}
 
-		int level = ID_ANI_SMALL;
-		if (life == MARIO_LEVEL_RACOON)
-		{
-			level = ID_ANI_RACOON;
-		}
-		else if (life == MARIO_LEVEL_BIG)
-		{
-			level = ID_ANI_BIG;
-		}
+	int action;
+	DWORD timePerFrame = TIME_FRAME;
+	switch (state)
+	{
+	case STATE_LIVE:
+		ChangeAnimationInLivingState(action, timePerFrame);
+		break;
+	case MARIO_STATE_GAIN_POWER:
+		action = ID_ANI_LEVEL_UP;
+		break;
+	case MARIO_STATE_LOSE_POWER:
+		action = ID_ANI_LEVEL_DOWN;
+		break;
+	case MARIO_PIPE_ENTRY_DOWN:
+		action = ID_ANI_PIPE_ENTER;
+		break;
+	case MARIO_PIPE_ENTRY_UP:
+		action = ID_ANI_PIPE_ENTER;
+		break;
+	case STATE_DIE:
+		action = ID_ANI_DIE;
+		break;
+	}
 
-		int action;
-		DWORD timePerFrame = TIME_FRAME;
-		switch (state)
-		{
-		case STATE_LIVE:
-			ChangeAnimationInLivingState(action, timePerFrame);
-			break;
-		case MARIO_STATE_GAIN_POWER:
-			action = ID_ANI_LEVEL_UP;
-			break;
-		case MARIO_STATE_LOSE_POWER:
-			action = ID_ANI_LEVEL_DOWN;
-			break;
-		case STATE_DIE:
-			action = ID_ANI_DIE;
-			break;
-		}
-
-		int direction = 0;
+	int direction = 0;
+	if (state != MARIO_PIPE_ENTRY_DOWN && state != MARIO_PIPE_ENTRY_UP)
+	{
 		if (nz)
 		{
 			direction = (nz < 0) ? ID_ANI_FRONT : ID_ANI_BEHIND;
@@ -300,14 +299,15 @@ void CMario::ChangeAnimation()
 		{
 			direction = (nx <= 0) ? ID_ANI_LEFT : ID_ANI_RIGHT;
 		}
-
-
-		aniID = ID_ANI_MARIO + level + action + direction;
-
-		if (timePerFrame < TIME_FRAME)
-			CAnimations::GetInstance()->Get(aniID)->ChangeTimePerFrame(timePerFrame);
 	}
-	
+
+
+	aniID = ID_ANI_MARIO + level + action + direction;
+
+	if (timePerFrame < TIME_FRAME)
+		CAnimations::GetInstance()->Get(aniID)->ChangeTimePerFrame(timePerFrame);
+
+
 	CAnimations::GetInstance()->Get(aniID)->SwitchSprite();
 }
 
