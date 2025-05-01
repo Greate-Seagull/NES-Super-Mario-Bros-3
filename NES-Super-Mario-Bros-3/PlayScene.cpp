@@ -51,12 +51,7 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 #define SCREEN_HEIGHT 240
 #define OFFSET 32
 
-float tempCamPosY = 0;
-
-bool isStartSpawned = false;
-
-int coin = 0;
-
+//bool isStartSpawned = false;
 vector<LPGAMEOBJECT> bricksArchive;
 
 void CPlayScene::_ParseSection_SPRITES(string line)
@@ -194,16 +189,16 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 			DebugOut(L"[ERROR] MARIO object was created before!\n");
 			return;
 		}
-
+		/*
 		if (isStartSpawned)
 		{
 			CGame::GetInstance()->GetNewPlayerPos(x, y);
-		}
+		}*/
 		obj = new CMario(x,y); 
-		player = (CMario*)obj;  
+		player = (CMario*)obj;
 
 		DebugOut(L"[INFO] Player object has been created!\n");
-		isStartSpawned = true;
+		//isStartSpawned = true;
 		break;
 	case OBJECT_TYPE_GOOMBA: obj = new CGoomba(x,y); break;
 	case OBJECT_TYPE_PARAGOOMBA: obj = new CParagoomba(x,y); break;
@@ -483,9 +478,11 @@ vector<LPGAMEOBJECT> CPlayScene::Filter()
 	CGame* game = CGame::GetInstance();
 
 	vector<LPGAMEOBJECT> process_list;
-	for (size_t i = 1; i < objects.size(); i++)
+	for (size_t i = 0; i < objects.size(); i++)
 	{
-		if (dynamic_cast<CBrickParticle*>(objects[i])) process_list.push_back(objects[i]);
+		if (dynamic_cast<CBrickParticle*>(objects[i]) ||
+			dynamic_cast<CMario*>(objects[i]))
+			process_list.push_back(objects[i]);
 		else {
 			if (game->IsInCam(objects[i]))
 				process_list.push_back(objects[i]);
@@ -502,6 +499,7 @@ void CPlayScene::UpdateCamera()
 
 	float cx, cy;
 	player->GetPosition(cx, cy);
+	DebugOutTitle(L"%f, %f", cx, cy);
 
 	float player_bbox_height = player->getBBoxHeight();
 

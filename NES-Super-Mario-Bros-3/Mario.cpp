@@ -42,6 +42,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	//DebugOutTitle(L"Momentum: %d, vx: %f", momentum, fabs(vx));
 	//dt = 16;
 	InPhase(dt, coObjects);
+	DebugOut(L"%f\n", switchSceneTime);
 }
 
 void CMario::InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
@@ -384,7 +385,7 @@ void CMario::ChangeDrawY(float& y)
 void CMario::TriggerActions()
 {
 	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
-
+	/*
 	if (keyState->IsHold(VK_UP))
 	{
 		Fly();
@@ -393,7 +394,7 @@ void CMario::TriggerActions()
 	{
 		is_flying = false;
 	}
-
+	*/
 	if (keyState->IsHold(VK_DOWN) &&
 		!keyState->IsHold(VK_LEFT) && !keyState->IsHold(VK_RIGHT))
 		Sit();

@@ -30,5 +30,6 @@ public:
 
 	void Render();
 	void GetBoundingBox(float& l, float& t, float& r, float& b);
+	virtual int IsDirectionColliable(float nx, float ny);
 	virtual int IsCollidable() { return 1; }
 };
