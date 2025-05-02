@@ -3,6 +3,7 @@
 
 #include "Mario.h"
 #include "Game.h"
+#include "PlayScene.h"
 
 #include "Goomba.h"
 #include "Coin.h"
@@ -740,6 +741,7 @@ void CMario::PipeEntry(int warp_direction, int scene_destination)
 	{
 		SetState(MARIO_PIPE_ENTRY_UP);
 		sceneDestination = scene_destination;
+		
 	}
 	else if (keyState->IsHold(VK_DOWN) && warp_direction == -1)
 	{

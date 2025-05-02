@@ -51,8 +51,10 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 #define SCREEN_HEIGHT 240
 #define OFFSET 32
 
-//bool isStartSpawned = false;
 vector<LPGAMEOBJECT> bricksArchive;
+
+bool isStartSpawned = false;
+float newMarioX, newMarioY;
 
 void CPlayScene::_ParseSection_SPRITES(string line)
 {
@@ -189,13 +191,16 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 			DebugOut(L"[ERROR] MARIO object was created before!\n");
 			return;
 		}
-		/*
+		
 		if (isStartSpawned)
 		{
-			CGame::GetInstance()->GetNewPlayerPos(x, y);
-		}*/
+			x = newMarioX;
+			y = newMarioY;
+		}
+
 		obj = new CMario(x,y); 
 		player = (CMario*)obj;
+		isStartSpawned = true;
 
 		DebugOut(L"[INFO] Player object has been created!\n");
 		//isStartSpawned = true;
@@ -256,12 +261,26 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		int warp_direction = atoi(tokens[11].c_str());
 		int scene_destination = atoi(tokens[12].c_str());
 
-		obj = new CPipe(
-			x, y,
-			cell_width, cell_height, pipe_height, 
-			face_direction, warp_direction, scene_destination, 
-			sprite_id_begin_begin, sprite_id_end_begin, 
-			sprite_id_begin_end, sprite_id_end_end);
+		if (warp_direction == 0)
+			obj = new CPipe(
+				x, y,
+				cell_width, cell_height, pipe_height, 
+				face_direction, warp_direction, scene_destination, 
+				sprite_id_begin_begin, sprite_id_end_begin, 
+				sprite_id_begin_end, sprite_id_end_end);
+		else
+		{
+			float newX = (float)atof(tokens[13].c_str());
+			float newY = (float)atof(tokens[14].c_str());
+
+			obj = new CPipe(
+				x, y,
+				cell_width, cell_height, pipe_height,
+				face_direction, warp_direction, scene_destination,
+				sprite_id_begin_begin, sprite_id_end_begin,
+				sprite_id_begin_end, sprite_id_end_end,
+				newX, newY);
+		}
 		break;
 	}
 
@@ -408,6 +427,8 @@ void CPlayScene::Update(DWORD dt)
 		process_list[i]->Update(dt, &coObjects);
 	}
 
+	DebugOutTitle(L"%f, %f", newMarioX, newMarioY);
+
 	UpdateCamera();
 
 	// skip the rest if scene was already unloaded (Mario::Update might trigger PlayScene::Unload)
@@ -473,6 +494,12 @@ void CPlayScene::GetObjects(vector<LPGAMEOBJECT>& objArray)
 	objArray = bricksArchive;
 }
 
+void CPlayScene::LoadNewMarioPosition(float newX, float newY)
+{
+	newMarioX = newX;
+	newMarioY = newY;
+}
+
 vector<LPGAMEOBJECT> CPlayScene::Filter()
 {
 	CGame* game = CGame::GetInstance();
@@ -499,7 +526,6 @@ void CPlayScene::UpdateCamera()
 
 	float cx, cy;
 	player->GetPosition(cx, cy);
-	DebugOutTitle(L"%f, %f", cx, cy);
 
 	float player_bbox_height = player->getBBoxHeight();
 

@@ -45,6 +45,8 @@ public:
 
 	void Add(LPGAMEOBJECT newObj);
 	void GetObjects(vector<LPGAMEOBJECT>& objArray);
+	void LoadNewMarioPosition(float newX, float newY);
+
 	vector<LPGAMEOBJECT> Filter();
 	void UpdateCamera();
 };

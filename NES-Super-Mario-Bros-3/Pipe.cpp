@@ -5,6 +5,7 @@
 
 #include "Textures.h"
 #include "Game.h"
+#include "PlayScene.h"
 
 void CPipe::Render()
 {
@@ -66,6 +67,8 @@ void CPipe::Reaction(CGameObject* by_another, int action)
 			if (mX >= this->x && mX <= this->x + PIPE_WIDTH / 2)
 			{
 				m->PipeEntry(this->warp_direction, this->scene_destination);
+				LPPLAYSCENE curr = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+				curr->LoadNewMarioPosition(newX, newY);
 			}
 		}
 	}
