@@ -59,16 +59,17 @@ void CPipe::Reaction(CGameObject* by_another, int action)
 	case ACTION_TOUCH:
 		if (dynamic_cast<CMario*>(by_another))
 		{
-			float mX, mY;
+			float mX, mY, mLife;
 
 			CMario* m = (CMario*)by_another;
 			m->GetPosition(mX, mY);
+			mLife = m->GetLife();
 
 			if (mX >= this->x && mX <= this->x + PIPE_WIDTH / 2)
 			{
 				m->PipeEntry(this->warp_direction, this->scene_destination);
 				LPPLAYSCENE curr = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
-				curr->LoadNewMarioPosition(newX, newY);
+				curr->LoadWarpedMario(newX, newY, mLife);
 			}
 		}
 	}

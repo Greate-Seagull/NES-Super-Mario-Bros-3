@@ -45,7 +45,7 @@ public:
 
 	void Add(LPGAMEOBJECT newObj);
 	void GetObjects(vector<LPGAMEOBJECT>& objArray);
-	void LoadNewMarioPosition(float newX, float newY);
+	void LoadWarpedMario(float newX, float newY, float newLife);
 
 	vector<LPGAMEOBJECT> Filter();
 	void UpdateCamera();

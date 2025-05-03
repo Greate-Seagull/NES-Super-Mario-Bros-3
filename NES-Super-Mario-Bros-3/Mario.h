@@ -162,6 +162,7 @@ public:
 	void Reaction(CGameObject* by_another, int action);
 
 	void SetLife(float l);
+	float GetLife() { return life; }
 
 	void SetState(int state);
 	void ToGainingPowerState();

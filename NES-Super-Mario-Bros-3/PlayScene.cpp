@@ -55,6 +55,7 @@ vector<LPGAMEOBJECT> bricksArchive;
 
 bool isStartSpawned = false;
 float newMarioX, newMarioY;
+float newMarioLife;
 
 void CPlayScene::_ParseSection_SPRITES(string line)
 {
@@ -200,6 +201,8 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 
 		obj = new CMario(x,y); 
 		player = (CMario*)obj;
+		if (isStartSpawned) player->SetLife(newMarioLife);
+
 		isStartSpawned = true;
 
 		DebugOut(L"[INFO] Player object has been created!\n");
@@ -427,8 +430,6 @@ void CPlayScene::Update(DWORD dt)
 		process_list[i]->Update(dt, &coObjects);
 	}
 
-	DebugOutTitle(L"%f, %f", newMarioX, newMarioY);
-
 	UpdateCamera();
 
 	// skip the rest if scene was already unloaded (Mario::Update might trigger PlayScene::Unload)
@@ -494,10 +495,11 @@ void CPlayScene::GetObjects(vector<LPGAMEOBJECT>& objArray)
 	objArray = bricksArchive;
 }
 
-void CPlayScene::LoadNewMarioPosition(float newX, float newY)
+void CPlayScene::LoadWarpedMario(float newX, float newY, float newLife)
 {
 	newMarioX = newX;
 	newMarioY = newY;
+	newMarioLife = newLife;
 }
 
 vector<LPGAMEOBJECT> CPlayScene::Filter()
