@@ -54,8 +54,7 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 vector<LPGAMEOBJECT> bricksArchive;
 
 bool isStartSpawned = false;
-float newMarioX, newMarioY;
-float newMarioLife;
+float newMarioX, newMarioY, newMarioLife, newMarioWarpDirection;
 
 void CPlayScene::_ParseSection_SPRITES(string line)
 {
@@ -201,7 +200,12 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 
 		obj = new CMario(x,y); 
 		player = (CMario*)obj;
-		if (isStartSpawned) player->SetLife(newMarioLife);
+		if (isStartSpawned)
+		{
+			player->SetLife(newMarioLife);
+			if (newMarioWarpDirection == 1) player->SetState(MARIO_PIPE_EXIT_UP);
+			else if (newMarioWarpDirection == -1) player->SetState(MARIO_PIPE_EXIT_DOWN);
+		}
 
 		isStartSpawned = true;
 
@@ -495,11 +499,12 @@ void CPlayScene::GetObjects(vector<LPGAMEOBJECT>& objArray)
 	objArray = bricksArchive;
 }
 
-void CPlayScene::LoadWarpedMario(float newX, float newY, float newLife)
+void CPlayScene::LoadWarpedMario(float newX, float newY, float newLife, float newDirection)
 {
 	newMarioX = newX;
 	newMarioY = newY;
 	newMarioLife = newLife;
+	newMarioWarpDirection = newDirection;
 }
 
 vector<LPGAMEOBJECT> CPlayScene::Filter()
@@ -510,7 +515,8 @@ vector<LPGAMEOBJECT> CPlayScene::Filter()
 	for (size_t i = 0; i < objects.size(); i++)
 	{
 		if (dynamic_cast<CBrickParticle*>(objects[i]) ||
-			dynamic_cast<CMario*>(objects[i]))
+			dynamic_cast<CCoin*>(objects[i]) ||
+			dynamic_cast<CBrick*>(objects[i]))
 			process_list.push_back(objects[i]);
 		else {
 			if (game->IsInCam(objects[i]))

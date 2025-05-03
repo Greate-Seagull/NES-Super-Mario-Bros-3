@@ -27,7 +27,7 @@
 
 #define MARIO_MAX_JUMP_HEIGHT 60.0f
 
-#define MARIO_PIPE_ENTRY_SPEED 0.1f
+#define MARIO_PIPE_ENTRY_SPEED 0.03f
 
 #define MARIO_BIG_TRANSFORM_TIME 600
 #define MARIO_RACOON_TRANSFORM_TIME 350
@@ -49,6 +49,8 @@
 
 #define MARIO_PIPE_ENTRY_DOWN 20
 #define MARIO_PIPE_ENTRY_UP 21
+#define MARIO_PIPE_EXIT_DOWN 30
+#define MARIO_PIPE_EXIT_UP 31
 
 #define MARIO_ACCEL_WALK_X	0.0005f
 #define MARIO_ACCEL_RUN_X	0.0007f
@@ -201,6 +203,8 @@ public:
 	void PipeEntry(int warp_direction, int scene_destination);
 	void PipeEntryUp(DWORD dt);
 	void PipeEntryDown(DWORD dt);
+	void PipeExitUp(DWORD dt);
+	void PipeExitDown(DWORD dt);
 
 	void StartInvulnerable();
 	void Invulnerable(DWORD dt);

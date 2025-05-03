@@ -69,7 +69,7 @@ void CPipe::Reaction(CGameObject* by_another, int action)
 			{
 				m->PipeEntry(this->warp_direction, this->scene_destination);
 				LPPLAYSCENE curr = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
-				curr->LoadWarpedMario(newX, newY, mLife);
+				curr->LoadWarpedMario(newX, newY, mLife, this->warp_direction);
 			}
 		}
 	}

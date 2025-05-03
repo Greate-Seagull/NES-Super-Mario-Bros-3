@@ -32,8 +32,6 @@ void CPButton::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		{
 			Reaction_Coin_To_Brick();
 			isSwitched = false;
-
-			coinsArchive.clear();
 			bricksArchive.clear();
 		}
 	}

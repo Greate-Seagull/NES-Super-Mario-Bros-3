@@ -18,7 +18,11 @@
 #include "Collision.h"
 
 float switchSceneTime = 0;
-#define MAX_SCENE_TIME 600
+#define MAX_SCENE_TIME 800
+
+float exitPipeTime = 0;
+bool finishedExitingPipe = false;
+#define MAX_EXIT_PIPE_TIME 800
 
 int sceneDestination;
 
@@ -64,6 +68,12 @@ void CMario::InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 			break;
 		case MARIO_PIPE_ENTRY_UP:
 			PipeEntryUp(dt);
+			break;
+		case MARIO_PIPE_EXIT_DOWN:
+			PipeExitDown(dt);
+			break;
+		case MARIO_PIPE_EXIT_UP:
+			PipeExitUp(dt);
 			break;
 		case STATE_DIE:		
 			Dying(dt);
@@ -285,13 +295,22 @@ void CMario::ChangeAnimation()
 	case MARIO_PIPE_ENTRY_UP:
 		action = ID_ANI_PIPE_ENTER;
 		break;
+	case MARIO_PIPE_EXIT_DOWN:
+		action = ID_ANI_PIPE_ENTER;
+		break;
+	case MARIO_PIPE_EXIT_UP:
+		action = ID_ANI_PIPE_ENTER;
+		break;
 	case STATE_DIE:
 		action = ID_ANI_DIE;
 		break;
 	}
 
 	int direction = 0;
-	if (state != MARIO_PIPE_ENTRY_DOWN && state != MARIO_PIPE_ENTRY_UP)
+	if (state != MARIO_PIPE_ENTRY_DOWN &&
+		state != MARIO_PIPE_ENTRY_UP &&
+		state != MARIO_PIPE_EXIT_DOWN &&
+		state != MARIO_PIPE_EXIT_UP)
 	{
 		if (nz)
 		{
@@ -758,6 +777,7 @@ void CMario::PipeEntryUp(DWORD dt)
 	if (switchSceneTime >= MAX_SCENE_TIME)
 	{
 		switchSceneTime = 0;
+		finishedExitingPipe = false;
 		CGame::GetInstance()->InitiateSwitchScene(sceneDestination);
 	}
 }
@@ -770,7 +790,40 @@ void CMario::PipeEntryDown(DWORD dt)
 	if (switchSceneTime >= MAX_SCENE_TIME)
 	{
 		switchSceneTime = 0;
+		finishedExitingPipe = false;
 		CGame::GetInstance()->InitiateSwitchScene(sceneDestination);
+	}
+}
+
+void CMario::PipeExitUp(DWORD dt)
+{
+	y -= MARIO_PIPE_ENTRY_SPEED * dt;
+
+	if (!finishedExitingPipe)
+	{
+		exitPipeTime += dt;
+		if (exitPipeTime >= MAX_EXIT_PIPE_TIME)
+		{
+			exitPipeTime = 0;
+			finishedExitingPipe = true;
+			SetState(STATE_LIVE);
+		}
+	}
+}
+
+void CMario::PipeExitDown(DWORD dt)
+{
+	y += MARIO_PIPE_ENTRY_SPEED * dt;
+
+	if (!finishedExitingPipe)
+	{
+		exitPipeTime += dt;
+		if (exitPipeTime >= MAX_EXIT_PIPE_TIME)
+		{
+			exitPipeTime = 0;
+			finishedExitingPipe = true;
+			SetState(STATE_LIVE);
+		}
 	}
 }
 
