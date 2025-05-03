@@ -398,6 +398,9 @@ void CCollision::SweptAABB(LPGAMEOBJECT objSrc, DWORD dt, LPGAMEOBJECT objDest)
 	float dx = mdx - sdx;
 	float dy = mdy - sdy;
 
+	/*float dx = mdx;
+	float dy = mdy;*/
+
 	objSrc->GetBoundingBox(ml, mt, mr, mb);
 	objDest->GetBoundingBox(sl, st, sr, sb);
 
@@ -421,7 +424,7 @@ void CCollision::Scan(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* objDe
 {
 	for (UINT i = 0; i < objDests->size(); i++)
 	{
-		if (objSrc == objDests->at(i))
+		if (objDests->at(i)->IsUpdated() || objSrc == objDests->at(i))
 			continue;
 
 		SweptAABB(objSrc, dt, objDests->at(i));
@@ -480,7 +483,11 @@ void CCollision::Filter(LPGAMEOBJECT objSrc,
 void CCollision::Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* coObjects) //Adjust to not move object if no collision
 {
 	LPCOLLISIONEVENT colX = NULL;
-	LPCOLLISIONEVENT colY = NULL;
+	LPCOLLISIONEVENT colY = NULL;	
+
+	if (CKoopaTroopa* koopa = dynamic_cast<CKoopaTroopa*>(objSrc))
+		if (koopa->GetState() == KOOPA_STATE_HIDE)
+			int i = 0;
 
 	if (objSrc->IsCollidable())
 	{
@@ -636,8 +643,8 @@ void CCollision::ProcessOverlap(LPGAMEOBJECT objSrc, vector<LPGAMEOBJECT>* coObj
 
 bool CCollision::Overlap(LPGAMEOBJECT objSrc, LPGAMEOBJECT objDst)
 {
-	float min_width = (objSrc->getBBoxWidth() + objDst->getBBoxWidth()) / 2.0f;
-	float min_height = (objSrc->getBBoxHeight() + objDst->getBBoxHeight()) / 2.0f;
+	float min_width = (objSrc->GetBBoxWidth() + objDst->GetBBoxWidth()) / 2.0f;
+	float min_height = (objSrc->GetBBoxHeight() + objDst->GetBBoxHeight()) / 2.0f;
 
 	float objSrc_x, objSrc_y;
 	float objDst_x, objDst_y;

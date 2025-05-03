@@ -30,7 +30,7 @@ void CCoin::Reaction(CGameObject* by_another, int action)
 {
 	switch (action)
 	{
-		case ACTION_ATTACK:
+		case ACTION_ATTACK_LEVEL_1:
 			isToggled = true;
 			break;
 		default:

@@ -23,8 +23,8 @@ void CGoomba::OnCollisionWith(LPCOLLISIONEVENT e)
 		OnCollisionWithPlatform(e);
 	else if (dynamic_cast<CBlock*>(e->obj))
 		OnCollisionWithBlock(e);
-	else if (dynamic_cast<CMario*>(e->obj))
-		OnCollisionWithMario(e);
+	else if (dynamic_cast<CCreature*>(e->obj))
+		OnCollisionWithCreature(e);
 }
 
 void CGoomba::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
@@ -52,43 +52,27 @@ void CGoomba::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 	}
 }
 
-void CGoomba::OnCollisionWithMario(LPCOLLISIONEVENT e)
+void CGoomba::OnCollisionWithCreature(LPCOLLISIONEVENT e)
 {
-	if (e->ny > 0)
-	{
-		UnderAttack((CMario*)e->obj);
-	}
+	if (dynamic_cast<CGoomba*>(e->obj));
+		//Do nothing to fellows
 	else
-	{
-		MeleeAttack((CMario*)e->obj);
-	}
+		Attack(e->obj);
 }
 
-void CGoomba::Reaction(CGameObject* by_another, int action)
+void CGoomba::ReactionToAttack1(CGameObject* by_another)
 {
-	switch (state)
-	{
-		case STATE_LIVE:
-			Reaction_LivingState(by_another, action);
-			break;
-	}
+	Die();
 }
 
-void CGoomba::Reaction_LivingState(CGameObject* by_another, int action)
+void CGoomba::ReactionToAttack2(CGameObject* by_another)
 {
-	switch (action)
-	{
-		case ACTION_ATTACK:
-		case ACTION_DESTROY:
-			Die();
-			break;
-		case ACTION_TOUCH:
-			MeleeAttack(by_another);
-			break;
-		case ACTION_CARRY:
-			AgainstControl();
-			break;
-	}
+	Die();
+}
+
+void CGoomba::ReactionToAttack3(CGameObject* by_another)
+{
+	Die();
 }
 
 void CGoomba::SetState(int state)

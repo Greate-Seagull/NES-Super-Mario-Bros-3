@@ -10,7 +10,7 @@
 
 
 #define CAM_MAX_Y 247.0f
-#define COLLISION_RANGE 275.0f
+#define COLLISION_RANGE 300.0f
 
 class CPlayScene: public CScene
 {

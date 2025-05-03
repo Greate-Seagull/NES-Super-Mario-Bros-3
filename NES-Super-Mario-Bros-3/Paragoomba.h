@@ -38,8 +38,7 @@ public:
 	virtual void ChangeAnimation();
 	virtual void Render();
 
-	virtual void Reaction(CGameObject* by_another, int action);
-	virtual void Reaction_LivingState(CGameObject* by_another, int action);
+	virtual void ReactionToAttack1(CGameObject* by_another);
 
 	virtual void SetState(int state);
 	virtual void ToStateLiving();

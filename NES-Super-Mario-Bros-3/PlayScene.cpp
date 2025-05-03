@@ -426,6 +426,11 @@ void CPlayScene::Update(DWORD dt)
 
 	for (size_t i = 0; i < collision_range_list.size(); i++)
 	{
+		collision_range_list[i]->Prepare(dt);
+	}
+
+	for (size_t i = 0; i < collision_range_list.size(); i++)
+	{
 		collision_range_list[i]->Update(dt, &coObjects);
 	}
 
@@ -551,7 +556,7 @@ void CPlayScene::UpdateCamera()
 	float cx, cy;
 	player->GetPosition(cx, cy);
 
-	float player_bbox_height = player->getBBoxHeight();
+	float player_bbox_height = player->GetBBoxHeight();
 
 	cx = cx - game->GetBackBufferWidth() / 2.0f;
 	cx = fmax(0.0f, cx);

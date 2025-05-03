@@ -18,10 +18,17 @@ class CMovableObject : public CGameObject
 protected:
 	float vx, vy; //velocity	
 	int nx, ny, nz; //Direction
+
 	bool isOnGround;
+
+	bool is_moved;
 
 public:
 	CMovableObject(float x, float y);
+
+	virtual void Prepare(DWORD dt);
+
+	virtual int IsUpdated() { return is_moved; }
 	
 	virtual void Move(DWORD t);
 	virtual void Accelerate(float ax, float ay, DWORD t);
