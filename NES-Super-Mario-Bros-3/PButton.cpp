@@ -33,6 +33,7 @@ void CPButton::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 			Reaction_Coin_To_Brick();
 			isSwitched = false;
 			bricksArchive.clear();
+			coinsArchive.clear();
 		}
 	}
 }
@@ -96,7 +97,7 @@ void CPButton::Reaction_Coin_To_Brick()
 		{
 			float bX, bY;
 			coinsArchive[i]->GetPosition(bX, bY);
-			if (!coinsArchive[i]->IsDeleted()) coinsArchive[i]->Delete();
+			if (coinsArchive[i]->GetState() == STATE_DIE) coinsArchive[i]->Delete();
 
 			CBrick* b = new CBrick(bX, bY, ITEM_TYPE_NOTHING);
 			bricksArchive.push_back(b);

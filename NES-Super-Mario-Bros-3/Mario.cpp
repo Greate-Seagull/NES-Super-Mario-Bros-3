@@ -44,10 +44,11 @@ CMario::CMario(float x, float y):
 
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {		
-	//DebugOutTitle(L"Momentum: %d, vx: %f", momentum, fabs(vx));
+	//
+	// Title(L"Momentum: %d, vx: %f", momentum, fabs(vx));
 	//dt = 16;
 	InPhase(dt, coObjects);
-	DebugOut(L"%f\n", switchSceneTime);
+	//DebugOut(L"%f\n", switchSceneTime);
 }
 
 void CMario::InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
