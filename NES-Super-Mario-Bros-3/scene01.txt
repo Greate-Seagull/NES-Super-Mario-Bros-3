@@ -265,7 +265,7 @@ particle.txt
 
 #Red Koopa Troopa
 23	560	378
-23	2099	390
+23	2104	370
 
 #Venus
 25	367	392

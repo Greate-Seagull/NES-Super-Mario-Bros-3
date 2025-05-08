@@ -55,11 +55,11 @@ void CBrick::Reaction(CGameObject* by_another, int action)
 	{
 	case ACTION_DESTROY:
 		if (itemID == OBJECT_TYPE_PBUTTON) SetState(BRICK_STATE_TOGGLE);
-		else
+		/*else
 		{
 			BrickBursting();
 			this->Delete();
-		}
+		}*/
 		break;
 	case ACTION_TOUCH:
 		SetState(BRICK_STATE_TOGGLE);
@@ -137,4 +137,10 @@ void CBrick::Shaking(DWORD dt)
 		if (itemID != 0) SetState(STATE_DIE);
 		else SetState(STATE_LIVE);
 	}
+}
+
+void CBrick::Destroy()
+{
+	BrickBursting();
+	this->Delete();
 }

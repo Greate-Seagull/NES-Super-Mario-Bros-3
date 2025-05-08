@@ -40,6 +40,7 @@ public:
 
 	void TriggerItem();
 
+	void Destroy();
 	void BrickBursting();
 	void Shaking(DWORD dt);
 };
