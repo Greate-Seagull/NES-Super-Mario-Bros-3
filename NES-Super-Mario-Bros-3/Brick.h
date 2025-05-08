@@ -22,6 +22,7 @@ class CBrick : public CBlock {
 	//Containing
 	int itemID;
 	CGameObject* item;
+	bool isItemTriggered = false;
 
 	//Shaking
 	float origin_y;
@@ -40,7 +41,6 @@ public:
 
 	void TriggerItem();
 
-	void Destroy();
 	void BrickBursting();
 	void Shaking(DWORD dt);
 };

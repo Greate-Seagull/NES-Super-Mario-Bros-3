@@ -36,7 +36,6 @@ void CRacoonTail::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 {
 	if (dynamic_cast<CBrick*>(e->obj))
 	{
-		CBrick* src = (CBrick*)e->obj;
-		src->Destroy();
+		Destroy(e->obj);
 	}
 }
