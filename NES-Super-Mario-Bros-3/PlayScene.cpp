@@ -56,6 +56,8 @@ vector<LPGAMEOBJECT> bricksArchive;
 bool isStartSpawned = false;
 float newMarioX, newMarioY, newMarioLife, newMarioWarpDirection;
 
+bool isAboveFlyingArea = false;
+
 void CPlayScene::_ParseSection_SPRITES(string line)
 {
 	vector<string> tokens = split(line);
@@ -514,9 +516,7 @@ vector<LPGAMEOBJECT> CPlayScene::Filter()
 	vector<LPGAMEOBJECT> process_list;
 	for (size_t i = 0; i < objects.size(); i++)
 	{
-		if (dynamic_cast<CBrickParticle*>(objects[i]) ||
-			dynamic_cast<CCoin*>(objects[i]) ||
-			dynamic_cast<CBrick*>(objects[i]))
+		if (dynamic_cast<CBrickParticle*>(objects[i]))
 			process_list.push_back(objects[i]);
 		else {
 			if (game->IsInCam(objects[i]))
@@ -544,10 +544,25 @@ void CPlayScene::UpdateCamera()
 	{
 		cy = cy - game->GetBackBufferHeight() / 2.0f;
 		cy = fmin(CAM_MAX_Y, cy);
+		
+		if (cy < CAM_MAX_Y + game->GetBackBufferHeight() / 2.0f) isAboveFlyingArea = true;
 	}
 	else
 	{
-		cy = CAM_MAX_Y;
+		if (cy >= CAM_MAX_Y + game->GetBackBufferHeight() / 2.0f)
+		{
+			cy = CAM_MAX_Y;
+			isAboveFlyingArea = false;
+		}
+		else
+		{
+			if (isAboveFlyingArea)
+			{
+				cy = cy - game->GetBackBufferHeight() / 2.0f;
+				cy = fmin(CAM_MAX_Y, cy);
+			}
+			else cy = CAM_MAX_Y;
+		}
 		//cy = cy + player_bbox_height / 2.0f + 16.0f - game->GetBackBufferHeight();
 	}
 

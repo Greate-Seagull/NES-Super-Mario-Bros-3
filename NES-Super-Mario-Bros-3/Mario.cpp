@@ -406,7 +406,7 @@ void CMario::ChangeDrawY(float& y)
 void CMario::TriggerActions()
 {
 	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
-	/*
+	
 	if (keyState->IsHold(VK_UP))
 	{
 		Fly();
@@ -415,7 +415,7 @@ void CMario::TriggerActions()
 	{
 		is_flying = false;
 	}
-	*/
+	
 	if (keyState->IsHold(VK_DOWN) &&
 		!keyState->IsHold(VK_LEFT) && !keyState->IsHold(VK_RIGHT))
 		Sit();
