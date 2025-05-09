@@ -1,0 +1,87 @@
+[33m704f8c7[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfix-camera-mario-flying[m[33m, [m[1;31morigin/fix-camera-mario-flying[m[33m)[m Merge branch 'master' into fix-camera-mario-flying
+[33m5d7079a[m Changed the behaviours for the camera while Mario is or is not flying
+[33m30588b8[m[33m ([m[1;31morigin/tail-collision[m[33m, [m[1;32mtail-collision[m[33m)[m Fix the PButton instantiating too many times in a row
+[33mda483fd[m Implemented Racoon tail attacking the bricks
+[33md27c6ea[m[33m ([m[1;31morigin/pipe-entry[m[33m, [m[1;32mpipe-entry[m[33m)[m Fixed the program crashing after trying to delete the NULL coin (PButton)
+[33m58d9e90[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m Improve Reaction method flexibility by moving it to parent class CHarmfulObject and creating smaller methods to specific action, so derived class can override those smaller methods
+[33m368d877[m Added animations to Mario after warping through pipes
+[33m1c1576d[m Adding transfering Mario's life after warping
+[33m149d14d[m Implemented changing Mario's position after warping through scenes
+[33m8d556ca[m Fixed the bug of nothing spawning in the secret scene
+[33m1da476a[m Reworked the code of changing Mario's action while entering pipes
+[33m54f5a4f[m Created pipe entry properties for Mario
+[33m08d154d[m Add FilterByCamera for render to ignore objects out of camera and FilterByPlayer for update to correct collision among objects out of camera
+[33mee8d4da[m[33m ([m[1;31morigin/brick-particles-reimplementation[m[33m, [m[1;32mbrick-particles-reimplementation[m[33m)[m Reimplemented particle effects for bricks
+[33m955c682[m[33m ([m[1;31morigin/brick-reimplementation[m[33m, [m[1;32mbrick-reimplementation[m[33m)[m Implemented necessary features for bricks
+[33me220ea7[m[33m ([m[1;32mmaster[m[33m)[m error
+[33mfd14054[m After merging Ending background
+[33m1d57193[m Merge branch 'master' of https://github.com/Greate-Seagull/NES-Super-Mario-Bros-3
+[33m51ec496[m Before merging
+[33mffe6034[m Merge pull request #17 from Greate-Seagull/coin-fix
+[33m80bba7a[m[33m ([m[1;31morigin/coin-fix[m[33m)[m Merge branch 'master' into coin-fix
+[33m53fbddc[m Optimize Rendering and Updating by ignoring object out of camera
+[33m58874ed[m Optimize collision process by adding CollisionEventManager to reduce operator delete and new
+[33m5606621[m[33m ([m[1;31morigin/ending-screen[m[33m, [m[1;32mending-screen[m[33m)[m #18 - Added ending screen of the map
+[33md98e942[m Optimize KeyStateManager to use less memory and fewer calls to GetAsyncKeyState
+[33m222288d[m Merge and solve conflict, reindex sprite ID, animation ID
+[33m54f8d34[m[33m ([m[1;32mcoin-fix[m[33m)[m #17 - Optimized code for coin, fixed bugs for coins
+[33m0f7c866[m Fix the error 'The item 'Background.cpp' already exists under the filter 'Source Files''
+[33m2f88f8e[m Merge pull request #16 from Greate-Seagull/optimized-code-for-bush
+[33mfe10529[m Merge pull request #15 from Greate-Seagull/coin-instantiation
+[33m56a2d17[m Merge pull request #14 from Greate-Seagull/breaking-brick-effects
+[33m9f63daa[m Merge pull request #13 from Greate-Seagull/mario-warp-between-scenes
+[33m740f1e0[m Merge pull request #12 from Greate-Seagull/hidden-map_pipe-revamp
+[33mbd8a026[m Merge pull request #11 from Greate-Seagull/question-block-collision-processing
+[33m74207fd[m Merge pull request #10 from Greate-Seagull/map_icon_addition-death_trigger
+[33m919c58f[m Merge pull request #9 from Greate-Seagull/sky-object-placement
+[33m717717e[m Merge pull request #8 from Greate-Seagull/object-on-ground-placement
+[33m04b626b[m Merge pull request #7 from Greate-Seagull/object-rendering-NON-DIRTY
+[33m7073941[m Merge pull request #6 from Greate-Seagull/bush-placement
+[33m1d453ad[m[33m ([m[1;31morigin/bush-placement[m[33m)[m Merge branch 'master' into bush-placement
+[33macdfd6d[m Merge pull request #5 from Greate-Seagull/container-placement
+[33ma32a82c[m[33m ([m[1;31morigin/container-placement[m[33m)[m Merge branch 'master' into container-placement
+[33mc9aa3bb[m Merge pull request #4 from Greate-Seagull/object-placement
+[33m60e69f2[m[33m ([m[1;31morigin/object-placement[m[33m)[m Merge branch 'master' into object-placement
+[33m202d838[m[33m ([m[1;31morigin/mario[m[33m)[m Correct mario's kicking mechanic
+[33me837fa5[m Merge pull request #3 from Greate-Seagull/object-rendering
+[33m0fe0d97[m Merge pull request #2 from Greate-Seagull/block_constructors
+[33mc5c6140[m[33m ([m[1;31morigin/block_constructors[m[33m)[m Merge branch 'master' into block_constructors
+[33m5280e29[m Merge pull request #1 from Greate-Seagull/23520292_resolution_background_change
+[33mba761c4[m Make mario's momentum for momentum bar
+[33m7bb1e0e[m Make Mario's dying state including animation, behavior
+[33m5add18f[m Make Big and Racoon Mario's carrying animations and kick animations
+[33m8e99282[m Make small Mario's carrying animation and kicking animation
+[33me877ee1[m Make Raccon Mario attack's movement, collision, animations
+[33m2817dbc[m[33m ([m[1;31morigin/optimized-code-for-bush[m[33m)[m #16 - Optimized code for bush decoration
+[33m4a07440[m[33m ([m[1;31morigin/coin-instantiation[m[33m)[m #15 - Coin movement and coin instantiation
+[33m956e8f8[m Make Leaf's animation and Mario's animation of transforming to Racoon
+[33m32cb1d4[m Correct leaf movement to be more like the origin
+[33mcca0298[m Make Super leaf's movement
+[33m7f40c58[m[33m ([m[1;31morigin/breaking-brick-effects[m[33m)[m #14 - Added particle object for breaking brick effects
+[33mb9dda38[m[33m ([m[1;31morigin/mario-warp-between-scenes[m[33m)[m #13 - Mario warps between scenes
+[33mff454ab[m Make mario's level up animation, degrade animation, invulnerable state animation
+[33m73651ad[m[33m ([m[1;31morigin/hidden-map_pipe-revamp[m[33m)[m #12 - Created hidden map in World 1-1, revamped the constructor for Pipes
+[33m3a41529[m Make super mushroom's animation, movements and effect to Mario
+[33m9b968c7[m Make paragoomba's animation, movements, winging and chasing Mario
+[33m8e6198c[m Make Venus fire trap's movements, shooting and animation, fix Piranha plant's animation, reaction to Koopa's attack
+[33m4154bce[m[33m ([m[1;31morigin/question-block-collision-processing[m[33m)[m #11 - Updated collision processing for question blocks
+[33m3d32d93[m[33m ([m[1;31morigin/map_icon_addition-death_trigger[m[33m)[m #10 - Added map's sky icons and death trigger
+[33mccfb00f[m Make piranha plant shoot
+[33m1dc903c[m Make Koopa recover after period of time and Mario's ability to carry shelled Koopa
+[33m380fa78[m[33m ([m[1;31morigin/sky-object-placement[m[33m)[m #9 - Cloud construction and sky objects placement
+[33m8d80ce7[m[33m ([m[1;31morigin/object-on-ground-placement[m[33m)[m #8 - Striped brick construction and on ground objects placement
+[33m5c9eb4b[m[33m ([m[1;31morigin/object-rendering-NON-DIRTY[m[33m)[m #7 - Narrow the range for objects to render
+[33m169a440[m Add Koopa Troopa and make Koopa's animations, movement, hiding and rolling
+[33m6f2c37a[m #6 - Constructed and place the bushes (mini and bush) for decoration
+[33m5872260[m Make Piranha plant's behavior when colliding with Mario
+[33mc37630b[m Make piranha plant's movement and animations
+[33m575f17e[m #5 - Constructed and positioned containers (large blocks) for the first half of World 1-1
+[33md0968ea[m #4 - Object placement for the first half of World 1-1
+[33m8afa20c[m Fix goomba's movement
+[33m06dcdfe[m[33m ([m[1;31morigin/object-rendering[m[33m)[m #3 - Object rendering adjustment
+[33m7d9d025[m Correct mario's jump and walk
+[33m7e4a72c[m #2 - Created constructors for blocks, changed the overall design for platform
+[33mc9c8550[m #2 - Created constructors for blocks, changed the overall design for platform
+[33m2c1a620[m Make small mario's jump like origin
+[33m1c9661a[m Adjust collision with coin, creature and platform for mario
+[33m8b0567f[m Make racoon mario'
