@@ -9,14 +9,14 @@ void CCoin::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		Accelerate(0.0f, GAME_GRAVITY, dt);
 		Move(dt);
 
-		if (y >= originalY)
+		if (y > originalY)
 		{
 			Delete();
 		}
 	}
 	else
 	{
-		//CCollision::GetInstance()->ProcessOverlap(this, coObjects);
+		CCollision::GetInstance()->ProcessOverlap(this, coObjects);
 	}
 }
 
@@ -30,7 +30,7 @@ void CCoin::Reaction(CGameObject* by_another, int action)
 {
 	switch (action)
 	{
-		case ACTION_ATTACK_LEVEL_1:
+		case ACTION_ATTACK:
 			isToggled = true;
 			break;
 		default:

@@ -7,8 +7,7 @@
 #define KOOPA_BBOX_HEIGHT_FOOT_1	26.0f
 #define KOOPA_BBOX_HEIGHT_FOOT_2	27.0f
 #define KOOPA_BBOX_HEIGHT_HIDE		16.0f
-#define KOOPA_BBOX_WIDTH_LIVE			6.0f//15.0f
-#define KOOPA_BBOX_WIDTH_HIDE			16.0f//15.0f
+#define KOOPA_BBOX_WIDTH 15.0f
 
 #define KOOPA_VX 0.03125f
 #define KOOPA_VY 0.0f
@@ -54,17 +53,16 @@ public:
 	virtual void InPhaseRollingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 	virtual void InPhasePopingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 
-	virtual int IsCollidable() { return state != STATE_DIE; };
+	virtual int IsCollidable() { return 1; };
 	virtual void OnCollisionWith(LPCOLLISIONEVENT e);
 	virtual void OnCollisionWithPlatform(LPCOLLISIONEVENT e);
 	virtual void OnCollisionWithBlock(LPCOLLISIONEVENT e);
 	virtual void OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e);
 
-	virtual void ReactionToCarry(CGameObject* by_another);
-	virtual void ReactionToTouch(CGameObject* by_another);
-	virtual void ReactionToAttack1(CGameObject* by_another);
-	virtual void ReactionToAttack2(CGameObject* by_another);
-	virtual void ReactionToAttack3(CGameObject* by_another);
+	virtual void Reaction(CGameObject* by_another, int action);
+	virtual void ReactionInLivingState(CGameObject* by_another, int action);
+	virtual void ReactionInHidingState(CGameObject* by_another, int action);
+	virtual void ReactionInRollingState(CGameObject* by_another, int action);
 
 	virtual void Render();
 	virtual void ChangeAnimation();

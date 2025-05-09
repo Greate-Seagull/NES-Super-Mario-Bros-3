@@ -2,13 +2,15 @@
 
 #include "HelpfulObject.h"
 
-#define MUSHROOM_VX 0.05f
+#define MUSHROOM_VX 0.07f
 #define MUSHROOM_VY -0.025f
 
 #define MUSHROOM_BBOX_HEIGHT 16.0f
 #define MUSHROOM_BBOX_WIDTH 16.0f
 
 #define MUSHROOM_WAKEUP_TIME 500 //the origin's is 250
+
+#define EFFECT_BIGGER 20
 
 #define MUSHROOM_STATE_SLEEP 10
 #define MUSHROOM_STATE_WAKEUP 11

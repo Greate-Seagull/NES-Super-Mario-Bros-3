@@ -4,6 +4,8 @@
 // This file contains all IDs of game assets 
 //
 
+#define ID_TEX_BACKGROUND -10
+
 #define ID_TEX_MARIO 0
 #define ID_TEX_ENEMY 10
 #define ID_TEX_MISC 20
@@ -12,8 +14,6 @@
 #pragma region NON OBJECT TYPES
 
 #define NON_OBJECT_TYPE_BACKGROUND -1
-#define NON_OBJECT_TYPE_ENDING -10
-#define NON_OBJECT_TYPE_CARD_RANDOM -11
 #define NON_OBJECT_TYPE_MINI_BUSH -2
 #define NON_OBJECT_TYPE_BIG_BUSH -3
 #define NON_OBJECT_TYPE_CLOUD -4

@@ -41,8 +41,8 @@ void CCloud::Render()
 
 void CCloud::GetBoundingBox(float& l, float& t, float& r, float& b)
 {
-	l = x - this->cellWidth / 2.0f;
-	t = y - this->cellHeight / 2.0f;
-	r = l + this->cellWidth * this->length;
-	b = t + this->cellHeight;
+	l = 0;
+	t = 0;
+	r = 0;
+	b = 0;
 }

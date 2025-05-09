@@ -42,7 +42,7 @@ public:
 
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 
-	int IsCollidable() { return isToggled == false; }
+	int IsCollidable() { return isToggled == false; } //Them de lay colliable object
 	int IsBlocking() { return 0; }
 	void OnCollisionWith(LPCOLLISIONEVENT e);
 

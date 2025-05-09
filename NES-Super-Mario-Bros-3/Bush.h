@@ -39,11 +39,14 @@ public:
 
 #define ID_ANI_MINI_BUSH -5000
 
-#define BUSH_BBOX_WIDTH 16.0f
-#define BUSH_BBOX_HEIGHT 16.0f
+#define BUSH_BBOX_WIDTH 16
+#define BUSH_BBOX_HEIGHT 16
 
 class CMiniBush : public CGameObject {
 public:
-	CMiniBush(float x, float y);
+	CMiniBush(float x, float y) : CGameObject(x, y) {}
+	void Render(); //GameObject co ham render roi! "virtual void Render();"
+	void Update(DWORD dt) {} //GameObject co ham update roi! "virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects = NULL) {};"
+	void GetBoundingBox(float& l, float& t, float& r, float& b);
 	int IsBlocking() { return 0; }
 };

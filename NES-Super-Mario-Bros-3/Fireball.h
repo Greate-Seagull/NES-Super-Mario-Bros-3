@@ -27,7 +27,7 @@ public:
 	virtual void ApplyRange(int range);
 	virtual void ApplyDirection(int nx, int ny);
 
-	virtual void Attack(CGameObject* another);
+	virtual void MeleeAttack(CGameObject* another);
 
 	//virtual void OnCollisionWith(LPCOLLISIONEVENT e);
 	//virtual void OnCollisionWithMario(LPCOLLISIONEVENT e);

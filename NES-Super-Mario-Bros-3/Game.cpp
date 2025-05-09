@@ -30,9 +30,6 @@ void CGame::Init(HWND hWnd, HINSTANCE hInstance)
 	backBufferHeight = 192.0f;
 	backBufferWidth = 256.0f;
 
-	/*backBufferHeight = 400.0f;
-	backBufferWidth = 400.0f;*/
-
 	DebugOut(L"[INFO] Window's client area: width= %d, height= %d\n", r.right - 1, r.bottom - 1);
 
 	// Create & clear the DXGI_SWAP_CHAIN_DESC structure
@@ -486,6 +483,23 @@ void CGame::_ParseSection_SCENES(string line)
 
 	LPSCENE scene = new CPlayScene(id, path);
 	scenes[id] = scene;
+}
+
+bool CGame::IsInCam(LPGAMEOBJECT obj)
+{
+	float left, top, right, bottom;
+	obj->GetBoundingBox(left, top, right, bottom);
+
+	float min_x = cam_x, min_y = cam_y;
+	float max_x = cam_x + backBufferWidth, max_y = cam_y + backBufferHeight;
+
+	bool horizontally_inside = (left >= min_x && left <= max_x) || (right >= min_x && right <= max_x); //For object smaller than cam size
+	bool vertically_inside = (top >= min_y && top <= max_y) || (bottom >= min_y && bottom <= max_y);
+
+	horizontally_inside = horizontally_inside || (left < min_x && right > max_x); //For object bigger than cam size
+	vertically_inside = vertically_inside || (top < min_y && bottom > max_y);
+
+	return horizontally_inside && vertically_inside;
 }
 
 /*

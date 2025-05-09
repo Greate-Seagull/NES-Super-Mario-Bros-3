@@ -7,79 +7,21 @@ CHarmfulObject::CHarmfulObject(float x, float y):
 	highPower = false;
 }
 
-void CHarmfulObject::Reaction(CGameObject* by_another, int action)
+void CHarmfulObject::MeleeAttack(CGameObject* another)
 {
-	switch (action)
+	if (another)
 	{
-	case ACTION_CARRY:
-		ReactionToCarry(by_another);
-		break;
-	case ACTION_TOUCH:
-		ReactionToTouch(by_another);
-		break;
-	case ACTION_ATTACK_LEVEL_1:
-		ReactionToAttack1(by_another);
-		break;
-	case ACTION_ATTACK_LEVEL_2:
-		ReactionToAttack2(by_another);
-		break;
-	case ACTION_ATTACK_LEVEL_3:
-		ReactionToAttack3(by_another);
-		break;
-	case EFFECT_BIGGER:
-		ReactionToBigger(by_another);
-		break;
-	case EFFECT_RACOONIZE:
-		ReactionToRacoonize(by_another);
-		break;
+		another->Reaction(this, ACTION_ATTACK);
 	}
-}
-
-void CHarmfulObject::ReactionToCarry(CGameObject* by_another)
-{
-	AgainstControl();
-	Attack(by_another);
-}
-
-void CHarmfulObject::ReactionToTouch(CGameObject* by_another)
-{
-	Attack(by_another);
-}
-
-void CHarmfulObject::ReactionToAttack1(CGameObject* by_another)
-{
-}
-
-void CHarmfulObject::ReactionToAttack2(CGameObject* by_another)
-{
-}
-
-void CHarmfulObject::ReactionToAttack3(CGameObject* by_another)
-{
-}
-
-void CHarmfulObject::ReactionToBigger(CGameObject* by_another)
-{
-}
-
-void CHarmfulObject::ReactionToRacoonize(CGameObject* by_another)
-{
-}
-
-void CHarmfulObject::Attack(CGameObject* another)
-{
-	another->Reaction(this, ACTION_ATTACK_LEVEL_1);
-}
-
-void CHarmfulObject::HigherAttack(CGameObject* another)
-{
-	another->Reaction(this, ACTION_ATTACK_LEVEL_2);
 }
 
 void CHarmfulObject::Destroy(CGameObject* another)
 {
-	//Effect boom
-	another->Reaction(this, ACTION_ATTACK_LEVEL_3);
+	if (another && highPower)
+	{
+		//Effect boom
+		another->Reaction(this, ACTION_DESTROY);
+	}
 }
 
 void CHarmfulObject::FlyOut(int attack_direction)

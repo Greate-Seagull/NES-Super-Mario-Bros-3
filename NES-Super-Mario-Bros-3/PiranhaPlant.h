@@ -59,11 +59,7 @@ public:
 	virtual void ToStateDig();
 	virtual void ToStateHide();
 
-	virtual void ReactionToCarry(CGameObject* by_another);
-	virtual void ReactionToTouch(CGameObject* by_another);
-	virtual void ReactionToAttack1(CGameObject* by_another);
-	virtual void ReactionToAttack2(CGameObject* by_another);
-	virtual void ReactionToAttack3(CGameObject* by_another);
-
 	virtual void LookforMario();
+
+	virtual void Reaction(CGameObject* by_another, int action);
 };

@@ -34,18 +34,37 @@ void CParagoomba::InPhaseLiving(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	Flutter();
 }
 
-void CParagoomba::ReactionToAttack1(CGameObject* by_another)
+void CParagoomba::Reaction(CGameObject* by_another, int action)
 {
 	switch (state)
 	{
-	case STATE_LIVE:
-		UnderAttack((CHarmfulObject*)by_another);
-		LoseWings();
-		SetState(PARAGOOMBA_STATE_GOOMBA);
-		break;
-	case PARAGOOMBA_STATE_GOOMBA:
-		CGoomba::ReactionToAttack1(by_another);
-		break;
+		case STATE_LIVE:
+			Reaction_LivingState(by_another, action);
+			break;
+		case PARAGOOMBA_STATE_GOOMBA:
+			CGoomba::Reaction_LivingState(by_another, action);
+			break;
+	}
+}
+
+void CParagoomba::Reaction_LivingState(CGameObject* by_another, int action)
+{
+	switch (action)
+	{
+		case ACTION_ATTACK:
+			UnderAttack((CHarmfulObject*)by_another);
+			LoseWings();
+			SetState(PARAGOOMBA_STATE_GOOMBA);
+			break;
+		case ACTION_DESTROY:
+			Die();
+			break;
+		case ACTION_TOUCH:
+			MeleeAttack(by_another);
+			break;
+		case ACTION_CARRY:
+			AgainstControl();
+			break;
 	}
 }
 

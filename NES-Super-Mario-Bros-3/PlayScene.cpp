@@ -136,34 +136,6 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		background = (CBackground*)obj;
 		break;
 	}
-	case NON_OBJECT_TYPE_ENDING:
-	{
-		float width = (float)atof(tokens[3].c_str());
-		float height = (float)atof(tokens[4].c_str());
-		int sprite_begin = atoi(tokens[5].c_str());
-		int sprite_end = atoi(tokens[6].c_str());
-
-		obj = new CEndLevel(x, y, width, height, sprite_begin, sprite_end);
-		break;
-	}
-	case NON_OBJECT_TYPE_CARD_RANDOM:
-	{
-		int sprite_begin_begin = atoi(tokens[3].c_str());
-		int sprite_middle_begin = atoi(tokens[4].c_str());
-		int sprite_end_begin = atoi(tokens[5].c_str());
-		int sprite_begin_middle = atoi(tokens[6].c_str());
-		int sprite_middle_middle = atoi(tokens[7].c_str());
-		int sprite_end_middle = atoi(tokens[8].c_str());
-		int sprite_begin_end = atoi(tokens[9].c_str());
-		int sprite_middle_end = atoi(tokens[10].c_str());
-		int sprite_end_end = atoi(tokens[11].c_str());
-
-		obj = new CRandomCard(x, y,
-			sprite_begin_begin, sprite_middle_begin, sprite_end_begin,
-			sprite_begin_middle, sprite_middle_middle, sprite_end_middle,
-			sprite_begin_end, sprite_middle_end, sprite_end_end);
-		break;
-	}
 	case DEAD_STATE_TRIGGER:
 	{
 		float width = (float)atof(tokens[3].c_str());
@@ -264,14 +236,13 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		float cell_width = (float)atof(tokens[3].c_str());
 		float cell_height = (float)atof(tokens[4].c_str());
 		int length = atoi(tokens[5].c_str());
-		int type = atoi(tokens[6].c_str());
-		int sprite_begin = atoi(tokens[7].c_str());
-		int sprite_middle = atoi(tokens[8].c_str());
-		int sprite_end = atoi(tokens[9].c_str());
+		int sprite_begin = atoi(tokens[6].c_str());
+		int sprite_middle = atoi(tokens[7].c_str());
+		int sprite_end = atoi(tokens[8].c_str());
 
 		obj = new CPlatform(
 			x, y,
-			cell_width, cell_height, length, type,
+			cell_width, cell_height, length,
 			sprite_begin, sprite_middle, sprite_end
 		);
 
@@ -451,22 +422,18 @@ void CPlayScene::Update(DWORD dt)
 	// TO-DO: This is a "dirty" way, need a more organized way 
 	//DebugOutTitle(L"Coin: %d", coin);
 
-	vector<LPGAMEOBJECT> collision_range_list = FilterByPlayer();
+	vector<LPGAMEOBJECT> process_list = Filter();
+
 	vector<LPGAMEOBJECT> coObjects;
-	for (size_t i = 0; i < collision_range_list.size(); i++)
+	for (size_t i = 0; i < process_list.size(); i++)
 	{
-		if (collision_range_list[i]->IsCollidable())
-			coObjects.push_back(collision_range_list[i]);
+		if (process_list[i]->IsCollidable())
+			coObjects.push_back(process_list[i]);
 	}
 
-	for (size_t i = 0; i < collision_range_list.size(); i++)
+	for (size_t i = 0; i < process_list.size(); i++)
 	{
-		collision_range_list[i]->Prepare(dt);
-	}
-
-	for (size_t i = 0; i < collision_range_list.size(); i++)
-	{
-		collision_range_list[i]->Update(dt, &coObjects);
+		process_list[i]->Update(dt, &coObjects);
 	}
 
 	UpdateCamera();
@@ -481,11 +448,11 @@ void CPlayScene::Render()
 {
 	//if (background) background->Render();
 
-	vector<LPGAMEOBJECT> process_list = FilterByCam();
+	vector<LPGAMEOBJECT> process_list = Filter();
 
-	for (int i = 0; i < process_list.size(); i++)
+	for (int i = 0; i < objects.size(); i++)
 	{
-		process_list[i]->Render();
+		objects[i]->Render();
 	}
 }
 
@@ -542,56 +509,14 @@ void CPlayScene::LoadWarpedMario(float newX, float newY, float newLife, float ne
 	newMarioWarpDirection = newDirection;
 }
 
-bool CPlayScene::IsInRange(LPGAMEOBJECT obj, float start_x, float end_x, float start_y, float end_y)
-{
-	float left, top, right, bottom;
-	obj->GetBoundingBox(left, top, right, bottom);
-
-	bool horizontally_inside = (left <= end_x) && (right >= start_x);
-	bool vertically_inside = (top <= end_y) && (bottom >= start_y);
-
-	return horizontally_inside && vertically_inside;
-
-	//return !(left > max_x || right < min_x || top > max_y || bottom < min_y);
-}
-
-vector<LPGAMEOBJECT> CPlayScene::FilterByPlayer(float range)
-{
-	float player_x, player_y;
-	player->GetPosition(player_x, player_y);
-
-	float range_width = range;
-	float range_height = range;
-
-	float start_x = player_x - range_width, end_x = player_x + range_width;
-	float start_y = player_y - range_height, end_y = player_y + range_height;
-
-	vector<LPGAMEOBJECT> process_list;
-	for (size_t i = 0; i < objects.size(); i++)
-	{
-		if (IsInRange(objects[i], start_x, end_x, start_y, end_y))
-			process_list.push_back(objects[i]);
-	}
-
-	return process_list;
-}
-
-vector<LPGAMEOBJECT> CPlayScene::FilterByCam()
+vector<LPGAMEOBJECT> CPlayScene::Filter()
 {
 	CGame* game = CGame::GetInstance();
-	
-	float start_x, end_x, start_y, end_y;
-	game->GetCamPos(start_x, start_y);
-	end_x = start_x + game->GetBackBufferWidth();
-	end_y = start_y + game->GetBackBufferHeight();
-
-	/*end_x = start_x + 256.0f;
-	end_y = start_y + 192.0f;*/
 
 	vector<LPGAMEOBJECT> process_list;
 	for (size_t i = 0; i < objects.size(); i++)
 	{
-		if (IsInRange(objects[i], start_x, end_x, start_y, end_y))
+		if (dynamic_cast<CBrickParticle*>(objects[i]))
 			process_list.push_back(objects[i]);
 		else {
 			if (game->IsInCam(objects[i]))
@@ -610,7 +535,7 @@ void CPlayScene::UpdateCamera()
 	float cx, cy;
 	player->GetPosition(cx, cy);
 
-	float player_bbox_height = player->GetBBoxHeight();
+	float player_bbox_height = player->getBBoxHeight();
 
 	cx = cx - game->GetBackBufferWidth() / 2.0f;
 	cx = fmax(0.0f, cx);

@@ -6,6 +6,9 @@
 
 #define ID_ANI_GENERAL_MAP_ICON -15000
 
+#define BUSH_BBOX_WIDTH 16
+#define BUSH_BBOX_HEIGHT 16
+
 class CMapIcon : public CGameObject {
 protected:
 	int icon_Type;
