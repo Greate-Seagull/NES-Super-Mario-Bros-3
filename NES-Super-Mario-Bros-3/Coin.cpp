@@ -19,10 +19,6 @@ void CCoin::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 			Delete();
 		}
 	}
-	else
-	{
-		//CCollision::GetInstance()->ProcessOverlap(this, coObjects);
-	}
 }
 
 void CCoin::OnCollisionWith(LPCOLLISIONEVENT e)
@@ -35,13 +31,20 @@ void CCoin::Reaction(CGameObject* by_another, int action)
 {
 	switch (action)
 	{
-		case ACTION_TOUCH:
-			isToggled = true;
-			break;
-		default:
-			Delete();
-			break;
+	case ACTION_TOUCH:
+		if (dynamic_cast<CMario*>(by_another)) Delete();
+		else SetToggled();
+		break;
+	default:
+		Delete();
+		break;
 	}
+}
+
+void CCoin::SetToggled()
+{
+	isToggled = true;
+	vy = COIN_VELOCITY_Y;
 }
 
 bool CCoin::IsUnderOriginal()

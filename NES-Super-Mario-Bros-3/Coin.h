@@ -21,8 +21,7 @@ public:
 	CCoin(float x, float y) : CMovableObject(x, y) 
 	{
 		isToggled = false;
-		originalY = y;
-		vy = COIN_VELOCITY_Y;
+		originalY = y;		
 
 		aniID = ID_ANI_COIN;
 
@@ -45,12 +44,13 @@ public:
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 
 	int IsCollidable() { return isToggled == false; }
-	int IsBlocking() { return 0; }
+	//int IsBlocking() { return 0; }
 	void OnCollisionWith(LPCOLLISIONEVENT e);
 
 	void Reaction(CGameObject* by_another, int action);
 
 	bool GetToggled() { return isToggled; }
+	void SetToggled();
 
 	void SetDisappear(bool Disappear) { this->isDisappear = Disappear; }
 	bool GetDisappear() { return isDisappear; }

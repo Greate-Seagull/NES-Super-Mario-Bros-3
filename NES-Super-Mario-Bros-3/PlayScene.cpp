@@ -434,6 +434,9 @@ void CPlayScene::Update(DWORD dt)
 	vector<LPGAMEOBJECT> nonBlockingColliders;
 	for (auto& obj : nearbyObjects)
 	{	
+		if (dynamic_cast<CCoin*>(obj))
+			int t = 0;
+
 		if (obj->IsCollidable())
 		{
 			//Collide with objects
@@ -445,7 +448,7 @@ void CPlayScene::Update(DWORD dt)
 			//Objects will use collision process
 			if (obj->IsMoving()) //For sweptAABB
 				movingColliders.push_back(obj);
-			else if (obj->IsDirectionalBlocking() == false && obj->IsBlocking()) //For overlap
+			else if (obj->IsDirectionalBlocking() == false) //For overlap
 				staticColliders.push_back(obj);
 
 			collisionTracker->Allocate(obj);

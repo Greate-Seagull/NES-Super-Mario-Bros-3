@@ -386,10 +386,10 @@ void CMario::StartSpecialActions()
 {
 	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
 
-	if (keyState->IsPressed(VK_UP))
+	/*if (keyState->IsPressed(VK_UP))
 		SetLife(life + 1.0f);
 	else if (keyState->IsPressed(VK_DOWN))
-		SetLife(life - 1.0f);
+		SetLife(life - 1.0f);*/
 
 	if (keyState->IsHold(VK_UP))
 		Fly();
