@@ -3,15 +3,14 @@
 CRacoonTail::CRacoonTail(float x, float y) :
 	CHarmfulObject(x, y)
 {
-	bbox_width = RACOON_TAIL_BBOX_WIDTH;
-	bbox_height = RACOON_TAIL_BBOX_HEIGHT;
+	SetBoundingBox(RACOON_TAIL_BBOX_WIDTH, RACOON_TAIL_BBOX_HEIGHT);
 
 	highPower = true;
 }
 
 void CRacoonTail::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
-	CCollision::GetInstance()->ProcessOverlap(this, coObjects);
+	CCollision::GetInstance()->SolveOverlap(this, coObjects);
 }
 
 void CRacoonTail::Render()

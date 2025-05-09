@@ -17,24 +17,22 @@ class CMovableObject : public CGameObject
 {
 protected:
 	float vx, vy; //velocity	
+	float ax, ay; //accelerator
 	int nx, ny, nz; //Direction
 
 	bool isOnGround;
-
-	bool is_moved;
-
 public:
 	CMovableObject(float x, float y);
 
+	//virtual int IsBlocking() { return vx == 0 && vy == 0; }
+
 	virtual void Prepare(DWORD dt);
 
-	virtual int IsUpdated() { return is_moved; }
-	
 	virtual void Move(DWORD t);
 	virtual void Accelerate(float ax, float ay, DWORD t);
 
-	virtual void SetSpeed(float vx, float vt) { this->vx = vx; this->vy = vy; }
-	virtual void GetSpeed(float& vx, float& vy) { vx = this->vx; vy = this->vy; }
+	virtual void SetSpeed(float vx, float vy) { this->vx = vx; this->vy = vy; }
+	virtual void GetSpeed(float& vx, float& vy);
 
 	virtual void ChangeDirection();
 	virtual void Stop();

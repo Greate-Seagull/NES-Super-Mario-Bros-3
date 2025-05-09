@@ -5,29 +5,38 @@ CMovableObject::CMovableObject(float x, float y):
 {
 	this->vx = 0.0f;
 	this->vy = 0.0f;
+
+	this->ax = 0.0f;
+	this->ay = GAME_GRAVITY;
+
 	this->nx = 0;
 	this->ny = 0;
 	this->nz = 0;
+
 	this->isOnGround = false;
 }
 
 void CMovableObject::Prepare(DWORD dt)
 {
-	is_moved = false;
+	Accelerate(ax, ay, dt);
 }
 
 void CMovableObject::Move(DWORD t)
 {
 	x += vx * t;
 	y += vy * t;
-
-	is_moved = true;
 }
 
 void CMovableObject::Accelerate(float ax, float ay, DWORD t)
 {
 	vx += ax * t;
 	vy += ay * t;
+}
+
+void CMovableObject::GetSpeed(float& vx, float& vy)
+{
+	vx = this->vx;
+	vy = this->vy;
 }
 
 void CMovableObject::ChangeDirection()

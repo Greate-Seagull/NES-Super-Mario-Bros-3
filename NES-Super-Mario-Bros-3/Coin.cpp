@@ -2,11 +2,16 @@
 
 #include "Mario.h"
 
+void CCoin::Prepare(DWORD dt)
+{
+	if (isToggled)
+		CMovableObject::Prepare(dt);
+}
+
 void CCoin::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
 	if (isToggled)
 	{
-		Accelerate(0.0f, GAME_GRAVITY, dt);
 		Move(dt);
 
 		if (y >= originalY)
@@ -30,7 +35,7 @@ void CCoin::Reaction(CGameObject* by_another, int action)
 {
 	switch (action)
 	{
-		case ACTION_ATTACK_LEVEL_1:
+		case ACTION_TOUCH:
 			isToggled = true;
 			break;
 		default:

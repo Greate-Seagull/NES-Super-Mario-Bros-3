@@ -5,12 +5,9 @@
 
 #define VENUS_AMMO_LIMIT 1
 
-#define VENUS_BBOX_HEIGHT 30.0f
-#define VENUS_BBOX_WIDTH 16.0f
-
 #define VENUS_LOOK_MAX_DISTANCE 145.0f
 #define VENUS_SHOOT_MIN_DISTANCE 115.0f
-#define VENUS_SHOOT_POSITION_OFFSET VENUS_BBOX_HEIGHT / 4.0f
+#define VENUS_SHOOT_POSITION_OFFSET PIRANHA_BBOX_HEIGHT / 4.0f
 
 #define ANI_ID_VENUS 25000
 //Actions
@@ -28,7 +25,7 @@ public:
 
 	virtual void ChangeAnimation();
 
-	virtual void InPhaseAttack(DWORD dt);
+	virtual void Attacking(DWORD dt);
 
 	virtual void ToStateHide();
 

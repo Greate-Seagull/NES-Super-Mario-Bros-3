@@ -16,7 +16,7 @@ protected:
 	float cellWidth;
 	float cellHeight;
 
-	int type;
+	int type; //block type
 
 	int spriteIdBegin, spriteIdMiddle, spriteIdEnd;
 
@@ -41,7 +41,11 @@ public:
 	void RenderBoundingBox();
 
 	virtual int IsCollidable() { return 1; }
+	virtual int IsBlocking() { return 1; }
+	virtual int IsDirectionalBlocking() { return type == PLATFORM_TYPE_BLOCK_FALL; }
 	virtual int IsDirectionColliable(float nx, float ny);
+
+	virtual void OnCollisionWith(LPCOLLISIONEVENT e);
 };
 
 typedef CPlatform* LPPLATFORM;

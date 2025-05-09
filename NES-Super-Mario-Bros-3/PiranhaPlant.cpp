@@ -8,8 +8,9 @@
 CPiranhaPlant::CPiranhaPlant(float x, float y):
 	CCreature(x, y)
 {
-	bbox_height = PIRANHA_BBOX_HEIGHT;
-	bbox_width = PIRANHA_BBOX_WIDTH;
+	start_y = y;
+
+	SetBoundingBox(PIRANHA_BBOX_WIDTH, PIRANHA_BBOX_HEIGHT);	
 
 	vx = PIRANHA_VX;
 	vy = PIRANHA_VY;
@@ -18,42 +19,47 @@ CPiranhaPlant::CPiranhaPlant(float x, float y):
 	life = PIRANHA_LIFE;	
 }
 
+void CPiranhaPlant::SetPosition(float x, float y)
+{
+	CGameObject::SetPosition(x, y);
+	start_y = y;
+}
+
+void CPiranhaPlant::Prepare(DWORD dt)
+{
+	switch (state)
+	{
+	case PIRANHA_STATE_EMERGE:
+		Emerging(dt);
+		break;
+	case PIRANHA_STATE_ATTACK:
+		Attacking(dt);
+		break;
+	case PIRANHA_STATE_DIG:
+		Digging(dt);
+		break;
+	case PIRANHA_STATE_HIDE:
+		Hiding(dt);
+		break;
+	}	
+}
+
 void CPiranhaPlant::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
-	dt = 16;
-	InPhase(dt, coObjects);	
 	LookforMario();
 	Move(dt);
 }
 
-void CPiranhaPlant::InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
-{	
-	switch (state)
-	{
-		case PIRANHA_STATE_EMERGE:
-			InPhaseEmerge();
-			break;
-		case PIRANHA_STATE_ATTACK:
-			InPhaseAttack(dt);
-			break;
-		case PIRANHA_STATE_DIG:
-			InPhaseDig();
-			break;
-		case PIRANHA_STATE_HIDE:			
-			InPhaseHide(dt);
-			break;
-	}
-}
-
-void CPiranhaPlant::InPhaseEmerge()
+void CPiranhaPlant::Emerging(DWORD dt)
 {
-	if (abs(y - start_y) >= bbox_height)
+	if (y <= start_y - bbox_height)
 	{
+		y = start_y - bbox_height;
 		SetState((this->state + 1) % PIRANHA_NUMBER_STATE);
 	}
 }
 
-void CPiranhaPlant::InPhaseAttack(DWORD dt)
+void CPiranhaPlant::Attacking(DWORD dt)
 {
 	start_action_time += dt;
 	if (start_action_time >= PIRANHA_ATTACK_TIME)
@@ -62,15 +68,16 @@ void CPiranhaPlant::InPhaseAttack(DWORD dt)
 	}
 }
 
-void CPiranhaPlant::InPhaseDig()
+void CPiranhaPlant::Digging(DWORD dt)
 {
-	if (fabs(y - start_y) >= bbox_height)
+	if (y >= start_y)
 	{
+		y = start_y;
 		SetState((this->state + 1) % PIRANHA_NUMBER_STATE);
 	}
 }
 
-void CPiranhaPlant::InPhaseHide(DWORD dt)
+void CPiranhaPlant::Hiding(DWORD dt)
 {
 	start_action_time += dt;
 	if (fabs(target_dx) <= PIRANHA_DISTANCE_HIDE)
@@ -114,7 +121,6 @@ void CPiranhaPlant::SetState(int state) //Start state
 
 void CPiranhaPlant::ToStateEmerge()
 {
-	start_y = y;
 	vy = -PIRANHA_VY;
 }
 
@@ -126,7 +132,6 @@ void CPiranhaPlant::ToStateAttack()
 
 void CPiranhaPlant::ToStateDig()
 {
-	start_y = y;
 	vy = PIRANHA_VY;
 }
 
@@ -138,8 +143,15 @@ void CPiranhaPlant::ToStateHide()
 
 void CPiranhaPlant::ReactionToCarry(CGameObject* by_another)
 {
-	AgainstControl();
-	HigherAttack(by_another);
+	if(pot)
+	{
+		AgainstControl();
+		HigherAttack(by_another);
+	}
+	else
+	{
+		pot = by_another;
+	}
 }
 
 void CPiranhaPlant::ReactionToTouch(CGameObject* by_another)

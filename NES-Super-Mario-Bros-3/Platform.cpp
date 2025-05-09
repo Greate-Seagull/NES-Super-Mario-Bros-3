@@ -6,6 +6,8 @@
 #include "Textures.h"
 #include "Game.h"
 
+#include "HarmfulObject.h";
+
 void CPlatform::RenderBoundingBox()
 {
 	D3DXVECTOR3 p(x, y, 0);
@@ -52,8 +54,8 @@ void CPlatform::GetBoundingBox(float& l, float& t, float& r, float& b)
 {
 	l = x - this->cellWidth / 2.0f;
 	t = y - this->cellHeight / 2.0f;
-	r = l + this->cellWidth * this->length;
-	b = t + this->cellHeight;
+	r = l + this->cellWidth * this->length - 1.0f;
+	b = t + this->cellHeight - 1.0f;
 }
 
 int CPlatform::IsDirectionColliable(float nx, float ny)
@@ -63,4 +65,9 @@ int CPlatform::IsDirectionColliable(float nx, float ny)
 
 	if (type == PLATFORM_TYPE_BLOCK_ANYWAY || ny == -1) return 1;
 	else return 0;
+}
+
+void CPlatform::OnCollisionWith(LPCOLLISIONEVENT e)
+{
+	e->obj->Reaction(this, ACTION_ATTACK_LEVEL_3);
 }

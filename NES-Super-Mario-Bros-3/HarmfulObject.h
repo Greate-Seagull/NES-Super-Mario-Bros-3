@@ -12,7 +12,7 @@
 #define EFFECT_RACOONIZE 11
 
 #define ATTACK_BOOM_VX 0.08f
-#define ATTACK_BOOM_VY 0.386f
+#define ATTACK_BOOM_VY 0.3f
 
 class CHarmfulObject : public CMovableObject
 {

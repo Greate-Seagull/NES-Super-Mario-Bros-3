@@ -3,8 +3,8 @@
 void CContainer::Render()
 {
 	if (this->length <= 0) return;
-	float yy = y;
 
+	float yy = y;
 	float xx = x;
 	CSprites* s = CSprites::GetInstance();
 
@@ -59,8 +59,8 @@ void CContainer::Render()
 
 void CContainer::GetBoundingBox(float& l, float& t, float& r, float& b)
 {
-	l = x - cellHeight * 0.3;// -length * cellWidth / 2;
-	t = y - (height - 0.5) * cellHeight;
-	r = l + (length - 0.3) * cellWidth;
-	b = t + height * cellHeight;
+	l = x - cellWidth / 2.0f;// -length * cellWidth / 2;
+	t = y + cellHeight / 2.0f - bbox_height;
+	r = l + (bbox_width - 1.0f);
+	b = t;
 }

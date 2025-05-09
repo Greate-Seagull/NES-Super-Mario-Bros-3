@@ -26,9 +26,10 @@ public:
 		this->spriteIdBeginEnd = sprite_id_begin_end;
 		this->spriteIdMiddleEnd = sprite_id_middle_end;
 		this->spriteIdEndEnd = sprite_id_end_end;
+
+		SetBoundingBox(length * cellWidth, height * cellHeight);
 	}
 
 	void Render();
 	void GetBoundingBox(float& l, float& t, float& r, float& b);
-	virtual int IsCollidable() { return 1; }
 };

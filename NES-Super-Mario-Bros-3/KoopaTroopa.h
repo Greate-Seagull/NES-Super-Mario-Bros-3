@@ -7,14 +7,14 @@
 #define KOOPA_BBOX_HEIGHT_FOOT_1	26.0f
 #define KOOPA_BBOX_HEIGHT_FOOT_2	27.0f
 #define KOOPA_BBOX_HEIGHT_HIDE		16.0f
-#define KOOPA_BBOX_WIDTH_LIVE			6.0f//15.0f
+#define KOOPA_BBOX_WIDTH_LIVE			8.0f//15.0f
 #define KOOPA_BBOX_WIDTH_HIDE			16.0f//15.0f
 
 #define KOOPA_VX 0.03125f
 #define KOOPA_VY 0.0f
 #define KOOPA_ROLL_VX 0.225f
 #define KOOPA_POP_VX 0.0625f
-#define KOOPA_BOUNCE_VY -0.08f
+#define KOOPA_BOUNCE_VY 0.08f
 #define KOOPA_FALL
 
 #define KOOPA_HIDE_TIME 7000
@@ -38,23 +38,27 @@
 
 class CKoopaTroopa : public CCreature
 {
-	//fall sensor
-	bool start_falling;
-	bool is_falling;
-
 	//recovering
 	int recovering_time;
+
+	//
+	float on_ground_y;
 public:
 	CKoopaTroopa(float x, float y);
 
-	virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
-	virtual void InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
-	virtual void InPhaseLivingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
-	virtual void InPhaseHidingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
-	virtual void InPhaseRollingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
-	virtual void InPhasePopingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+	virtual void Prepare(DWORD dt);
 
-	virtual int IsCollidable() { return state != STATE_DIE; };
+	virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+	virtual void Living(DWORD dt);
+	virtual void Hiding(DWORD dt);
+	virtual void Rolling(DWORD dt);
+	virtual void Poping(DWORD dt);
+
+	virtual int IsBlocking() { return state == KOOPA_STATE_HIDE || state == KOOPA_STATE_POP; }
+	virtual int IsCollidable() { return state != STATE_DIE; };	
+
+	virtual void OnNoCollisionWithBlocking(DWORD dt);
+
 	virtual void OnCollisionWith(LPCOLLISIONEVENT e);
 	virtual void OnCollisionWithPlatform(LPCOLLISIONEVENT e);
 	virtual void OnCollisionWithBlock(LPCOLLISIONEVENT e);
@@ -78,11 +82,6 @@ public:
 	virtual void Hide(DWORD dt);
 	virtual void Pop(DWORD dt);
 
-	void InitiateFallSensor();
-	void ThinkOfFalling();
-	void AwareOfNotFalling();
-	void Falling();
-	bool IsGoingToFall();
 	void Patrol();
 
 	virtual void LookForMario();

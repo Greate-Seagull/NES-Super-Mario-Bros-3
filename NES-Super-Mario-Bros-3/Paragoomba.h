@@ -35,17 +35,19 @@ class CParagoomba : public CGoomba
 public:
 	CParagoomba(float x, float y);
 
-	virtual void ChangeAnimation();
-	virtual void Render();
+	void ChangeAnimation();
+	void Render();
 
-	virtual void ReactionToAttack1(CGameObject* by_another);
+	void ReactionToAttack1(CGameObject* by_another);
 
-	virtual void SetState(int state);
-	virtual void ToStateLiving();
-	virtual void ToStateDying();
+	void SetState(int state);
+	void ToStateLiving();
+	void ToStateDying();
 
-	virtual void InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
-	void InPhaseLiving(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+	void Prepare(DWORD dt);
+
+	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+	void Living(DWORD dt);
 
 	//chasing
 	void LookforMario();

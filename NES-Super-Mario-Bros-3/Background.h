@@ -68,7 +68,7 @@ public:
 
 		reward = new CReward(x + cellWidth, y - cellHeight);
 		LPPLAYSCENE playScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
-		playScene->Add(reward);
+		playScene->Insert(reward, -1);
 	}
 	void Render();
 	void Update(DWORD dt) {}

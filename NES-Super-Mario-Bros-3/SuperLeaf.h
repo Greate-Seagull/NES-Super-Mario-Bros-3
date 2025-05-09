@@ -14,8 +14,8 @@
 
 #define LEAF_GRAVITY LEAF_Y_AMPLITUDE * sqrt(2.0f) / 2.0f;
 
-#define LEAF_BBOX_HEIGHT 15.0f
-#define LEAF_BBOX_WIDTH 16.0f
+#define LEAF_BBOX_HEIGHT 6.0f//15.0f
+#define LEAF_BBOX_WIDTH 12.0f//16.0f
 
 #define LEAF_STATE_SLEEP 10
 #define LEAF_STATE_BLOWN 11
@@ -36,13 +36,11 @@ class CSuperLeaf : public CHelpfulObject
 public:
 	CSuperLeaf(float x, float y);
 
-	int IsCollidable() { return 1; }
+	int IsCollidable() { return state != LEAF_STATE_SLEEP; }
+
+	virtual void Prepare(DWORD dt);
 
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
-
-	void InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
-	void InPhaseBlownState(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
-	void InPhaseFallingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 
 	void SetState(int state);
 	void ToStateSleeping();

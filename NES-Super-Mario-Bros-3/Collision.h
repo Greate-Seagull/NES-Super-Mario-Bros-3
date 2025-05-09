@@ -44,15 +44,15 @@ struct CCollisionEvent
 	}
 };
 
-class CCollisionEventManager
+class CCollisionEventPool
 {
-	vector<unique_ptr<CCollisionEvent>> co_events;
+	vector<CCollisionEvent> co_events;
 	int current_event;
 
 public:
-	CCollisionEventManager();
+	CCollisionEventPool();
 
-	void Add(float t, float nx, float ny, float dx, float dy, LPGAMEOBJECT objDest, LPGAMEOBJECT objSrc);
+	void Allocate(float t, float nx, float ny, float dx, float dy, LPGAMEOBJECT objDest, LPGAMEOBJECT objSrc);
 	void VirtualDelete();
 	void Refresh();
 	LPCOLLISIONEVENT Get(int i);
@@ -64,7 +64,7 @@ class CCollision
 {
 	static CCollision* __instance;
 
-	CCollisionEventManager e_manager;
+	CCollisionEventPool eventPool;
 public: 
 	static void SweptAABB(
 		float ml,			// move left 
@@ -119,8 +119,11 @@ public:
 
 	void Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 
+	void SolveCollisionWithBlocking(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* blockingObjects);
+	void SolveCollisionWithNonBlocking(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* nonBlockingObjects);
+
 	bool Overlap(LPGAMEOBJECT objSrc, LPGAMEOBJECT objDst);
-	void ProcessOverlap(LPGAMEOBJECT objSrc, vector<LPGAMEOBJECT>* coObjects);
+	void SolveOverlap(LPGAMEOBJECT objSrc, vector<LPGAMEOBJECT>* coObjects);
 
 	static CCollision* GetInstance();
 };

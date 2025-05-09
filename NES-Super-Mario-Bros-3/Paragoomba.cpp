@@ -11,26 +11,26 @@ CParagoomba::CParagoomba(float x, float y):
 	SetState(STATE_LIVE);
 }
 
-void CParagoomba::InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+void CParagoomba::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
 	switch (state)
 	{
 		case STATE_LIVE:
-			InPhaseLiving(dt, coObjects);
+			Living(dt);
 			break;
 		case PARAGOOMBA_STATE_GOOMBA:
-			CGoomba::InPhaseLiving(dt, coObjects);
+			CGoomba::Living(dt);
 			break;
 		case STATE_DIE:
-			CGoomba::InPhaseDying(dt, coObjects);
+			CGoomba::Dying(dt);
 			break;
 	}
 }
 
-void CParagoomba::InPhaseLiving(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+void CParagoomba::Living(DWORD dt)
 {
 	ChaseMario(dt);
-	CGoomba::InPhaseLiving(dt, coObjects);
+	CGoomba::Living(dt);
 	Flutter();
 }
 
@@ -85,8 +85,23 @@ void CParagoomba::ToStateDying()
 	die_start = 0;
 	y += (bbox_height - PARAGOOMBA_BBOX_DIE_HEIGHT) / 2;
 	bbox_height = PARAGOOMBA_BBOX_DIE_HEIGHT;
-	vx = 0;
+	vx = 0.0f;
+	vy = 0.0f;
 	LoseWings();
+}
+
+void CParagoomba::Prepare(DWORD dt)
+{
+	switch (state)
+	{
+	case STATE_LIVE:
+		ChaseMario(dt);
+		CMovableObject::Prepare(dt);
+		break;
+	case PARAGOOMBA_STATE_GOOMBA:
+		CMovableObject::Prepare(dt);
+		break;
+	}
 }
 
 void CParagoomba::ChangeAnimation()

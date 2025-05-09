@@ -9,9 +9,6 @@
 CVenusFireTrap::CVenusFireTrap(float x, float y) :
 	CPiranhaPlant(x, y)
 {
-	bbox_height = VENUS_BBOX_HEIGHT;
-	bbox_width = VENUS_BBOX_WIDTH;
-
 	mag_size = VENUS_AMMO_LIMIT;
 	assault_mode = false;
 	boomerang = nullptr;
@@ -34,7 +31,7 @@ void CVenusFireTrap::ChangeAnimation()
 	aniID = object + action + vertical + horizontal;
 }
 
-void CVenusFireTrap::InPhaseAttack(DWORD dt)
+void CVenusFireTrap::Attacking(DWORD dt)
 {
 	start_action_time += dt;
 	if (start_action_time >= PIRANHA_ATTACK_TIME)
@@ -53,7 +50,6 @@ void CVenusFireTrap::ToStateHide()
 	Reload();
 }
 
-//----------------------------------------------------SHOOT----------------------------------------------------------
 void CVenusFireTrap::Shoot()
 {
 	if (mag_size)
@@ -62,7 +58,7 @@ void CVenusFireTrap::Shoot()
 		{
 			boomerang = new CFireball(x, y);
 			CPlayScene* playScene = (CPlayScene*)(CGame::GetInstance()->GetCurrentScene());
-			playScene->Add(boomerang);
+			playScene->Insert(boomerang, -1);
 		}
 
 		if (abs(target_dx) <= VENUS_SHOOT_MIN_DISTANCE)

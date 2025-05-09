@@ -2,12 +2,6 @@
 
 #include "Block.h"
 
-#include "AssetIDs.h"
-#include "Animation.h"
-#include "Animations.h"
-
-#include "debug.h"
-
 #define QUESTION_BLOCK_BBOX_WIDTH 16.0f
 #define QUESTION_BLOCK_BBOX_HEIGHT 16.0f
 
@@ -19,10 +13,6 @@
 
 class CQuestionBlock : public CBlock {
 protected:
-	//Containing
-	int itemID;
-	CGameObject* item;
-
 	//Shaking
 	float origin_y;
 
@@ -35,16 +25,18 @@ public:
 
 		SetState(STATE_LIVE);
 		SetBoundingBox(QUESTION_BLOCK_BBOX_WIDTH, QUESTION_BLOCK_BBOX_HEIGHT);
+
+		TakeItem();
 	}
 
+	void Prepare(DWORD dt);
+
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
-	void InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 
 	void Render();
 	void Reaction(CGameObject* by_another, int action);
 	void SetState(int state);
 
+	void TakeItem();
 	void TriggerItem();
-
-	void Shaking(DWORD dt);
 };

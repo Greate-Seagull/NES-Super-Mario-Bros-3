@@ -32,26 +32,34 @@
 class CPiranhaPlant : public CCreature
 {
 protected:
-	//Behavior sensor
-	float start_y;		
+	//pot
+	CGameObject* pot;
+
+	//emerge and dig
+	float start_y;	
 	DWORD start_action_time;
 
-	//attack sensor
+	//attack
 	float target_dx, target_dy;
 public:
 	CPiranhaPlant(float x, float y);
+
+	virtual void SetPosition(float x, float y);
+
+	virtual void Prepare(DWORD dt);
+
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 
-	virtual int IsCollidable() { return 1; };
+	virtual int IsCollidable() { return state != PIRANHA_STATE_HIDE && state != STATE_DIE; };
+	virtual int IsLinkedTo(CGameObject* obj) { return pot == obj; }
 
 	virtual void Render();
 	virtual void ChangeAnimation();
 
-	virtual void InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
-	virtual void InPhaseEmerge();
-	virtual void InPhaseAttack(DWORD dt);
-	virtual void InPhaseDig();
-	virtual void InPhaseHide(DWORD dt);
+	virtual void Emerging(DWORD dt);
+	virtual void Attacking(DWORD dt);
+	virtual void Digging(DWORD dt);
+	virtual void Hiding(DWORD dt);
 
 	virtual void SetState(int state);
 	virtual void ToStateEmerge();

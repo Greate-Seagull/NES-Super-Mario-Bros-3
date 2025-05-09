@@ -33,7 +33,6 @@ public:
 	virtual void Render();
 
 	virtual int IsCollidable() { return state != STATE_DIE; };
-	//virtual int IsBlocking() { return 0; }
 	virtual void OnCollisionWith(LPCOLLISIONEVENT e);
 	virtual void OnCollisionWithPlatform(LPCOLLISIONEVENT e);
 	virtual void OnCollisionWithBlock(LPCOLLISIONEVENT e);
@@ -47,7 +46,6 @@ public:
 	virtual void ToStateLiving();
 	virtual void ToStateDying();
 
-	virtual void InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
-	virtual void InPhaseLiving(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
-	virtual void InPhaseDying(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+	virtual void Living(DWORD dt);
+	virtual void Dying(DWORD dt);
 };

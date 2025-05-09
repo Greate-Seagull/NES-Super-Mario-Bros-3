@@ -11,14 +11,12 @@ CGoomba::CGoomba(float x, float y):
 	
 	nx = DIRECTION_LEFT;
 	life = GOOMBA_LIFE;
-	//die_start = -1;
 	SetState(STATE_LIVE);
 }
 
 void CGoomba::OnCollisionWith(LPCOLLISIONEVENT e)
 {
 	//if (!e->obj->IsBlocking()) return; 
-	//if (dynamic_cast<CGoomba*>(e->obj)) return; 
 	if (dynamic_cast<CPlatform*>(e->obj))
 		OnCollisionWithPlatform(e);
 	else if (dynamic_cast<CBlock*>(e->obj))
@@ -106,29 +104,16 @@ void CGoomba::ToStateDying()
 	die_start = 0;
 	y += (bbox_height - GOOMBA_BBOX_HEIGHT_DIE) / 2.0f;
 	bbox_height = GOOMBA_BBOX_HEIGHT_DIE;
+	vx = 0.0f;
+	vy = 0.0f;
 }
 
-void CGoomba::InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+void CGoomba::Living(DWORD dt)
 {
-	switch (state)
-	{
-		case STATE_LIVE:	
-			InPhaseLiving(dt, coObjects);
-			break;
-		case STATE_DIE:
-			InPhaseDying(dt, coObjects);		
-			break;
-	}
-}
-
-void CGoomba::InPhaseLiving(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
-{
-	Accelerate(0.0f, GAME_GRAVITY, dt);
-	CCollision::GetInstance()->Process(this, dt, coObjects);
 	Move(dt);
 }
 
-void CGoomba::InPhaseDying(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+void CGoomba::Dying(DWORD dt)
 {
 	die_start += dt;
 	if (die_start >= GOOMBA_DIE_TIMEOUT)
@@ -139,8 +124,15 @@ void CGoomba::InPhaseDying(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 
 void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {
-	dt = 16;
-	InPhase(dt, coObjects);	
+	switch (state)
+	{
+	case STATE_LIVE:
+		Living(dt);
+		break;
+	case STATE_DIE:
+		Dying(dt);
+		break;
+	}
 }
 
 void CGoomba::ChangeAnimation()

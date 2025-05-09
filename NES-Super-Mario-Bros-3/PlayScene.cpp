@@ -132,7 +132,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	{
 		obj = new CBackground(x, y);
 		background = (CBackground*)obj;
-		break;
+		return;
 	}
 	case NON_OBJECT_TYPE_ENDING:
 	{
@@ -278,12 +278,15 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		int face_direction = atoi(tokens[10].c_str());
 		int warp_direction = atoi(tokens[11].c_str());
 
+		int itemID = atoi(tokens[12].c_str());
+
 		obj = new CPipe(
 			x, y,
 			cell_width, cell_height, pipe_height, 
 			face_direction, warp_direction, 
 			sprite_id_begin_begin, sprite_id_end_begin, 
-			sprite_id_begin_end, sprite_id_end_end);
+			sprite_id_begin_end, sprite_id_end_end,
+			itemID);
 		break;
 	}
 
@@ -336,8 +339,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	// General object setup
 	obj->SetPosition(x, y);
 
-	if (object_type != NON_OBJECT_TYPE_BACKGROUND)
-		objects.push_back(obj);
+	objects.push_back(obj);
 }
 
 void CPlayScene::LoadAssets(LPCWSTR assetFile)
@@ -412,32 +414,54 @@ void CPlayScene::Load()
 
 void CPlayScene::Update(DWORD dt)
 {
-	// We know that Mario is the first object in the list hence we won't add him into the colliable object list
-	// TO-DO: This is a "dirty" way, need a more organized way 
-	//DebugOutTitle(L"Coin: %d", coin);
-
-	vector<LPGAMEOBJECT> collision_range_list = FilterByPlayer();
-	vector<LPGAMEOBJECT> coObjects;
-	for (size_t i = 0; i < collision_range_list.size(); i++)
-	{
-		if (collision_range_list[i]->IsCollidable())
-			coObjects.push_back(collision_range_list[i]);
-	}
-
-	for (size_t i = 0; i < collision_range_list.size(); i++)
-	{
-		collision_range_list[i]->Prepare(dt);
-	}
-
-	for (size_t i = 0; i < collision_range_list.size(); i++)
-	{
-		collision_range_list[i]->Update(dt, &coObjects);
-	}
-
-	UpdateCamera();
-
 	// skip the rest if scene was already unloaded (Mario::Update might trigger PlayScene::Unload)
-	if (player == NULL) return; 
+	if (player == NULL) return;
+
+	vector<LPGAMEOBJECT> nearbyObjects = FilterByPlayer();
+
+	for (auto& obj : nearbyObjects)
+	{
+		obj->Prepare(dt);
+	}
+
+	vector<LPGAMEOBJECT> movingColliders;
+	vector<LPGAMEOBJECT> staticColliders;
+
+	vector<LPGAMEOBJECT> blockingColliders;
+	vector<LPGAMEOBJECT> nonBlockingColliders;
+	for (auto& obj : nearbyObjects)
+	{	
+		if (obj->IsCollidable())
+		{
+			//Collide with objects
+			if (obj->IsBlocking())
+				blockingColliders.push_back(obj);
+			else
+				nonBlockingColliders.push_back(obj);
+
+			//Objects will use collision process
+			if (obj->IsMoving()) //For sweptAABB
+				movingColliders.push_back(obj);
+			else if (obj->IsDirectionalBlocking() == false && obj->IsBlocking()) //For overlap
+				staticColliders.push_back(obj);
+		}
+	}	
+
+	//solve collision with blocking objects first
+	for (auto& obj : movingColliders) //For moving objects
+		CCollision::GetInstance()->SolveCollisionWithBlocking(obj, dt, &blockingColliders);
+
+	for (auto& obj : staticColliders) //For static objects
+		CCollision::GetInstance()->SolveOverlap(obj, &movingColliders);
+
+	//solve collision with non-blocking objects
+	for (auto& obj : movingColliders)
+		CCollision::GetInstance()->SolveCollisionWithNonBlocking(obj, dt, &nonBlockingColliders);
+
+	for (auto& obj : nearbyObjects)
+		obj->Update(dt, &nearbyObjects);
+
+	UpdateCamera();	
 
 	PurgeDeletedObjects();
 }
@@ -486,10 +510,25 @@ void CPlayScene::Unload()
 
 bool CPlayScene::IsGameObjectDeleted(const LPGAMEOBJECT& o) { return o == NULL; }
 
-void CPlayScene::Add(LPGAMEOBJECT newObj)
+void CPlayScene::Insert(LPGAMEOBJECT newObj, int index)
 {
-	if(newObj)
+	if (!newObj)
+		return;
+	else if (index < 0)
 		objects.push_back(newObj);
+	else
+		objects.insert(objects.begin() + index, newObj);
+}
+
+int CPlayScene::Find(LPGAMEOBJECT obj)
+{
+	if (obj)
+	{
+		for (int i = 0; i < objects.size(); i++)
+			if (objects.at(i) == obj)
+				return i;
+	}
+	return -1;
 }
 
 bool CPlayScene::IsInRange(LPGAMEOBJECT obj, float start_x, float end_x, float start_y, float end_y)

@@ -11,12 +11,12 @@
 #define MARIO_SMALL_WALKING_MAX_VX 0.1f
 #define MARIO_SMALL_RUNNING_MAX_VX 0.25f
 #define MARIO_SMALL_JUMPING_MAX_VY 0.15f
-#define MARIO_SMALL_RUNNING_AX 0.00016f//0.0002f
+#define MARIO_SMALL_RUNNING_AX 0.0002f//0.0002f
 
 #define MARIO_DECELERATE_AX 0.00016f
 #define MARIO_BRAKE_AX 0.0004f
 
-#define MARIO_START_JUMP_VY -0.25f
+#define MARIO_START_JUMP_VY 0.25f
 #define MARIO_MAX_JUMP_HEIGHT 60.0f
 
 #define MARIO_JUMP_DEFLECT_VY  -0.25f
@@ -85,13 +85,12 @@
 
 class CMario : public CCreature
 {
-	float ax, ay;
 	float maxVx;
 
-	bool is_falling;
 	bool is_invulnerable;
+	bool is_jumping;
 
-	float on_ground_position;
+	float on_ground_y;
 
 	int changing_state_time;
 
@@ -123,7 +122,6 @@ public:
 	CMario(float x, float y);
 
 	void Prepare(DWORD dt);
-	void RefreshInLiveState(DWORD dt);
 
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 	void Living(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
@@ -134,10 +132,9 @@ public:
 	void ChangeDrawY(float& y);
 	void Render();
 
-	int IsCollidable() { return (state == STATE_LIVE); }
-	int IsBlocking() { return (state != STATE_DIE /*&& untouchable==0*/); }
+	int IsCollidable() { return state == STATE_LIVE; }
 
-	void OnNoCollision(DWORD dt);
+	void OnNoCollisionWithBlocking(DWORD dt);
 	void OnCollisionWith(LPCOLLISIONEVENT e);
 
 	//void ReactionToCarry(CGameObject* by_another);
@@ -149,10 +146,14 @@ public:
 	void ReactionToRacoonize(CGameObject* by_another);
 
 	void SetLife(float l);
+	void ToSmallLevel();
+	void ToBigLevel();
+	void ToRacoonLevel();
 
 	void SetState(int state);
 	void ToGainingPowerState();
 	void ToLosingPowerState();
+	void ToLivingState();
 	void ToDyingState();
 
 	void StartNormalActions(DWORD& t);
@@ -176,7 +177,7 @@ public:
 
 	void Attack();
 	void Attacking(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
-	void ToAttackPhase(int phase);
+	void ChangeAttackPhase(int phase);
 	void UntriggerTail();
 
 	void BackJump();
@@ -194,7 +195,6 @@ public:
 
 	void GainingPower(DWORD dt);
 	void LosingPower(DWORD dt);
-	void LoseRacoonPower();
 
 	void Dying(DWORD dt);
 

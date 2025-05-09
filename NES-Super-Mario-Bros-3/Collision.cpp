@@ -1,6 +1,6 @@
 #include "Collision.h"
 #include "GameObject.h"
-#include "KoopaTroopa.h"
+#include "SuperLeaf.h"
 
 #include "debug.h"
 
@@ -47,9 +47,11 @@ void CCollision::SweptAABB(
 	float br = dx > 0 ? mr + dx : mr;
 	float bb = dy > 0 ? mb + dy : mb;
 
-	if (br < sl || bl > sr || bb < st || bt > sb) return;
+	if (br < sl || bl > sr || bb < st || bt > sb) 
+		return;
 
-	if (dx == 0 && dy == 0) return;// moving object is not moving > obvious no collision		
+	if (dx == 0 && dy == 0)
+		return;// moving object is not moving > obvious no collision
 
 	if (dx > 0)
 	{
@@ -97,12 +99,14 @@ void CCollision::SweptAABB(
 	}
 
 
-	if ((tx_entry < 0.0f && ty_entry < 0.0f) || tx_entry > 1.0f || ty_entry > 1.0f) return;
+	if ((tx_entry < 0.0f && ty_entry < 0.0f) || tx_entry > 1.0f || ty_entry > 1.0f) 
+		return;
 
 	t_entry = max(tx_entry, ty_entry);
 	t_exit = min(tx_exit, ty_exit);
 
-	if (t_entry > t_exit) return;
+	if (t_entry > t_exit) 
+		return;
 
 	t = t_entry;
 
@@ -411,7 +415,7 @@ void CCollision::SweptAABB(LPGAMEOBJECT objSrc, DWORD dt, LPGAMEOBJECT objDest)
 		t, nx, ny
 	);
 
-	e_manager.Add(t, nx, ny, dx, dy, objDest, objSrc);
+	eventPool.Allocate(t, nx, ny, dx, dy, objDest, objSrc);
 }
 
 /*
@@ -424,14 +428,16 @@ void CCollision::Scan(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* objDe
 {
 	for (UINT i = 0; i < objDests->size(); i++)
 	{
-		if (objDests->at(i)->IsUpdated() || objSrc == objDests->at(i))
+		if (objSrc == objDests->at(i))
+			continue;
+		if (objSrc->IsLinkedTo(objDests->at(i)))
 			continue;
 
 		SweptAABB(objSrc, dt, objDests->at(i));
-		LPCOLLISIONEVENT e = e_manager.GetLast();
+		LPCOLLISIONEVENT e = eventPool.GetLast();
 
 		if (e->WasCollided() != 1)
-			e_manager.VirtualDelete();
+			eventPool.VirtualDelete();
 	}
 
 	//std::sort(coEvents.begin(), coEvents.end(), CCollisionEvent::compare);
@@ -451,9 +457,9 @@ void CCollision::Filter(LPGAMEOBJECT objSrc,
 	int min_ix = -1;
 	int min_iy = -1;
 
-	for (UINT i = 0; i < e_manager.Size(); i++)
+	for (UINT i = 0; i < eventPool.Size(); i++)
 	{
-		LPCOLLISIONEVENT c = e_manager.Get(i);
+		LPCOLLISIONEVENT c = eventPool.Get(i);
 		if (c->isDeleted) continue;
 		if (c->obj->IsDeleted()) continue;
 
@@ -472,8 +478,8 @@ void CCollision::Filter(LPGAMEOBJECT objSrc,
 		}
 	}
 
-	if (min_ix >= 0) colX = e_manager.Get(min_ix);
-	if (min_iy >= 0) colY = e_manager.Get(min_iy);
+	if (min_ix >= 0) colX = eventPool.Get(min_ix);
+	if (min_iy >= 0) colY = eventPool.Get(min_iy);
 }
 
 /*
@@ -485,17 +491,13 @@ void CCollision::Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* co
 	LPCOLLISIONEVENT colX = NULL;
 	LPCOLLISIONEVENT colY = NULL;	
 
-	if (CKoopaTroopa* koopa = dynamic_cast<CKoopaTroopa*>(objSrc))
-		if (koopa->GetState() == KOOPA_STATE_HIDE)
-			int i = 0;
-
 	if (objSrc->IsCollidable())
 	{
 		Scan(objSrc, dt, coObjects);
 	}
 
 	// No collision detected
-	if (e_manager.Size() == 0)
+	if (eventPool.Size() == 0)
 	{
 		objSrc->OnNoCollision(dt);
 	}
@@ -514,6 +516,7 @@ void CCollision::Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* co
 			if (colY->t < colX->t)	// was collision on Y first ?
 			{
 				y += colY->t * dy + colY->ny * BLOCK_PUSH_FACTOR;
+
 				objSrc->SetPosition(x, y);
 
 				objSrc->OnCollisionWith(colY);
@@ -543,10 +546,6 @@ void CCollision::Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* co
 
 					objSrc->OnCollisionWith(colX_other);
 				}
-				/*else
-				{
-					x += dx;
-				}*/
 			}
 			else // collision on X first
 			{
@@ -581,78 +580,210 @@ void CCollision::Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* co
 
 					objSrc->OnCollisionWith(colY_other);
 				}
-				/*else
-				{
-					y += dy;
-				}*/
 			}
 		}
 		else if (colX != NULL)
 		{
 			x += colX->t * dx + colX->nx * BLOCK_PUSH_FACTOR;
-			//y += dy;
-			objSrc->SetPosition(x, y); //Can be commented
 
+			objSrc->SetPosition(x, y);
+			
 			objSrc->OnCollisionWith(colX);
 		}
 		else if (colY != NULL)
 		{
-			//x += dx;
 			y += colY->t * dy + colY->ny * BLOCK_PUSH_FACTOR;
 
-			objSrc->SetPosition(x, y); //Can be commented
-
+			objSrc->SetPosition(x, y);
+			
 			objSrc->OnCollisionWith(colY);
 		}
-		//else // both colX & colY are NULL 
-		//{
-		//	x += dx;
-		//	y += dy;
-		//}
-
-		//objSrc->SetPosition(x, y);
 	}
 
 
 	//
 	// Scan all non-blocking collisions for further collision logic
 	//
-	for (UINT i = 0; i < e_manager.Size(); i++)
+	for (UINT i = 0; i < eventPool.Size(); i++)
 	{
-		LPCOLLISIONEVENT e = e_manager.Get(i);
+		LPCOLLISIONEVENT e = eventPool.Get(i);
 		if (e->isDeleted) continue;
 		if (e->obj->IsBlocking()) continue;  // blocking collisions were handled already, skip them
 
 		objSrc->OnCollisionWith(e);
 	}
 
-	e_manager.Refresh();
+	eventPool.Refresh();
 }
 
-void CCollision::ProcessOverlap(LPGAMEOBJECT objSrc, vector<LPGAMEOBJECT>* coObjects)
+void CCollision::SolveCollisionWithBlocking(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* blockingObjects)
+{
+	LPCOLLISIONEVENT colX = NULL;
+	LPCOLLISIONEVENT colY = NULL;
+
+	Scan(objSrc, dt, blockingObjects);
+
+	// No collision detected
+	if (eventPool.Size() == 0)
+	{
+		objSrc->OnNoCollisionWithBlocking(dt);
+	}
+	else
+	{
+		Filter(objSrc, colX, colY);
+
+		float x, y, vx, vy, dx, dy;
+		objSrc->GetPosition(x, y);
+		objSrc->GetSpeed(vx, vy);
+		dx = vx * dt;
+		dy = vy * dt;
+
+		if (colX != NULL && colY != NULL)
+		{
+			if (colY->t < colX->t)	// was collision on Y first ?
+			{
+				y += colY->t * dy + colY->ny * BLOCK_PUSH_FACTOR;
+
+				objSrc->SetPosition(x, y);
+
+				objSrc->OnCollisionWith(colY);
+
+				objSrc->GetPosition(x, y);
+				//
+				// see if after correction on Y, is there still a collision on X ? 
+				//
+				LPCOLLISIONEVENT colX_other = NULL;
+
+				//
+				// check again if there is true collision on X 
+				//
+				colX->isDeleted = true;		// remove current collision event on X
+
+				// replace with a new collision event using corrected location 
+				SweptAABB(objSrc, dt, colX->obj);
+
+				// re-filter on X only
+				Filter(objSrc, colX_other, colY, /*filterBlock = */ 1, 1, /*filterY=*/0);
+
+				if (colX_other != NULL)
+				{
+					x += colX_other->t * dx + colX_other->nx * BLOCK_PUSH_FACTOR;
+
+					objSrc->SetPosition(x, y);
+
+					objSrc->OnCollisionWith(colX_other);
+				}
+			}
+			else // collision on X first
+			{
+				x += colX->t * dx + colX->nx * BLOCK_PUSH_FACTOR;
+
+				objSrc->SetPosition(x, y);
+
+				objSrc->OnCollisionWith(colX);
+
+				objSrc->GetPosition(x, y);
+				//
+				// see if after correction on X, is there still a collision on Y ? 
+				//
+				LPCOLLISIONEVENT colY_other = NULL;
+
+				//
+				// check again if there is true collision on Y
+				//
+				colY->isDeleted = true;		// remove current collision event on Y
+
+				// replace with a new collision event using corrected location 
+				SweptAABB(objSrc, dt, colY->obj);
+
+				// re-filter on Y only
+				Filter(objSrc, colX, colY_other, /*filterBlock = */ 1, /*filterX=*/0, /*filterY=*/1);
+
+				if (colY_other != NULL)
+				{
+					y += colY_other->t * dy + colY_other->ny * BLOCK_PUSH_FACTOR;
+
+					objSrc->SetPosition(x, y);
+
+					objSrc->OnCollisionWith(colY_other);
+				}
+			}
+		}
+		else if (colX != NULL)
+		{
+			x += colX->t * dx + colX->nx * BLOCK_PUSH_FACTOR;
+
+			objSrc->SetPosition(x, y);
+
+			objSrc->OnCollisionWith(colX);
+		}
+		else if (colY != NULL)
+		{
+			y += colY->t * dy + colY->ny * BLOCK_PUSH_FACTOR;
+
+			objSrc->SetPosition(x, y);
+
+			objSrc->OnCollisionWith(colY);
+		}
+	}
+
+	eventPool.Refresh();
+}
+
+void CCollision::SolveCollisionWithNonBlocking(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* nonBlockingObjects)
+{
+	Scan(objSrc, dt, nonBlockingObjects);
+
+	if (eventPool.Size() == 0)
+	{
+		objSrc->OnNoCollisionWithNonBlocking(dt);
+		return;
+	}
+
+	for (UINT i = 0; i < eventPool.Size(); i++)
+	{
+		LPCOLLISIONEVENT e = eventPool.Get(i);
+		if (e->isDeleted) continue;
+		if (e->obj->IsBlocking()) continue;  // blocking collisions were handled already, skip them
+
+		objSrc->OnCollisionWith(e);
+	}
+
+	eventPool.Refresh();
+}
+
+void CCollision::SolveOverlap(LPGAMEOBJECT objSrc, vector<LPGAMEOBJECT>* coObjects)
 {
 	for (UINT i = 0; i < coObjects->size(); i++)
 	{
+		if (objSrc == coObjects->at(i))
+			continue;
+		if (objSrc->IsLinkedTo(coObjects->at(i)))
+			continue;		
+
 		if (Overlap(objSrc, coObjects->at(i)))
 		{
-			CCollisionEvent* e = new CCollisionEvent(-1, 0, 0, 0, 0, coObjects->at(i), objSrc);// Should be fix
+			eventPool.Allocate(-1, 0, 0, 0, 0, coObjects->at(i), objSrc);
+			CCollisionEvent* e = eventPool.GetLast();
 			objSrc->OnCollisionWith(e);
 		}
 	}
+
+	eventPool.Refresh();
 }
 
 bool CCollision::Overlap(LPGAMEOBJECT objSrc, LPGAMEOBJECT objDst)
 {
-	float min_width = (objSrc->GetBBoxWidth() + objDst->GetBBoxWidth()) / 2.0f;
+	/*float min_width = (objSrc->GetBBoxWidth() + objDst->GetBBoxWidth()) / 2.0f;
 	float min_height = (objSrc->GetBBoxHeight() + objDst->GetBBoxHeight()) / 2.0f;
 
 	float objSrc_x, objSrc_y;
 	float objDst_x, objDst_y;
 
 	objSrc->GetPosition(objSrc_x, objSrc_y);
-	objDst->GetPosition(objDst_x, objDst_y);
+	objDst->GetPosition(objDst_x, objDst_y);*/
 
-	/*float objSrc_l, objSrc_t, objSrc_r, objSrc_b;
+	float objSrc_l, objSrc_t, objSrc_r, objSrc_b;
 	float objDst_l, objDst_t, objDst_r, objDst_b;
 
 	objSrc->GetBoundingBox(objSrc_l, objSrc_t, objSrc_r, objSrc_b);
@@ -661,65 +792,57 @@ bool CCollision::Overlap(LPGAMEOBJECT objSrc, LPGAMEOBJECT objDst)
 	bool horizontally_inside = (objSrc_l <= objDst_r) && (objDst_l <= objSrc_r);
 	bool vertically_inside = (objSrc_t <= objDst_b) && (objDst_t <= objSrc_b);
 
-	return horizontally_inside && vertically_inside;*/
+	return horizontally_inside && vertically_inside;
 
-	return fabs(objSrc_x - objDst_x) < min_width && fabs(objSrc_y - objDst_y) < min_height;
+	//return fabs(objSrc_x - objDst_x) < min_width && fabs(objSrc_y - objDst_y) < min_height;
 }
 
-CCollisionEventManager::CCollisionEventManager()
+CCollisionEventPool::CCollisionEventPool()
 {
 	current_event = 0;
 }
 
-void CCollisionEventManager::Add(float t, float nx, float ny, float dx, float dy, LPGAMEOBJECT objDest, LPGAMEOBJECT objSrc)
+void CCollisionEventPool::Allocate(float t, float nx, float ny, float dx, float dy, LPGAMEOBJECT objDest, LPGAMEOBJECT objSrc)
 {
 	if (current_event >= co_events.size())
 	{
-		co_events.push_back(make_unique<CCollisionEvent>(t, nx, ny, dx, dy, objDest, objSrc));		
+		co_events.emplace_back(t, nx, ny, dx, dy, objDest, objSrc);
 	}
 	else
 	{
-		auto& new_e = co_events.at(current_event);
-		new_e->t = t;
-		new_e->nx = nx;
-		new_e->ny = ny;
-		new_e->dx = dx;
-		new_e->dy = dy;
-		new_e->obj = objDest;
-		new_e->src_obj = objSrc;
-		new_e->isDeleted = false;
+		co_events[current_event] = CCollisionEvent(t, nx, ny, dx, dy, objDest, objSrc);
 	}
 
 	current_event++;
 }
 
-void CCollisionEventManager::VirtualDelete()
+void CCollisionEventPool::VirtualDelete()
 {
 	current_event = max(0, current_event - 1);
 }
 
-void CCollisionEventManager::Refresh()
+void CCollisionEventPool::Refresh()
 {
 	current_event = 0;
 }
 
-LPCOLLISIONEVENT CCollisionEventManager::Get(int i)
+LPCOLLISIONEVENT CCollisionEventPool::Get(int i)
 {
 	if (i < 0 || i >= current_event)
 		return nullptr;
 
-	return co_events[i].get();
+	return &co_events[i];
 }
 
-LPCOLLISIONEVENT CCollisionEventManager::GetLast()
+LPCOLLISIONEVENT CCollisionEventPool::GetLast()
 {
 	if (current_event == 0)
 		return nullptr;
 
-	return co_events[current_event - 1].get();
+	return &co_events[current_event - 1];
 }
 
-int CCollisionEventManager::Size()
+int CCollisionEventPool::Size()
 {
 	return current_event;
 }

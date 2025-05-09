@@ -8,7 +8,7 @@
 #define MUSHROOM_BBOX_HEIGHT 16.0f
 #define MUSHROOM_BBOX_WIDTH 16.0f
 
-#define MUSHROOM_WAKEUP_TIME 500 //the origin's is 250
+#define MUSHROOM_WAKEUP_TIME 1000 //the origin's is 250
 
 #define MUSHROOM_STATE_SLEEP 10
 #define MUSHROOM_STATE_WAKEUP 11
@@ -26,11 +26,11 @@ class CSuperMushroom : public CHelpfulObject
 public:
 	CSuperMushroom(float x, float y);
 
-	int IsCollidable() { return 1; }
+	int IsCollidable() { return state > MUSHROOM_STATE_WAKEUP; }
+
+	virtual void Prepare(DWORD dt);
 
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
-
-	void InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 
 	void SetState(int state);
 	void ToStateSleeping();
@@ -50,5 +50,5 @@ public:
 	virtual void Render();
 
 	void LookAwayFromMario();
-	void WakingUp(DWORD dt);
+	void WakeUp(DWORD dt);
 };

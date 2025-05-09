@@ -17,9 +17,9 @@ CGameObject::CGameObject()
 
 void CGameObject::GetBoundingBox(float& left, float& top, float& right, float& bottom)
 {
-	left = x - (bbox_width / 2.0f);
-	top = y - (bbox_height / 2.0f);
-	right = left + bbox_width;
+	left = x - (bbox_width) / 2.0f;
+	top = y - (bbox_height) / 2.0f;
+	right = left + bbox_width - 1.0f;
 	bottom = top + bbox_height;
 }
 
@@ -33,6 +33,13 @@ void CGameObject::Render()
 void CGameObject::SetState(int state)
 {
 	this->state = state;
+}
+
+int CGameObject::IsMoving()
+{
+	float vx, vy;
+	this->GetSpeed(vx, vy);
+	return vx || vy;
 }
 
 void CGameObject::SetBoundingBox(float width, float height)

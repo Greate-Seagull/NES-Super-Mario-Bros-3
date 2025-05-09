@@ -18,8 +18,8 @@
 CMario::CMario(float x, float y):
 	CCreature(x, y)
 {
-	is_falling = false;
 	is_invulnerable = false;
+	is_jumping = false;
 	is_flying = false;
 
 	decrease_momentum_time = 0;
@@ -36,16 +36,20 @@ void CMario::Prepare(DWORD dt)
 	switch (state)
 	{
 	case STATE_LIVE:
-		RefreshInLiveState(dt);
+		StartSpecialActions();
+		StartNormalActions(dt);
+		break;
+	case MARIO_STATE_GAIN_POWER:
+		GainingPower(dt);
+		break;
+	case MARIO_STATE_LOSE_POWER:
+		LosingPower(dt);
+		break;
+	case STATE_DIE:		
+		changing_state_time += dt;
+		if (changing_state_time >= MARIO_DYING_TIME) CMovableObject::Prepare(dt);
 		break;
 	}
-}
-
-void CMario::RefreshInLiveState(DWORD dt)
-{
-	CMovableObject::Prepare(dt);
-	StartSpecialActions();
-	StartNormalActions(dt);
 }
 
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
@@ -56,12 +60,6 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	case STATE_LIVE:
 		Living(dt, coObjects);
 		break;
-	case MARIO_STATE_GAIN_POWER:
-		GainingPower(dt);
-		break;
-	case MARIO_STATE_LOSE_POWER:
-		LosingPower(dt);
-		break;
 	case STATE_DIE:
 		Dying(dt);
 		break;
@@ -70,10 +68,6 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 
 void CMario::Living(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
-	CCollision::GetInstance()->Process(this, dt, coObjects);
-	if (this->state != STATE_LIVE) //Check state changed after collision
-		return;
-
 	Flying();
 	Move(dt);
 
@@ -83,9 +77,9 @@ void CMario::Living(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	Invulnerable(dt);
 }
 
-void CMario::OnNoCollision(DWORD dt)
+void CMario::OnNoCollisionWithBlocking(DWORD dt)
 {
-	//isOnPlatform = false;
+	isOnGround = false;
 }
 
 void CMario::OnCollisionWith(LPCOLLISIONEVENT e)
@@ -100,19 +94,20 @@ void CMario::OnCollisionWith(LPCOLLISIONEVENT e)
 	}
 	else if (dynamic_cast<CCoin*>(e->obj))
 		OnCollisionWithCoin(e);
-	/*else if (dynamic_cast<CDeadStateTrigger*>(e->obj))
-		OnCollisionWithDeadTrigger(e);*/
 	else if (dynamic_cast<CHelpfulObject*>(e->obj))
 		OnCollisionWithHelpfulObject(e);
 	else if (dynamic_cast<CPortal*>(e->obj))
 		OnCollisionWithPortal(e);
+	/*else if (dynamic_cast<CDeadStateTrigger*>(e->obj))
+		OnCollisionWithDeadTrigger(e);*/
 	/*else if (dynamic_cast<CRandomCard*>(e->obj))
 		OnCollisionWithRandomCard(e);*/
 }
 
 void CMario::ReactionToTouch(CGameObject* by_another)
 {
-	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
+	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();	
+
 	if (keyState->IsHold(VK_A))
 		Carry((CHarmfulObject*)by_another);
 	else
@@ -122,7 +117,10 @@ void CMario::ReactionToTouch(CGameObject* by_another)
 void CMario::ReactionToAttack1(CGameObject* by_another)
 {
 	if (this->y + this->bbox_height / 2.0f <= by_another->GetY() - by_another->GetBBoxHeight() / 2.0f)
+	{
 		CHarmfulObject::Attack(by_another);
+		BackJump();
+	}
 	else
 		UnderAttack((CHarmfulObject*) by_another);
 }
@@ -179,10 +177,9 @@ void CMario::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 {
 	if (e->ny)
 	{
-		vy = 0.0f;
-		ny = 0;
-		is_falling = false;
-		on_ground_position = y;
+		vy = 0.0f; 
+		isOnGround = true;
+		on_ground_y = y;
 	}	
 
 	if (e->nx)
@@ -205,19 +202,19 @@ void CMario::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 
 		if (e->ny > 0)
 		{
-			is_falling = true;
+			is_jumping = false;
 			Touch(e->obj);
 		}
 		else
 		{
-			is_falling = false;
-			on_ground_position = y;
+			isOnGround = true;
+			on_ground_y = y;
 		}
 	}
 
 	if (e->nx)
 	{
-		vx = 0.0f;		
+		vx = 0.0f;
 	}
 }
 
@@ -289,9 +286,8 @@ void CMario::ChangeAnimation()
 	{
 		direction = (nx <= 0) ? ID_ANI_LEFT : ID_ANI_RIGHT;
 	}
-	
 
-	aniID = ID_ANI_MARIO + level + action + direction;	
+	aniID = ID_ANI_MARIO + level + action + direction;
 
 	if(timePerFrame < TIME_FRAME)
 		CAnimations::GetInstance()->Get(aniID)->ChangeTimePerFrame(timePerFrame);
@@ -358,7 +354,7 @@ bool CMario::SetSpecialAction(int actionID)
 	//validation
 	if (special_action == actionID)
 		return false;
-
+	
 	switch (actionID)
 	{
 	case ID_ANI_SIT:
@@ -392,14 +388,15 @@ void CMario::StartSpecialActions()
 {
 	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
 
+	if (keyState->IsPressed(VK_UP))
+		SetLife(life + 1.0f);
+	else if (keyState->IsPressed(VK_DOWN))
+		SetLife(life - 1.0f);
+
 	if (keyState->IsHold(VK_UP))
-	{
 		Fly();
-	}
 	if (keyState->IsHold(VK_UP) && keyState->IsHold(VK_DOWN))
-	{
 		is_flying = false;
-	}	
 	
 	if (keyState->IsHold(VK_A))
 		Run();
@@ -408,6 +405,7 @@ void CMario::StartSpecialActions()
 
 	if (keyState->IsReleased(VK_A))
 		Tosh();
+	else if (special_action == ID_ANI_KICK || special_action == ID_ANI_CARRY);
 	else if (keyState->IsHold(VK_DOWN))
 		Sit();
 	else if (keyState->IsPressed(VK_A))
@@ -441,71 +439,71 @@ void CMario::StartNormalActions(DWORD& t)
 	float calculated_ay = GAME_GRAVITY;
 	int new_nx = 0;
 
+	//go left or right
 	if (keyState->IsHold(VK_LEFT))
 	{
-		if (vx > 0)
+		if (vx <= 0)
 		{
-			float temp_ax = min(MARIO_BRAKE_AX, fabs(vx / t));
-			calculated_ax += -temp_ax;
+			calculated_ax += -ax;
 		}
 		else
 		{		
-			calculated_ax += -ax;
+			float temp_ax = min(MARIO_BRAKE_AX, fabs(vx / t));
+			calculated_ax += -temp_ax;
 		}
 
 		new_nx += DIRECTION_LEFT;
 	}
 	if (keyState->IsHold(VK_RIGHT))
 	{
-		if (vx < 0)
+		if (vx >= 0)
+		{
+			calculated_ax += ax;
+		}
+		else
 		{
 			float temp_ax = min(MARIO_BRAKE_AX, fabs(vx / t));
 			calculated_ax += temp_ax;
 		}
-		else
-		{
-			calculated_ax += ax;
-		}
 
 		new_nx += DIRECTION_RIGHT;
 	}
-	if (calculated_ax == 0.0f)
+	
+	//jumping
+	if (isOnGround && keyState->IsPressed(VK_S))
+	{
+		ny = DIRECTION_UP;
+		vy = ny * MARIO_START_JUMP_VY;
+		calculated_ay = 0.0f;
+
+		isOnGround = false;
+		is_jumping = true;
+	}
+	else if (is_jumping && fabs(y - on_ground_y) < MARIO_MAX_JUMP_HEIGHT && keyState->IsHold(VK_S))
+	{
+		if (fabs(vy) <= MARIO_SMALL_JUMPING_MAX_VY)
+			calculated_ay = 0.0f;
+		//else calculated_ay = GAME_GRAVITY;
+	}
+	else
+	{
+		//calculated_ay = GAME_GRAVITY;
+		ny = DIRECTION_DOWN;
+
+		is_jumping = false;
+	}
+
+	//decelerate
+	if (new_nx == 0)
 	{
 		calculated_ax = min(MARIO_DECELERATE_AX, fabs(vx) / t);
 
 		if (vx > 0)
-		{
 			calculated_ax = -calculated_ax;
-		}
 	}
+	else this->nx = new_nx;
 
-	//Jump
-	if (keyState->IsPressed(VK_S) && !is_falling)
-	{
-		vy = MARIO_START_JUMP_VY;
-		ny = DIRECTION_UP;
-	}
-	else if (keyState->IsReleased(VK_S) || 
-			 fabs(y - on_ground_position) >= MARIO_MAX_JUMP_HEIGHT || 
-			 vy > 0.0f)
-	{
-		is_falling = true; //Lock
-		ny = DIRECTION_DOWN;
-	}
-	else if (keyState->IsHold(VK_S) && !is_falling)
-	{
-		if(fabs(vy) <= MARIO_SMALL_JUMPING_MAX_VY)
-			calculated_ay = 0.0f;
-
-		ny = DIRECTION_UP;
-	}
-	//------------------------------------------
-
-	if (new_nx)
-	{
-		this->nx = new_nx;
-	}
-
+	//
 	Accelerate(calculated_ax, calculated_ay, t);
 }
 
@@ -538,7 +536,6 @@ void CMario::Sit()
 
 	y += (bbox_height - MARIO_BIG_SITTING_BBOX_HEIGHT) / 2.0f;
 	bbox_height = MARIO_BIG_SITTING_BBOX_HEIGHT;
-	nz = 0;
 }
 
 void CMario::Sitting()
@@ -554,7 +551,6 @@ void CMario::Stand()
 	float stand_bbox = (life < MARIO_LEVEL_BIG) ? MARIO_SMALL_BBOX_HEIGHT : MARIO_BIG_BBOX_HEIGHT;
 	y += (bbox_height - stand_bbox) / 2.0f;
 	bbox_height = stand_bbox;
-	nz = 0;
 }
 
 void CMario::Run()
@@ -610,7 +606,7 @@ void CMario::Attacking(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
 	//Switching phase
 	attacking_time += dt;
-	ToAttackPhase(attacking_time / MARIO_ATTACK_PHASE_TIME);
+	ChangeAttackPhase(attacking_time / MARIO_ATTACK_PHASE_TIME);
 	
 	//Tail's position should be calculated after processing attacking phase to synchronize with the animation
 	if (special_action == ID_ANI_ATTACK) // if attack hasn't ended
@@ -622,7 +618,7 @@ void CMario::Attacking(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	}
 }
 
-void CMario::ToAttackPhase(int phase)
+void CMario::ChangeAttackPhase(int phase)
 {
 	if (this->attack_phase == phase)
 	{
@@ -663,6 +659,7 @@ void CMario::UntriggerTail()
 {
 	delete tail;
 	tail = nullptr;
+	nz = 0;
 }
 
 void CMario::BackJump()
@@ -751,7 +748,7 @@ void CMario::Invulnerable(DWORD dt)
 void CMario::GainingPower(DWORD dt)
 {
 	changing_state_time += dt;
-	if (changing_state_time > action_duration)
+	if (changing_state_time >= action_duration)
 	{
 		SetLife(life + 1.0f);
 		SetState(STATE_LIVE);
@@ -777,22 +774,60 @@ void CMario::SetLife(float l)
 
 	life = l;
 
-	if (l > MARIO_LEVEL_SMALL)
+	if (l == MARIO_LEVEL_RACOON)
 	{
-		y += (bbox_height - MARIO_BIG_BBOX_HEIGHT) / 2.0f - 1.0f;
-		bbox_height = MARIO_BIG_BBOX_HEIGHT;
-		bbox_width = MARIO_BIG_BBOX_WIDTH;
+		ToRacoonLevel();
+	}
+	else if (l == MARIO_LEVEL_BIG)
+	{		
+		ToBigLevel();
 	}
 	else if (l == MARIO_LEVEL_SMALL)
 	{
-		y += (bbox_height - MARIO_SMALL_BBOX_HEIGHT) / 2.0f;
-		bbox_height = MARIO_SMALL_BBOX_HEIGHT;
-		bbox_width = MARIO_SMALL_BBOX_WIDTH;
+		ToSmallLevel();
 	}
 	else
 	{
 		SetState(STATE_DIE);
 	}
+}
+
+void CMario::ToSmallLevel()
+{
+	//Change position and bbox
+	y += (bbox_height - MARIO_SMALL_BBOX_HEIGHT) / 2.0f;
+	bbox_height = MARIO_SMALL_BBOX_HEIGHT;
+	bbox_width = MARIO_SMALL_BBOX_WIDTH;
+
+	//Cancel unexisted action in previous state
+	switch (special_action)
+	{
+	case ID_ANI_ATTACK:
+	case ID_ANI_SIT:
+		SetSpecialAction(ID_ANI_IDLE);
+	}
+}
+
+void CMario::ToBigLevel()
+{
+	//Change position and bbox
+	y += (bbox_height - MARIO_BIG_BBOX_HEIGHT) / 2.0f - 1.0f;
+	bbox_height = MARIO_BIG_BBOX_HEIGHT;
+	bbox_width = MARIO_BIG_BBOX_WIDTH;
+
+	//Cancel unexisted action in previous state
+	switch (special_action)
+	{
+	case ID_ANI_ATTACK:
+		SetSpecialAction(ID_ANI_IDLE);
+	}
+}
+
+void CMario::ToRacoonLevel()
+{
+	y += (bbox_height - MARIO_BIG_BBOX_HEIGHT) / 2.0f - 1.0f;
+	bbox_height = MARIO_BIG_BBOX_HEIGHT;
+	bbox_width = MARIO_BIG_BBOX_WIDTH;
 }
 
 void CMario::ToGainingPowerState()
@@ -805,9 +840,11 @@ void CMario::ToGainingPowerState()
 	}
 	else if (life == MARIO_LEVEL_BIG)
 	{
-		nz = DIRECTION_FRONT;
+		nz = DIRECTION_FRONT; //for changing level up animation
 		action_duration = MARIO_RACOON_TRANSFORM_TIME;
 	}
+
+	this->state = MARIO_STATE_GAIN_POWER;
 }
 
 void CMario::ToLosingPowerState()
@@ -816,9 +853,8 @@ void CMario::ToLosingPowerState()
 
 	if (life == MARIO_LEVEL_RACOON)
 	{
-		nz = DIRECTION_FRONT;
+		nz = DIRECTION_FRONT; //for changing level down animation
 		action_duration = MARIO_RACOON_TRANSFORM_TIME;
-		LoseRacoonPower();
 	}
 	else if (life == MARIO_LEVEL_BIG)
 	{
@@ -829,6 +865,24 @@ void CMario::ToLosingPowerState()
 		//SetLevel(life - 1.0f);
 		Die();
 	}
+
+	this->state = MARIO_STATE_LOSE_POWER;
+}
+
+void CMario::ToLivingState()
+{
+	//Clear previous state
+	switch (state)
+	{
+	case MARIO_STATE_GAIN_POWER:
+	case MARIO_STATE_LOSE_POWER:
+		nz = 0;
+		break;
+	case STATE_DIE:
+		break;
+	}
+
+	this->state = STATE_LIVE;
 }
 
 void CMario::ToDyingState()
@@ -840,22 +894,18 @@ void CMario::ToDyingState()
 	vx = 0.0f;
 	vy = ny * ATTACK_BOOM_VY;
 
-	changing_state_time = 0;
-}
+	ax = 0.0f;
+	ay = GAME_GRAVITY;
 
-void CMario::LoseRacoonPower()
-{
-	UntriggerTail();
+	changing_state_time = 0;
+
+	this->state = STATE_DIE;
 }
 
 void CMario::Dying(DWORD dt)
 {
-	changing_state_time += dt;
 	if (changing_state_time >= MARIO_DYING_TIME)
-	{
-		Accelerate(0.0f, GAME_GRAVITY, dt);
 		Move(dt);
-	}
 }
 
 void CMario::Fly()
@@ -891,8 +941,6 @@ void CMario::SetState(int state)
 		return;
 	}
 
-	this->state = state;
-
 	switch (state)
 	{
 		case MARIO_STATE_GAIN_POWER:
@@ -902,11 +950,10 @@ void CMario::SetState(int state)
 			ToLosingPowerState();
 			break;
 		case STATE_LIVE:
-			nz = 0;
+			ToLivingState();
 			break;
 		case STATE_DIE:
 			ToDyingState();			
 			break;
 	}
 }
-

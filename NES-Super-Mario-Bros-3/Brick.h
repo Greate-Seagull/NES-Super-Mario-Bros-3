@@ -13,6 +13,4 @@
 class CBrick : public CBlock {
 public:
 	CBrick(float x, float y);
-	//GameObject co ham update roi! "virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects = NULL) {};"
-	//GameObject co ham render roi! "virtual void Render();"
 };

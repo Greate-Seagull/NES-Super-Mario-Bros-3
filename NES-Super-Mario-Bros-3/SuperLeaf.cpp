@@ -5,51 +5,31 @@
 CSuperLeaf::CSuperLeaf(float x, float y):
 	CHelpfulObject(x, y)
 {
-	bbox_height = LEAF_BBOX_HEIGHT;
-	bbox_width = LEAF_BBOX_WIDTH;
+	SetBoundingBox(LEAF_BBOX_WIDTH, LEAF_BBOX_HEIGHT);
 
 	effect = EFFECT_RACOONIZE;
 
 	SetState(LEAF_STATE_SLEEP);
 }
 
-void CSuperLeaf::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
-{
-	dt = 16;
-	InPhase(dt, coObjects);
-}
-
-void CSuperLeaf::InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+void CSuperLeaf::Prepare(DWORD dt)
 {
 	switch (state)
 	{
-		case LEAF_STATE_SLEEP:
-			//Do nothing just sleep
-			break;
-		case LEAF_STATE_BLOWN:
-			InPhaseBlownState(dt, coObjects);
-			break;
-		case LEAF_STATE_FALL:
-			InPhaseFallingState(dt, coObjects);
-			break;
+	case LEAF_STATE_BLOWN:
+		if (vy > 0) SetState(LEAF_STATE_FALL);
+		CMovableObject::Prepare(dt);
+		break;
+	case LEAF_STATE_FALL:
+		ChangeDirection();
+		Oscillate(dt);
+		break;
 	}
 }
 
-void CSuperLeaf::InPhaseBlownState(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+void CSuperLeaf::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
-	Accelerate(0.0f, GAME_GRAVITY, dt);
-	Move(dt);
-
-	if (vy > 0)
-	{
-		SetState(LEAF_STATE_FALL);
-	}
-}
-
-void CSuperLeaf::InPhaseFallingState(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
-{
-	Oscillate(dt);
-	ChangeDirection();
+	Move(dt);	
 }
 
 void CSuperLeaf::SetState(int state)
@@ -151,16 +131,16 @@ void CSuperLeaf::Render()
 
 void CSuperLeaf::Oscillate(DWORD dt)
 {
-	float old_x = x, old_y = y;
+	float new_x = x, new_y = y;
 
 	//Oscillate
 	time += dt;
-	x = origin_x - LEAF_X_AMPLITUDE / LEAF_X_FREQUENCY * cos(LEAF_X_FREQUENCY * time + x_oscillate_phase) + LEAF_X_AMPLITUDE / LEAF_X_FREQUENCY; //use integral of harmonic oscillation eqation instead of harmonic oscillation eqation for more accurate position
-	y = origin_y - LEAF_Y_AMPLITUDE / LEAF_Y_FREQUENCY * sin(LEAF_Y_FREQUENCY * time + y_oscillate_phase) + LEAF_Y_AMPLITUDE / 3 * time + LEAF_Y_AMPLITUDE / LEAF_Y_FREQUENCY;
+	new_x = origin_x - LEAF_X_AMPLITUDE / LEAF_X_FREQUENCY * cos(LEAF_X_FREQUENCY * time + x_oscillate_phase) + LEAF_X_AMPLITUDE / LEAF_X_FREQUENCY; //use integral of harmonic oscillation eqation instead of harmonic oscillation eqation for more accurate position
+	new_y = origin_y - LEAF_Y_AMPLITUDE / LEAF_Y_FREQUENCY * sin(LEAF_Y_FREQUENCY * time + y_oscillate_phase) + LEAF_Y_AMPLITUDE / 3 * time + LEAF_Y_AMPLITUDE / LEAF_Y_FREQUENCY;
 
 	//Update velocity
-	vx = x - old_x;
-	vy = y - old_y;
+	vx = (new_x - x) / dt;
+	vy = (new_y - y) / dt;
 }
 
 void CSuperLeaf::ChangeDirection()

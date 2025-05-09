@@ -1,7 +1,9 @@
 #include "Pipe.h"
 
+#include "VenusFireTrap.h"
+
+#include "PlayScene.h"
 #include "Textures.h"
-#include "Game.h"
 
 void CPipe::Render()
 {
@@ -90,8 +92,47 @@ void CPipe::GetBoundingBox(float& l, float& t, float& r, float& b)
 		b = t + height * cell_height;
 	}*/
 
-	l = x - cell_width / 2.0f;
-	t = y + cell_height / 2.0f  - bbox_height;
-	r = l + bbox_width;
-	b = t + bbox_height;
+	l = x - cell_width / 2.0f + 1.0f;
+	t = y + cell_height / 2.0f - bbox_height;
+	r = l + bbox_width - 1.0f;
+	b = t + bbox_height - 1.0f;
+}
+
+void CPipe::TakeItem()
+{
+	if (item)
+		return;
+
+	switch (itemID)
+	{
+	case OBJECT_TYPE_VENUS_FIRE_TRAP:
+		item = new CVenusFireTrap(x, y);
+		UseDefaultItemPosition();
+		break;
+	default:
+		item = nullptr;
+		break;
+	}
+}
+
+void CPipe::UseDefaultItemPosition()
+{
+	float l, t, r, b;
+	this->GetBoundingBox(l, t, r, b);
+
+	float item_x = l + bbox_width / 2.0f;
+	float item_y = t + item->GetBBoxHeight() / 2.0f;
+
+	PutItem(item_x, item_y);
+}
+
+void CPipe::TriggerItem()
+{
+	if (item)
+	{
+		LPPLAYSCENE ps = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+		ps->Insert(item, ps->Find(this));
+
+		item->Reaction(this, ACTION_CARRY);
+	}
 }

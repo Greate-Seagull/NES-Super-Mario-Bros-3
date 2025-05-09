@@ -44,7 +44,8 @@ public:
 
 	static bool IsGameObjectDeleted(const LPGAMEOBJECT& o);
 
-	void Add(LPGAMEOBJECT newObj);
+	void Insert(LPGAMEOBJECT newObj, int index);
+	int Find(LPGAMEOBJECT obj);
 	bool IsInRange(LPGAMEOBJECT obj, float start_x, float end_x, float start_y, float end_y);
 	vector<LPGAMEOBJECT> FilterByPlayer(float range = COLLISION_RANGE);
 	vector<LPGAMEOBJECT> FilterByCam();

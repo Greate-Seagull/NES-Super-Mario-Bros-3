@@ -7,8 +7,7 @@
 CSuperMushroom::CSuperMushroom(float x, float y):
 	CHelpfulObject(x, y)
 {
-	bbox_height = MUSHROOM_BBOX_HEIGHT;
-	bbox_width = MUSHROOM_BBOX_WIDTH;
+	SetBoundingBox(MUSHROOM_BBOX_WIDTH, MUSHROOM_BBOX_HEIGHT);
 
 	effect = EFFECT_BIGGER;
 	
@@ -17,37 +16,25 @@ CSuperMushroom::CSuperMushroom(float x, float y):
 	SetState(MUSHROOM_STATE_SLEEP);
 }
 
-void CSuperMushroom::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
-{
-	dt = 16;
-	InPhase(dt, coObjects);
-}
-
-void CSuperMushroom::InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+void CSuperMushroom::Prepare(DWORD dt)
 {
 	switch (state)
 	{
-		case MUSHROOM_STATE_SLEEP:
-			break;
-		case MUSHROOM_STATE_WAKEUP:
-			WakingUp(dt);
-			break;
-		case MUSHROOM_STATE_EMERGE:
-			if (abs(y - start_y) < bbox_height) //emerging
-			{
-				Move(dt);
-			}
-			else //prepare to run
-			{
-				SetState(MUSHROOM_STATE_RUN);
-			}
-			break;
-		case MUSHROOM_STATE_RUN:
-			Accelerate(0.0f, GAME_GRAVITY, dt);
-			CCollision::GetInstance()->Process(this, dt, coObjects);
-			Move(dt);
-			break;
+	case MUSHROOM_STATE_WAKEUP:
+		WakeUp(dt);
+		break;
+	case MUSHROOM_STATE_EMERGE:
+		if (abs(y - start_y) > bbox_height) SetState(MUSHROOM_STATE_RUN);
+		break;
+	case MUSHROOM_STATE_RUN:
+		CMovableObject::Prepare(dt);
+		break;
 	}
+}
+
+void CSuperMushroom::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+{
+	Move(dt);
 }
 
 void CSuperMushroom::SetState(int state)
@@ -149,8 +136,6 @@ void CSuperMushroom::OnCollisionWithMario(LPCOLLISIONEVENT e)
 
 void CSuperMushroom::Reaction(CGameObject* by_another, int action)
 {
-	LookAwayFromMario();
-
 	switch (state)
 	{		
 		case MUSHROOM_STATE_SLEEP:
@@ -164,7 +149,8 @@ void CSuperMushroom::Reaction(CGameObject* by_another, int action)
 }
 
 void CSuperMushroom::ReactionInSleepingState(CGameObject* by_another, int action)
-{
+{	
+	LookAwayFromMario();
 	SetState(MUSHROOM_STATE_WAKEUP);
 }
 
@@ -179,7 +165,8 @@ void CSuperMushroom::ReactionInRunningState(CGameObject* by_another, int action)
 
 void CSuperMushroom::Render()
 {
-	CAnimations::GetInstance()->Get(aniID)->Render(x, y);
+	if(state > MUSHROOM_STATE_WAKEUP)
+		CAnimations::GetInstance()->Get(aniID)->Render(x, y);
 	//RenderBoundingBox();
 }
 
@@ -198,7 +185,7 @@ void CSuperMushroom::LookAwayFromMario()
 	nx = -nx;
 }
 
-void CSuperMushroom::WakingUp(DWORD dt)
+void CSuperMushroom::WakeUp(DWORD dt)
 {
 	wakeup_time += dt;
 	if (wakeup_time >= MUSHROOM_WAKEUP_TIME)

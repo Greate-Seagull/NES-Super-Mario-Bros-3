@@ -26,7 +26,7 @@ public:
 
 		aniID = ID_ANI_COIN;
 
-		this->SetBoundingBox(COIN_BBOX_WIDTH, COIN_BBOX_HEIGHT);
+		SetBoundingBox(COIN_BBOX_WIDTH, COIN_BBOX_HEIGHT);
 	}
 	/*CCoin(float x, float y, bool isToggled) : CMovableObject(x, y)
 	{
@@ -39,6 +39,8 @@ public:
 		
 		this->SetBoundingBox(COIN_BBOX_WIDTH, COIN_BBOX_HEIGHT);
 	}*/
+
+	void Prepare(DWORD dt);
 
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 

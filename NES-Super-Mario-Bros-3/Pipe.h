@@ -28,8 +28,8 @@ public:
 		float cell_width, float cell_height, float height,
 		int faceDirection, int warpDirection,
 		int sprite_id_begin_begin, int sprite_id_end_begin,
-		int sprite_id_begin_end, int sprite_id_end_end)
-		: CBlock(x, y)
+		int sprite_id_begin_end, int sprite_id_end_end, int itemID)
+		: CBlock(x, y, itemID)
 	{
 		this->cell_width = cell_width;
 		this->cell_height = cell_height;
@@ -43,10 +43,16 @@ public:
 
 		this->bbox_height = cell_height * height;
 		this->bbox_width = PIPE_BBOX_WIDTH;
+
+		TakeItem();
+		TriggerItem();
 	}
 	void Render();
 	void RenderBoundingBox();
 
-	void Update(DWORD dt) {} //GameObject co ham update roi! "virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects = NULL) {};"
 	void GetBoundingBox(float& left, float& top, float& right, float& bottom);
+
+	void TakeItem();
+	void UseDefaultItemPosition();
+	void TriggerItem();
 };

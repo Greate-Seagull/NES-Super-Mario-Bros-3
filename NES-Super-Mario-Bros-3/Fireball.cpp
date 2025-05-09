@@ -1,6 +1,5 @@
 #include "Fireball.h"
 #include "Mario.h"
-#include "debug.h"
 
 CFireball::CFireball(float x, float y, int shoot_range, int nx, int ny) :
 	CHarmfulObject(x, y)
@@ -56,19 +55,11 @@ void CFireball::ApplyDirection(int nx, int ny)
 	vy *= ny;
 }
 
-void CFireball::Attack(CGameObject* another)
-{
-	if (CCreature* creature = dynamic_cast<CCreature*>(another))
-	{
-		creature->Reaction(this, ACTION_ATTACK_LEVEL_1);
-	}
-}
-
 void CFireball::Reaction(CGameObject* by_another, int action)
 {
 	AgainstControl();
 	if(CMario* mario = dynamic_cast<CMario*>(by_another))
-		Attack(mario);
+		HigherAttack(mario);
 }
 
 int CFireball::IsCollidable()

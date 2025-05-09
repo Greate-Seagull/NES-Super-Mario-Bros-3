@@ -43,18 +43,18 @@ protected:
 	void SetBoundingBox(float width, float height);
 
 public: 
-	void SetPosition(float x, float y) { this->x = x, this->y = y; }
-	void GetPosition(float &x, float &y) { x = this->x; y = this->y; }
-	float GetX() { return x; }
-	float GetY() { return y; }
+	virtual void SetPosition(float x, float y) { this->x = x, this->y = y; }
+	virtual void GetPosition(float &x, float &y) { x = this->x; y = this->y; }
+	virtual float GetX() { return x; }
+	virtual float GetY() { return y; }
 
 	virtual void GetSpeed(float &vx, float &vy) { vx = 0.0f; vy = 0.0f; }
 
-	int GetState() { return this->state; }
+	virtual int GetState() { return this->state; }
 	virtual void Delete() { isDeleted = true;  }
 	bool IsDeleted() { return isDeleted; }
 
-	void RenderBoundingBox();
+	virtual void RenderBoundingBox();
 
 	CGameObject();
 	CGameObject(float x, float y) :CGameObject() { this->x = x; this->y = y; }
@@ -64,22 +64,23 @@ public:
 	virtual float GetBBoxHeight() { return bbox_height; }
 	virtual float GetBBoxWidth() { return bbox_width; }
 
-	virtual void Prepare(DWORD dt) {};
+	virtual void Prepare(DWORD dt) { }
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects = NULL) {};
 	virtual void Render();
 	virtual void SetState(int state);
 	virtual void ClearState() { state = -100; }
 	
-	//When an object is updated, collision scanning will not detect it
-	virtual int IsUpdated() { return 0; }
-
 	//
 	// Collision ON or OFF ? This can change depending on object's state. For example: die
 	//
 	virtual int IsCollidable() { return 0; };
+	virtual int IsMoving();
+	virtual int IsLinkedTo(CGameObject* obj) { return 0; } //For skip collision with specific object
 
 	// When no collision has been detected (triggered by CCollision::Process)
 	virtual void OnNoCollision(DWORD dt) {};
+	virtual void OnNoCollisionWithBlocking(DWORD dt) {};
+	virtual void OnNoCollisionWithNonBlocking(DWORD dt) {};
 
 	// When collision with an object has been detected (triggered by CCollision::Process)
 	//Active
@@ -88,7 +89,8 @@ public:
 	virtual void Reaction(CGameObject* by_another, int action) {};
 	
 	// Is this object blocking other object? If YES, collision framework will automatically push the other object
-	virtual int IsBlocking() { return 1; }
+	virtual int IsBlocking() { return 0; }
+	virtual int IsDirectionalBlocking() { return 0; }
 
 	// Does this object collide with other object at certain direction ( like ColorBox )
 	virtual int IsDirectionColliable(float nx, float ny) { return 1; }

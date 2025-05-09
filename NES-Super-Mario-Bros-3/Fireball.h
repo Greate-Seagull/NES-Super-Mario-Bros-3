@@ -1,6 +1,7 @@
 #pragma once
 
 #include "HarmfulObject.h"
+#include "debug.h"
 
 #define FIREBALL_BBOX_HEIGHT 8.0f
 #define FIREBALL_BBOX_WIDTH 8.0f
@@ -21,13 +22,12 @@ class CFireball : public CHarmfulObject
 public:
 	CFireball(float x, float y, int shoot_range = FIREBALL_RANGE_DISARM, int nx = 1, int ny = 1);
 
+	void Prepare(DWORD dt) { };
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 	void Render();
 
 	virtual void ApplyRange(int range);
 	virtual void ApplyDirection(int nx, int ny);
-
-	virtual void Attack(CGameObject* another);
 
 	//virtual void OnCollisionWith(LPCOLLISIONEVENT e);
 	//virtual void OnCollisionWithMario(LPCOLLISIONEVENT e);
