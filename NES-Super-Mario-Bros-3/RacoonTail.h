@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Creature.h"
-#include "Block.h";
+#include "Block.h"
 
 #define RACOON_TAIL_BBOX_WIDTH 9.0f
 #define RACOON_TAIL_BBOX_HEIGHT 5.0f

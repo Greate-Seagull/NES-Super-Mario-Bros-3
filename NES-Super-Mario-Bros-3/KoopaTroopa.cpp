@@ -32,7 +32,7 @@ void CKoopaTroopa::Prepare(DWORD dt)
 		break;
 	}
 
-	/*DebugOutTitle(L"%f, %f", x, y);*/
+	//DebugOutTitle(L"%f, %f", x, y);
 }
 
 void CKoopaTroopa::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
@@ -75,17 +75,21 @@ void CKoopaTroopa::Poping(DWORD dt)
 }
 
 void CKoopaTroopa::OnNoCollisionWithBlocking(DWORD dt)
-{
-	isOnGround = false;
-
+{	
 	switch (state)
 	{
 	case STATE_LIVE:
-		Patrol();
-		y = on_ground_y;
-		vy = 0.0f;
+		if (isOnGround)
+		{
+			Patrol();
+			x = on_ground_x;
+			y = on_ground_y;	
+			vy = 0.0f;
+		}
 		break;
 	}
+
+	isOnGround = false;
 }
 
 void CKoopaTroopa::OnCollisionWith(LPCOLLISIONEVENT e)
@@ -107,6 +111,7 @@ void CKoopaTroopa::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 		if (e->ny < 0) 
 		{
 			isOnGround = true;
+			on_ground_x = x;
 			on_ground_y = y;
 		}
 
@@ -134,6 +139,7 @@ void CKoopaTroopa::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 		if (e->ny < 0)
 		{
 			isOnGround = true;
+			on_ground_x = x;
 			on_ground_y = y;
 		}
 	}
@@ -395,7 +401,7 @@ void CKoopaTroopa::ReactionToAttack2(CGameObject* by_another)
 
 void CKoopaTroopa::ReactionToAttack3(CGameObject* by_another)
 {
-	/*switch (state)
+	switch (state)
 	{
 	case STATE_LIVE:
 		UnderAttack(by_another);
@@ -411,10 +417,7 @@ void CKoopaTroopa::ReactionToAttack3(CGameObject* by_another)
 		UnderDestructrion(by_another);
 		SetState(KOOPA_STATE_HIDE);
 		break;
-	}*/
-
-	UnderDestructrion(by_another);
-	Die();
+	}
 }
 
 void CKoopaTroopa::UnderAttack(CGameObject* by_another)

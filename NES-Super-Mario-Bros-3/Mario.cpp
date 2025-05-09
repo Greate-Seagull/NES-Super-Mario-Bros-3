@@ -155,10 +155,8 @@ void CMario::OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e)
 		CHarmfulObject::Attack(enemy);
 		BackJump();
 	}
-	else if (keyState->IsHold(VK_A)) //case collision on the left or right or below
-		Carry(enemy);
-	else
-		Touch(enemy);
+	else if (keyState->IsHold(VK_A) && Grab(enemy)); //case collision on the left or right or below
+	else Touch(enemy);
 }
 
 void CMario::OnCollisionWithCoin(LPCOLLISIONEVENT e)
@@ -388,10 +386,10 @@ void CMario::StartSpecialActions()
 {
 	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
 
-	/*if (keyState->IsPressed(VK_UP))
+	if (keyState->IsPressed(VK_UP))
 		SetLife(life + 1.0f);
 	else if (keyState->IsPressed(VK_DOWN))
-		SetLife(life - 1.0f);*/
+		SetLife(life - 1.0f);
 
 	if (keyState->IsHold(VK_UP))
 		Fly();
@@ -529,13 +527,15 @@ void CMario::UnderAttack(CGameObject* by_another)
 	SetState(MARIO_STATE_LOSE_POWER);
 }
 
-void CMario::Sit()
+bool CMario::Sit()
 {
 	if (SetSpecialAction(ID_ANI_SIT) == false)
-		return;
+		return false;
 
 	y += (bbox_height - MARIO_BIG_SITTING_BBOX_HEIGHT) / 2.0f;
 	bbox_height = MARIO_BIG_SITTING_BBOX_HEIGHT;
+
+	return true;
 }
 
 void CMario::Sitting()
@@ -546,17 +546,21 @@ void CMario::Sitting()
 		SetSpecialAction(ID_ANI_IDLE);
 }
 
-void CMario::Stand()
+bool CMario::Stand()
 {
 	float stand_bbox = (life < MARIO_LEVEL_BIG) ? MARIO_SMALL_BBOX_HEIGHT : MARIO_BIG_BBOX_HEIGHT;
 	y += (bbox_height - stand_bbox) / 2.0f;
 	bbox_height = stand_bbox;
+
+	return true;
 }
 
-void CMario::Run()
+bool CMario::Run()
 {
 	ax = MARIO_SMALL_RUNNING_AX;
 	maxVx = MARIO_SMALL_RUNNING_MAX_VX;
+
+	return true;
 }
 
 void CMario::UpdateMomentum(DWORD dt)
@@ -578,7 +582,7 @@ void CMario::UpdateMomentum(DWORD dt)
 	}
 }
 
-void CMario::Walk()
+bool CMario::Walk()
 {
 	ax = MARIO_SMALL_RUNNING_AX;
 
@@ -589,17 +593,21 @@ void CMario::Walk()
 	else
 	{
 		ax = -MARIO_DECELERATE_AX;
-	}	
+	}
+
+	return true;
 }
 
-void CMario::Attack()
+bool CMario::Attack()
 {
 	if (SetSpecialAction(ID_ANI_ATTACK) == false)
-		return;
+		return false;
 
 	attacking_time = 0;
 	attack_phase = -1;
 	tail = new CRacoonTail(x, y);
+
+	return true;
 }
 
 void CMario::Attacking(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
@@ -672,14 +680,16 @@ void CMario::Jump()
 {
 }
 
-void CMario::Carry(CHarmfulObject* weapon)
+bool CMario::Grab(CHarmfulObject* weapon)
 {
 	if (this->weapon)
-		return;
+		return false;
 
 	SetSpecialAction(ID_ANI_CARRY);
 
 	CCreature::Carry(weapon);
+
+	return true;
 }
 
 void CMario::Carrying()
@@ -702,20 +712,22 @@ void CMario::Carrying()
 	}
 }
 
-void CMario::Tosh()
+bool CMario::Tosh()
 {
 	if (!weapon)
-		return;
+		return false;
 
 	Touch(weapon);
-	Kick();
+	return Kick();
 }
 
-void CMario::Kick()
+bool CMario::Kick()
 {
 	SetSpecialAction(ID_ANI_KICK);
 
 	attacking_time = 0;	
+
+	return true;
 }
 
 void CMario::Kicking(DWORD dt)

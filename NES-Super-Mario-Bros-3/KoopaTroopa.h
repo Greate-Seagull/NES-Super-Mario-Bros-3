@@ -43,6 +43,7 @@ class CKoopaTroopa : public CCreature
 
 	//
 	float on_ground_y;
+	float on_ground_x;
 public:
 	CKoopaTroopa(float x, float y);
 
@@ -54,7 +55,7 @@ public:
 	virtual void Rolling(DWORD dt);
 	virtual void Poping(DWORD dt);
 
-	virtual int IsBlocking() { return state == KOOPA_STATE_HIDE || state == KOOPA_STATE_POP; }
+	//virtual int IsBlocking() { return state == KOOPA_STATE_HIDE || state == KOOPA_STATE_POP; }
 	virtual int IsCollidable() { return state != STATE_DIE; };	
 
 	virtual void OnNoCollisionWithBlocking(DWORD dt);

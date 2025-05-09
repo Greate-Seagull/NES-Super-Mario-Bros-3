@@ -66,13 +66,11 @@ void CVenusFireTrap::Shoot()
 			mag_size -= 1;
 			assault_mode = true;
 			Aim();
-			//return new CFireball(x, y, FIREBALL_RANGE_SHORT, shoot_nx, shoot_ny);
 		}
 		else if (assault_mode && abs(target_dx) <= VENUS_LOOK_MAX_DISTANCE)
 		{
 			mag_size -= 1;
 			Aim();
-			//return new CFireball(x, y, FIREBALL_RANGE_SHORT, shoot_nx, shoot_ny);
 		}
 		else
 		{
@@ -80,7 +78,6 @@ void CVenusFireTrap::Shoot()
 			Unload();
 		}
 	}
-	//return nullptr;
 }
 
 void CVenusFireTrap::LookforMario()

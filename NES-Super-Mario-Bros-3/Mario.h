@@ -81,7 +81,7 @@
 
 //TAIL POSITION
 #define MARIO_RACOON_TAIL_Y_OFFSET 7.0f
-#define MARIO_CARRY_OFFSET_X 10.0f
+#define MARIO_CARRY_OFFSET_X 12.0f
 
 class CMario : public CCreature
 {
@@ -166,16 +166,16 @@ public:
 	void StartSpecialActions();
 	void DoSpecialActions(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 
-	void Sit();
+	bool Sit();
 	void Sitting();
 
-	void Stand();
+	bool Stand();
 
-	void Run();
+	bool Run();
 	void UpdateMomentum(DWORD dt);
-	void Walk();
+	bool Walk();
 
-	void Attack();
+	bool Attack();
 	void Attacking(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 	void ChangeAttackPhase(int phase);
 	void UntriggerTail();
@@ -183,11 +183,11 @@ public:
 	void BackJump();
 	void Jump();
 
-	void Carry(CHarmfulObject* weapon);
+	bool Grab(CHarmfulObject* weapon);
 	void Carrying();
-	void Tosh();
+	bool Tosh();
 
-	void Kick();
+	bool Kick();
 	void Kicking(DWORD dt);
 
 	void StartInvulnerable();

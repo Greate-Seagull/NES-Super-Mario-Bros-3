@@ -28,10 +28,10 @@ void CRacoonTail::OnCollisionWith(LPCOLLISIONEVENT e)
 
 void CRacoonTail::OnCollisionWithCreature(LPCOLLISIONEVENT e)
 {
-	HigherAttack(e->obj);
+	Destroy(e->obj);
 }
 
 void CRacoonTail::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 {
-	HigherAttack(e->obj);
+	Destroy(e->obj);
 }

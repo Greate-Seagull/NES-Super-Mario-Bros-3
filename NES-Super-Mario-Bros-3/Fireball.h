@@ -29,7 +29,7 @@ public:
 	virtual void ApplyRange(int range);
 	virtual void ApplyDirection(int nx, int ny);
 
-	//virtual void OnCollisionWith(LPCOLLISIONEVENT e);
+	//void OnCollisionWith(LPCOLLISIONEVENT e);
 	//virtual void OnCollisionWithMario(LPCOLLISIONEVENT e);
 	void Reaction(CGameObject* by_another, int action);
 

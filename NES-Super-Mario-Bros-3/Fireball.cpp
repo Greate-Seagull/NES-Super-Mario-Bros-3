@@ -55,6 +55,12 @@ void CFireball::ApplyDirection(int nx, int ny)
 	vy *= ny;
 }
 
+//void CFireball::OnCollisionWith(LPCOLLISIONEVENT e)
+//{
+//	if (CMario* mario = dynamic_cast<CMario*>(e->obj))
+//		HigherAttack(mario);
+//}
+
 void CFireball::Reaction(CGameObject* by_another, int action)
 {
 	AgainstControl();
@@ -66,17 +72,3 @@ int CFireball::IsCollidable()
 {
 	return vx || vy;
 }
-
-//void CFireball::OnCollisionWith(LPCOLLISIONEVENT e)
-//{
-//	if (dynamic_cast<CMario*>(e->obj))
-//	{
-//		OnCollisionWithMario(e);
-//	}
-//}
-
-//void CFireball::OnCollisionWithMario(LPCOLLISIONEVENT e)
-//{
-//	CMario* mario = dynamic_cast<CMario*>(e->obj);
-//	MeleeAttack(mario);
-//}
