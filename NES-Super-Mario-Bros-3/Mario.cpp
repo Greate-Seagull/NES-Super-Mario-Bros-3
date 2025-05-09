@@ -388,10 +388,10 @@ void CMario::StartSpecialActions()
 {
 	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
 
-	if (keyState->IsPressed(VK_UP))
+	/*if (keyState->IsPressed(VK_UP))
 		SetLife(life + 1.0f);
 	else if (keyState->IsPressed(VK_DOWN))
-		SetLife(life - 1.0f);
+		SetLife(life - 1.0f);*/
 
 	if (keyState->IsHold(VK_UP))
 		Fly();
@@ -794,33 +794,37 @@ void CMario::SetLife(float l)
 
 void CMario::ToSmallLevel()
 {
-	//Change position and bbox
-	y += (bbox_height - MARIO_SMALL_BBOX_HEIGHT) / 2.0f;
-	bbox_height = MARIO_SMALL_BBOX_HEIGHT;
-	bbox_width = MARIO_SMALL_BBOX_WIDTH;
-
 	//Cancel unexisted action in previous state
 	switch (special_action)
 	{
 	case ID_ANI_ATTACK:
 	case ID_ANI_SIT:
 		SetSpecialAction(ID_ANI_IDLE);
+		break;
 	}
+
+	//Change position and bbox
+	y += (bbox_height - MARIO_SMALL_BBOX_HEIGHT) / 2.0f;
+	bbox_height = MARIO_SMALL_BBOX_HEIGHT;
+	bbox_width = MARIO_SMALL_BBOX_WIDTH;
 }
 
 void CMario::ToBigLevel()
 {
-	//Change position and bbox
-	y += (bbox_height - MARIO_BIG_BBOX_HEIGHT) / 2.0f - 1.0f;
-	bbox_height = MARIO_BIG_BBOX_HEIGHT;
-	bbox_width = MARIO_BIG_BBOX_WIDTH;
-
 	//Cancel unexisted action in previous state
 	switch (special_action)
 	{
 	case ID_ANI_ATTACK:
 		SetSpecialAction(ID_ANI_IDLE);
+		break;
+	case ID_ANI_SIT:
+		return;
 	}
+
+	//Change position and bbox
+	y += (bbox_height - MARIO_BIG_BBOX_HEIGHT) / 2.0f - 1.0f;
+	bbox_height = MARIO_BIG_BBOX_HEIGHT;
+	bbox_width = MARIO_BIG_BBOX_WIDTH;
 }
 
 void CMario::ToRacoonLevel()
@@ -832,6 +836,8 @@ void CMario::ToRacoonLevel()
 
 void CMario::ToGainingPowerState()
 {
+	this->state = MARIO_STATE_GAIN_POWER;
+
 	changing_state_time = 0;
 
 	if (life == MARIO_LEVEL_SMALL)
@@ -843,12 +849,12 @@ void CMario::ToGainingPowerState()
 		nz = DIRECTION_FRONT; //for changing level up animation
 		action_duration = MARIO_RACOON_TRANSFORM_TIME;
 	}
-
-	this->state = MARIO_STATE_GAIN_POWER;
 }
 
 void CMario::ToLosingPowerState()
 {
+	this->state = MARIO_STATE_LOSE_POWER;
+
 	changing_state_time = 0;
 
 	if (life == MARIO_LEVEL_RACOON)
@@ -864,9 +870,7 @@ void CMario::ToLosingPowerState()
 	{
 		//SetLevel(life - 1.0f);
 		Die();
-	}
-
-	this->state = MARIO_STATE_LOSE_POWER;
+	}	
 }
 
 void CMario::ToLivingState()
@@ -887,6 +891,8 @@ void CMario::ToLivingState()
 
 void CMario::ToDyingState()
 {
+	this->state = STATE_DIE;
+
 	nx = 0;
 	ny = DIRECTION_UP;
 	nz = 0;
@@ -898,8 +904,6 @@ void CMario::ToDyingState()
 	ay = GAME_GRAVITY;
 
 	changing_state_time = 0;
-
-	this->state = STATE_DIE;
 }
 
 void CMario::Dying(DWORD dt)

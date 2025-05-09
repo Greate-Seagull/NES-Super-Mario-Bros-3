@@ -22,9 +22,16 @@ void CRacoonTail::OnCollisionWith(LPCOLLISIONEVENT e)
 {
 	if (dynamic_cast<CCreature*>(e->obj))
 		OnCollisionWithCreature(e);
+	else if (dynamic_cast<CBlock*>(e->obj))
+		OnCollisionWithBlock(e);
 }
 
 void CRacoonTail::OnCollisionWithCreature(LPCOLLISIONEVENT e)
 {
-	Destroy(e->obj);
+	HigherAttack(e->obj);
+}
+
+void CRacoonTail::OnCollisionWithBlock(LPCOLLISIONEVENT e)
+{
+	HigherAttack(e->obj);
 }

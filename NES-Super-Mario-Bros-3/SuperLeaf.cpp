@@ -87,6 +87,15 @@ void CSuperLeaf::ToStateFalling()
 	ChangeDirection();
 }
 
+void CSuperLeaf::OnCollisionWith(LPCOLLISIONEVENT e)
+{
+	if (CMario* mario = dynamic_cast<CMario*>(e->obj))
+	{
+		LaunchEffect(mario);
+		SetState(STATE_DIE);
+	}
+}
+
 void CSuperLeaf::Reaction(CGameObject* by_another, int action)
 {
 	switch (state)

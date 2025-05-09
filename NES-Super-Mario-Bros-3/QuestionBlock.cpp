@@ -44,12 +44,13 @@ void CQuestionBlock::Reaction(CGameObject* by_another, int action)
 
 	switch (action)
 	{
-		case ACTION_ATTACK_LEVEL_3:
-			SetState(STATE_DIE);
-			break;
-		case ACTION_TOUCH:
-			SetState(QUESTION_BLOCK_STATE_TOGGLE);
-			break;
+	case ACTION_ATTACK_LEVEL_2:		
+	case ACTION_ATTACK_LEVEL_3:
+		SetState(STATE_DIE);
+		break;
+	case ACTION_TOUCH:
+		SetState(QUESTION_BLOCK_STATE_TOGGLE);
+		break;
 	}	
 }
 

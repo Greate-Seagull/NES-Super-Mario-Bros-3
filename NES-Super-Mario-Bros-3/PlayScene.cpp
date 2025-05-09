@@ -417,6 +417,9 @@ void CPlayScene::Update(DWORD dt)
 	// skip the rest if scene was already unloaded (Mario::Update might trigger PlayScene::Unload)
 	if (player == NULL) return;
 
+	CCollision* collisionProcessor = CCollision::GetInstance();
+	CCollisionTracker* collisionTracker = collisionProcessor->GetTracker();
+
 	vector<LPGAMEOBJECT> nearbyObjects = FilterByPlayer();
 
 	for (auto& obj : nearbyObjects)
@@ -444,19 +447,21 @@ void CPlayScene::Update(DWORD dt)
 				movingColliders.push_back(obj);
 			else if (obj->IsDirectionalBlocking() == false && obj->IsBlocking()) //For overlap
 				staticColliders.push_back(obj);
+
+			collisionTracker->Allocate(obj);
 		}
 	}	
 
 	//solve collision with blocking objects first
 	for (auto& obj : movingColliders) //For moving objects
-		CCollision::GetInstance()->SolveCollisionWithBlocking(obj, dt, &blockingColliders);
+		collisionProcessor->SolveCollisionWithBlocking(obj, dt, &blockingColliders);
 
 	for (auto& obj : staticColliders) //For static objects
-		CCollision::GetInstance()->SolveOverlap(obj, &movingColliders);
+		collisionProcessor->SolveOverlap(obj, &movingColliders);
 
 	//solve collision with non-blocking objects
 	for (auto& obj : movingColliders)
-		CCollision::GetInstance()->SolveCollisionWithNonBlocking(obj, dt, &nonBlockingColliders);
+		collisionProcessor->SolveCollisionWithNonBlocking(obj, dt, &nonBlockingColliders);
 
 	for (auto& obj : nearbyObjects)
 		obj->Update(dt, &nearbyObjects);

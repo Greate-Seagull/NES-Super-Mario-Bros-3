@@ -47,6 +47,8 @@ public:
 	void ToStateBlownUp();
 	void ToStateFalling();
 
+	void OnCollisionWith(LPCOLLISIONEVENT e);
+
 	void Reaction(CGameObject* by_another, int action);
 	void ReactionInSleepingState(CGameObject* by_another, int action);
 	void ReactionInFallingState(CGameObject* by_another, int action);

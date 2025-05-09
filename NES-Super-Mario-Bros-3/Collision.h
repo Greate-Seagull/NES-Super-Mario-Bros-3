@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 #include <vector>
+#include <unordered_map>
 #include <memory>
 #include <algorithm>
 
@@ -44,6 +45,15 @@ struct CCollisionEvent
 	}
 };
 
+class CCollisionTracker
+{
+	unordered_map<LPGAMEOBJECT, unordered_map<LPGAMEOBJECT, bool>> tracker;
+public:
+	void Allocate(LPGAMEOBJECT object);
+	void MarkAsResolved(LPGAMEOBJECT key, LPGAMEOBJECT collider);
+	bool IsResolved(LPGAMEOBJECT key, LPGAMEOBJECT collider);
+};
+
 class CCollisionEventPool
 {
 	vector<CCollisionEvent> co_events;
@@ -65,6 +75,8 @@ class CCollision
 	static CCollision* __instance;
 
 	CCollisionEventPool eventPool;
+
+	CCollisionTracker coTracker;
 public: 
 	static void SweptAABB(
 		float ml,			// move left 
@@ -126,4 +138,5 @@ public:
 	void SolveOverlap(LPGAMEOBJECT objSrc, vector<LPGAMEOBJECT>* coObjects);
 
 	static CCollision* GetInstance();
+	CCollisionTracker* GetTracker();
 };

@@ -395,7 +395,7 @@ void CKoopaTroopa::ReactionToAttack2(CGameObject* by_another)
 
 void CKoopaTroopa::ReactionToAttack3(CGameObject* by_another)
 {
-	switch (state)
+	/*switch (state)
 	{
 	case STATE_LIVE:
 		UnderAttack(by_another);
@@ -411,7 +411,10 @@ void CKoopaTroopa::ReactionToAttack3(CGameObject* by_another)
 		UnderDestructrion(by_another);
 		SetState(KOOPA_STATE_HIDE);
 		break;
-	}
+	}*/
+
+	UnderDestructrion(by_another);
+	Die();
 }
 
 void CKoopaTroopa::UnderAttack(CGameObject* by_another)

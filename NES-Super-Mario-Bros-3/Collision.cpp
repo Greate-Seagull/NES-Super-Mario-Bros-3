@@ -19,6 +19,11 @@ CCollision* CCollision::GetInstance()
 	return __instance;
 }
 
+CCollisionTracker* CCollision::GetTracker()
+{
+	return &coTracker;
+}
+
 /*
 	SweptAABB 
 */
@@ -432,6 +437,8 @@ void CCollision::Scan(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* objDe
 			continue;
 		if (objSrc->IsLinkedTo(objDests->at(i)))
 			continue;
+		if (coTracker.IsResolved(objSrc, objDests->at(i)))
+			continue;
 
 		SweptAABB(objSrc, dt, objDests->at(i));
 		LPCOLLISIONEVENT e = eventPool.GetLast();
@@ -727,6 +734,11 @@ void CCollision::SolveCollisionWithBlocking(LPGAMEOBJECT objSrc, DWORD dt, vecto
 		}
 	}
 
+	if(colX)
+		coTracker.MarkAsResolved(objSrc, colX->obj);
+	if (colY)
+		coTracker.MarkAsResolved(objSrc, colY->obj);
+
 	eventPool.Refresh();
 }
 
@@ -744,9 +756,10 @@ void CCollision::SolveCollisionWithNonBlocking(LPGAMEOBJECT objSrc, DWORD dt, ve
 	{
 		LPCOLLISIONEVENT e = eventPool.Get(i);
 		if (e->isDeleted) continue;
-		if (e->obj->IsBlocking()) continue;  // blocking collisions were handled already, skip them
 
 		objSrc->OnCollisionWith(e);
+
+		coTracker.MarkAsResolved(objSrc, e->obj);
 	}
 
 	eventPool.Refresh();
@@ -759,13 +772,17 @@ void CCollision::SolveOverlap(LPGAMEOBJECT objSrc, vector<LPGAMEOBJECT>* coObjec
 		if (objSrc == coObjects->at(i))
 			continue;
 		if (objSrc->IsLinkedTo(coObjects->at(i)))
-			continue;		
+			continue;
+		if (coTracker.IsResolved(objSrc, coObjects->at(i)))
+			continue;
 
 		if (Overlap(objSrc, coObjects->at(i)))
 		{
 			eventPool.Allocate(-1, 0, 0, 0, 0, coObjects->at(i), objSrc);
 			CCollisionEvent* e = eventPool.GetLast();
 			objSrc->OnCollisionWith(e);
+
+			coTracker.MarkAsResolved(objSrc, coObjects->at(i));
 		}
 	}
 
@@ -845,4 +862,20 @@ LPCOLLISIONEVENT CCollisionEventPool::GetLast()
 int CCollisionEventPool::Size()
 {
 	return current_event;
+}
+
+void CCollisionTracker::Allocate(LPGAMEOBJECT object)
+{
+	tracker[object] = unordered_map<LPGAMEOBJECT, bool>();
+}
+
+void CCollisionTracker::MarkAsResolved(LPGAMEOBJECT key, LPGAMEOBJECT collider)
+{
+	tracker[key][collider] = true;
+	tracker[collider][key] = true;
+}
+
+bool CCollisionTracker::IsResolved(LPGAMEOBJECT key, LPGAMEOBJECT collider)
+{
+	return tracker[key][collider];
 }
