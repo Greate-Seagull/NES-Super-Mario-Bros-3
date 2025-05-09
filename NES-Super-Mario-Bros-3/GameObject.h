@@ -45,6 +45,9 @@ protected:
 public: 
 	void SetPosition(float x, float y) { this->x = x, this->y = y; }
 	void GetPosition(float &x, float &y) { x = this->x; y = this->y; }
+	float GetX() { return x; }
+	float GetY() { return y; }
+
 	virtual void GetSpeed(float &vx, float &vy) { vx = 0.0f; vy = 0.0f; }
 
 	int GetState() { return this->state; }
@@ -58,13 +61,17 @@ public:
 
 
 	virtual void GetBoundingBox(float &left, float &top, float &right, float &bottom);	
-	virtual float getBBoxHeight() { return bbox_height; }
-	virtual float getBBoxWidth() { return bbox_width; }
+	virtual float GetBBoxHeight() { return bbox_height; }
+	virtual float GetBBoxWidth() { return bbox_width; }
 
+	virtual void Prepare(DWORD dt) {};
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects = NULL) {};
 	virtual void Render();
 	virtual void SetState(int state);
 	virtual void ClearState() { state = -100; }
+	
+	//When an object is updated, collision scanning will not detect it
+	virtual int IsUpdated() { return 0; }
 
 	//
 	// Collision ON or OFF ? This can change depending on object's state. For example: die

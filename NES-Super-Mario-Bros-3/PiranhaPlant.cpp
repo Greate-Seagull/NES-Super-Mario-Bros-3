@@ -136,6 +136,32 @@ void CPiranhaPlant::ToStateHide()
 	vy = 0.0f;
 }
 
+void CPiranhaPlant::ReactionToCarry(CGameObject* by_another)
+{
+	AgainstControl();
+	HigherAttack(by_another);
+}
+
+void CPiranhaPlant::ReactionToTouch(CGameObject* by_another)
+{
+	HigherAttack(by_another);
+}
+
+void CPiranhaPlant::ReactionToAttack1(CGameObject* by_another)
+{
+	HigherAttack(by_another);
+}
+
+void CPiranhaPlant::ReactionToAttack2(CGameObject* by_another)
+{
+	Die();
+}
+
+void CPiranhaPlant::ReactionToAttack3(CGameObject* by_another)
+{
+	Die();
+}
+
 void CPiranhaPlant::Render()
 {
 	/*if (state == PIRANHA_STATE_RELOAD) 
@@ -174,19 +200,4 @@ void CPiranhaPlant::LookforMario()
 	//aim at target
 	target_dx = mario_x - x;
 	target_dy = mario_y - y;	
-}
-
-void CPiranhaPlant::Reaction(CGameObject* by_another, int action)
-{	
-	switch (action)
-	{
-		case ACTION_DESTROY:
-			Die();
-			break;
-		case ACTION_CARRY:
-			AgainstControl();
-		default:
-			MeleeAttack(by_another);
-			break;
-	}
 }

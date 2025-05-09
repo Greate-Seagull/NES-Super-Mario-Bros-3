@@ -56,11 +56,11 @@ void CFireball::ApplyDirection(int nx, int ny)
 	vy *= ny;
 }
 
-void CFireball::MeleeAttack(CGameObject* another)
+void CFireball::Attack(CGameObject* another)
 {
 	if (CCreature* creature = dynamic_cast<CCreature*>(another))
 	{
-		creature->Reaction(this, ACTION_ATTACK);
+		creature->Reaction(this, ACTION_ATTACK_LEVEL_1);
 	}
 }
 
@@ -68,7 +68,7 @@ void CFireball::Reaction(CGameObject* by_another, int action)
 {
 	AgainstControl();
 	if(CMario* mario = dynamic_cast<CMario*>(by_another))
-		MeleeAttack(mario);
+		Attack(mario);
 }
 
 int CFireball::IsCollidable()

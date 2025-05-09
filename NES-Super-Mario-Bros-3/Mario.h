@@ -7,28 +7,24 @@
 
 #include "debug.h"
 
+//MOVING
 #define MARIO_SMALL_WALKING_MAX_VX 0.1f
 #define MARIO_SMALL_RUNNING_MAX_VX 0.25f
 #define MARIO_SMALL_JUMPING_MAX_VY 0.15f
-
-#define MARIO_VX_BAND 0.02f
-#define MARIO_MAX_MOMENTUM 7
-
-#define MARIO_SMALL_RUNNING_AX 0.0002f
-
-#define MARIO_BIG_WALKING_AX 0.00016f
-#define MARIO_BIG_RUNNING_AX 0.0002f
+#define MARIO_SMALL_RUNNING_AX 0.00016f//0.0002f
 
 #define MARIO_DECELERATE_AX 0.00016f
 #define MARIO_BRAKE_AX 0.0004f
 
-#define MARIO_START_JUMPING_AY -0.015f - GAME_GRAVITY
 #define MARIO_START_JUMP_VY -0.25f
-
 #define MARIO_MAX_JUMP_HEIGHT 60.0f
 
-#define MARIO_PIPE_ENTRY_SPEED 0.03f
+#define MARIO_JUMP_DEFLECT_VY  -0.25f
 
+#define MARIO_VX_BAND 0.02f
+#define MARIO_MAX_MOMENTUM 7
+
+//TIME
 #define MARIO_BIG_TRANSFORM_TIME 600
 #define MARIO_RACOON_TRANSFORM_TIME 350
 #define MARIO_SMALL_TRANSFORM_TIME 700
@@ -38,15 +34,17 @@
 #define MARIO_DYING_TIME 700
 #define MARIO_MOMENTUM_TIME 300
 
-//life
+//LIFE
 #define	MARIO_LEVEL_SMALL	1.0f
 #define	MARIO_LEVEL_BIG		2.0f
 #define MARIO_LEVEL_RACOON	3.0f
 
-//state
+//STATE
 #define MARIO_STATE_GAIN_POWER 10
 #define MARIO_STATE_LOSE_POWER 11
 
+//PIPE ENTERING/EXITING
+#define MARIO_PIPE_ENTRY_SPEED 0.03f
 #define MARIO_PIPE_ENTRY_DOWN 20
 #define MARIO_PIPE_ENTRY_UP 21
 #define MARIO_PIPE_EXIT_DOWN 30
@@ -63,12 +61,15 @@
 #pragma region ANIMATION_ID
 
 // 10000
+=======
+//ANIMATION
+//OBJECT
 #define ID_ANI_MARIO 0
-// 1000
+//LEVELS
 #define ID_ANI_SMALL 0
 #define ID_ANI_BIG 1000
 #define ID_ANI_RACOON 2000
-// 100
+//ACTIONS
 #define ID_ANI_IDLE 0
 #define ID_ANI_JUMP 10
 #define ID_ANI_FALL 20
@@ -82,7 +83,7 @@
 #define ID_ANI_KICK 90
 #define ID_ANI_DIE 200
 #define ID_ANI_CARRY 100
-// 1
+//DIRECTIONS
 #define ID_ANI_LEFT 0
 #define ID_ANI_RIGHT 1
 #define ID_ANI_FRONT 2
@@ -90,8 +91,7 @@
 // PIPE ACTION
 #define ID_ANI_PIPE_ENTER 150
 
-#pragma endregion
-
+//BOUNDING BOX
 #define MARIO_SMALL_BBOX_WIDTH  12.0f
 #define MARIO_SMALL_BBOX_HEIGHT 15.0f
 
@@ -100,6 +100,7 @@
 
 #define MARIO_BIG_SITTING_BBOX_HEIGHT 18.0f
 
+//TAIL POSITION
 #define MARIO_RACOON_TAIL_Y_OFFSET 7.0f
 #define MARIO_CARRY_OFFSET_X 10.0f
 
@@ -108,30 +109,27 @@ class CMario : public CCreature
 	float ax, ay;
 	float maxVx;
 
-	bool is_sitting;
-	bool is_boosting;
 	bool is_falling;
 	bool is_invulnerable;
 
-	bool want_to_carry;
-
-	float startJumpingPosition;
+	float on_ground_position;
 
 	int changing_state_time;
 
 	int action_duration;
 
-	bool is_attacking;
 	int attacking_time;
 	int attack_phase;
 	CRacoonTail* tail;
-
-	bool is_kicking;
 
 	int momentum;
 	int decrease_momentum_time;
 
 	bool is_flying;
+
+	bool is_boosting;
+
+	int special_action;
 
 	//int coin; 
 
@@ -145,8 +143,10 @@ class CMario : public CCreature
 public:
 	CMario(float x, float y);
 
+	void Prepare(DWORD dt);
+	void RefreshInLiveState(DWORD dt);
+
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
-	void InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 	void Living(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 
 	void ChangeAnimation();
@@ -155,13 +155,19 @@ public:
 	void ChangeDrawY(float& y);
 	void Render();
 
-	int IsCollidable() { return (state != STATE_DIE); }
+	int IsCollidable() { return (state == STATE_LIVE); }
 	int IsBlocking() { return (state != STATE_DIE /*&& untouchable==0*/); }
 
 	void OnNoCollision(DWORD dt);
 	void OnCollisionWith(LPCOLLISIONEVENT e);
 
-	void Reaction(CGameObject* by_another, int action);
+	//void ReactionToCarry(CGameObject* by_another);
+	void ReactionToTouch(CGameObject* by_another);
+	void ReactionToAttack1(CGameObject* by_another);
+	void ReactionToAttack2(CGameObject* by_another);
+	void ReactionToAttack3(CGameObject* by_another);
+	void ReactionToBigger(CGameObject* by_another);
+	void ReactionToRacoonize(CGameObject* by_another);
 
 	void SetLife(float l);
 	float GetLife() { return life; }
@@ -171,14 +177,19 @@ public:
 	void ToLosingPowerState();
 	void ToDyingState();
 
-	void TriggerActions();
-	void ComputeAccelerator(float& ax, float& ay, DWORD& t);
+	void StartNormalActions(DWORD& t);
 
 	void Accelerate(float ax, float ay, DWORD t);
 
 	void UnderAttack(CGameObject* by_another);
 
+	bool SetSpecialAction(int actionID);
+	void StartSpecialActions();
+	void DoSpecialActions(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+
 	void Sit();
+	void Sitting();
+
 	void Stand();
 
 	void Run();
@@ -193,7 +204,7 @@ public:
 	void BackJump();
 	void Jump();
 
-	void Carry();
+	void Carry(CHarmfulObject* weapon);
 	void Carrying();
 	void Tosh();
 

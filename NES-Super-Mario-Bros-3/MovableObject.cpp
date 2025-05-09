@@ -12,10 +12,17 @@ CMovableObject::CMovableObject(float x, float y):
 	this->isOnGround = false;
 }
 
+void CMovableObject::Prepare(DWORD dt)
+{
+	is_moved = false;
+}
+
 void CMovableObject::Move(DWORD t)
 {
 	x += vx * t;
 	y += vy * t;
+
+	is_moved = true;
 }
 
 void CMovableObject::Accelerate(float ax, float ay, DWORD t)

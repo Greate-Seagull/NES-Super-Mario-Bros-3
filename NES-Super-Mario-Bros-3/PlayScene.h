@@ -10,6 +10,7 @@
 
 
 #define CAM_MAX_Y 247.0f
+#define COLLISION_RANGE 300.0f
 
 class CPlayScene: public CScene
 {
@@ -44,10 +45,13 @@ public:
 	static bool IsGameObjectDeleted(const LPGAMEOBJECT& o);
 
 	void Add(LPGAMEOBJECT newObj);
+
 	void GetObjects(vector<LPGAMEOBJECT>& objArray);
 	void LoadWarpedMario(float newX, float newY, float newLife, float newDirection);
-
-	vector<LPGAMEOBJECT> Filter();
+  
+	bool IsInRange(LPGAMEOBJECT obj, float start_x, float end_x, float start_y, float end_y);
+	vector<LPGAMEOBJECT> FilterByPlayer(float range = COLLISION_RANGE);
+	vector<LPGAMEOBJECT> FilterByCam();
 	void UpdateCamera();
 };
 

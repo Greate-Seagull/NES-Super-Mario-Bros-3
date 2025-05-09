@@ -34,13 +34,14 @@ public:
 
 	virtual int IsCollidable() { return state != STATE_DIE; };
 	//virtual int IsBlocking() { return 0; }
-	virtual void OnCollisionWith(LPCOLLISIONEVENT e);	
+	virtual void OnCollisionWith(LPCOLLISIONEVENT e);
 	virtual void OnCollisionWithPlatform(LPCOLLISIONEVENT e);
 	virtual void OnCollisionWithBlock(LPCOLLISIONEVENT e);
-	virtual void OnCollisionWithMario(LPCOLLISIONEVENT e);
+	virtual void OnCollisionWithCreature(LPCOLLISIONEVENT e);
 
-	virtual void Reaction(CGameObject* by_another, int action);
-	virtual void Reaction_LivingState(CGameObject* by_another, int action);
+	virtual void ReactionToAttack1(CGameObject* by_another);
+	virtual void ReactionToAttack2(CGameObject* by_another);
+	virtual void ReactionToAttack3(CGameObject* by_another);
 	
 	virtual void SetState(int state);
 	virtual void ToStateLiving();

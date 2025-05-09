@@ -49,8 +49,7 @@ void CCollision::SweptAABB(
 
 	if (br < sl || bl > sr || bb < st || bt > sb) return;
 
-
-	if (dx == 0 && dy == 0) return;		// moving object is not moving > obvious no collision
+	if (dx == 0 && dy == 0) return;// moving object is not moving > obvious no collision		
 
 	if (dx > 0)
 	{
@@ -117,7 +116,6 @@ void CCollision::SweptAABB(
 		nx = 0.0f;
 		dy > 0 ? ny = -1.0f : ny = 1.0f;
 	}
-
 }
 
 /*
@@ -400,6 +398,9 @@ void CCollision::SweptAABB(LPGAMEOBJECT objSrc, DWORD dt, LPGAMEOBJECT objDest)
 	float dx = mdx - sdx;
 	float dy = mdy - sdy;
 
+	/*float dx = mdx;
+	float dy = mdy;*/
+
 	objSrc->GetBoundingBox(ml, mt, mr, mb);
 	objDest->GetBoundingBox(sl, st, sr, sb);
 
@@ -423,6 +424,9 @@ void CCollision::Scan(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* objDe
 {
 	for (UINT i = 0; i < objDests->size(); i++)
 	{
+		if (objDests->at(i)->IsUpdated() || objSrc == objDests->at(i))
+			continue;
+
 		SweptAABB(objSrc, dt, objDests->at(i));
 		LPCOLLISIONEVENT e = e_manager.GetLast();
 
@@ -479,7 +483,11 @@ void CCollision::Filter(LPGAMEOBJECT objSrc,
 void CCollision::Process(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* coObjects) //Adjust to not move object if no collision
 {
 	LPCOLLISIONEVENT colX = NULL;
-	LPCOLLISIONEVENT colY = NULL;
+	LPCOLLISIONEVENT colY = NULL;	
+
+	if (CKoopaTroopa* koopa = dynamic_cast<CKoopaTroopa*>(objSrc))
+		if (koopa->GetState() == KOOPA_STATE_HIDE)
+			int i = 0;
 
 	if (objSrc->IsCollidable())
 	{
@@ -627,7 +635,7 @@ void CCollision::ProcessOverlap(LPGAMEOBJECT objSrc, vector<LPGAMEOBJECT>* coObj
 	{
 		if (Overlap(objSrc, coObjects->at(i)))
 		{
-			CCollisionEvent* e = new CCollisionEvent(-1, 0, 0, 0, 0, coObjects->at(i), objSrc);
+			CCollisionEvent* e = new CCollisionEvent(-1, 0, 0, 0, 0, coObjects->at(i), objSrc);// Should be fix
 			objSrc->OnCollisionWith(e);
 		}
 	}
@@ -635,14 +643,25 @@ void CCollision::ProcessOverlap(LPGAMEOBJECT objSrc, vector<LPGAMEOBJECT>* coObj
 
 bool CCollision::Overlap(LPGAMEOBJECT objSrc, LPGAMEOBJECT objDst)
 {
-	float min_width = (objSrc->getBBoxWidth() + objDst->getBBoxWidth()) / 2;
-	float min_height = (objSrc->getBBoxHeight() + objDst->getBBoxHeight()) / 2;
+	float min_width = (objSrc->GetBBoxWidth() + objDst->GetBBoxWidth()) / 2.0f;
+	float min_height = (objSrc->GetBBoxHeight() + objDst->GetBBoxHeight()) / 2.0f;
 
 	float objSrc_x, objSrc_y;
 	float objDst_x, objDst_y;
 
 	objSrc->GetPosition(objSrc_x, objSrc_y);
 	objDst->GetPosition(objDst_x, objDst_y);
+
+	/*float objSrc_l, objSrc_t, objSrc_r, objSrc_b;
+	float objDst_l, objDst_t, objDst_r, objDst_b;
+
+	objSrc->GetBoundingBox(objSrc_l, objSrc_t, objSrc_r, objSrc_b);
+	objDst->GetBoundingBox(objDst_l, objDst_t, objDst_r, objDst_b);
+
+	bool horizontally_inside = (objSrc_l <= objDst_r) && (objDst_l <= objSrc_r);
+	bool vertically_inside = (objSrc_t <= objDst_b) && (objDst_t <= objSrc_b);
+
+	return horizontally_inside && vertically_inside;*/
 
 	return fabs(objSrc_x - objDst_x) < min_width && fabs(objSrc_y - objDst_y) < min_height;
 }

@@ -37,7 +37,7 @@ void CQuestionBlock::Reaction(CGameObject* by_another, int action)
 
 	switch (action)
 	{
-		case ACTION_DESTROY:
+		case ACTION_ATTACK_LEVEL_3:
 			SetState(STATE_DIE);
 			break;
 		case ACTION_TOUCH:
@@ -81,7 +81,7 @@ void CQuestionBlock::TriggerItem()
 			break;
 	}
 
-	item->Reaction(this, ACTION_ATTACK);
+	item->Reaction(this, ACTION_ATTACK_LEVEL_1);
 	LPPLAYSCENE ps = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
 	ps->Add(item);
 }

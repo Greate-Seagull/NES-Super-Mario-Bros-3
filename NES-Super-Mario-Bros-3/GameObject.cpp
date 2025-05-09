@@ -17,8 +17,8 @@ CGameObject::CGameObject()
 
 void CGameObject::GetBoundingBox(float& left, float& top, float& right, float& bottom)
 {
-	left = x - (bbox_width / 2);
-	top = y - (bbox_height / 2);
+	left = x - (bbox_width / 2.0f);
+	top = y - (bbox_height / 2.0f);
 	right = left + bbox_width;
 	bottom = top + bbox_height;
 }
