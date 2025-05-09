@@ -1,7 +1,11 @@
 #include "Pipe.h"
 
+#include "Creature.h"
+#include "Mario.h"
+
 #include "Textures.h"
 #include "Game.h"
+#include "PlayScene.h"
 
 void CPipe::Render()
 {
@@ -45,6 +49,29 @@ void CPipe::Render()
 
 		s->Get(this->spriteIdBeginBegin)->Draw(xx, yy);
 		s->Get(this->spriteIdEndBegin)->Draw(xx + cell_width, yy);
+	}
+}
+
+void CPipe::Reaction(CGameObject* by_another, int action)
+{
+	switch (action)
+	{
+	case ACTION_TOUCH:
+		if (dynamic_cast<CMario*>(by_another))
+		{
+			float mX, mY, mLife;
+
+			CMario* m = (CMario*)by_another;
+			m->GetPosition(mX, mY);
+			mLife = m->GetLife();
+
+			if (mX >= this->x && mX <= this->x + PIPE_WIDTH / 2)
+			{
+				m->PipeEntry(this->warp_direction, this->scene_destination);
+				LPPLAYSCENE curr = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+				curr->LoadWarpedMario(newX, newY, mLife, this->warp_direction);
+			}
+		}
 	}
 }
 

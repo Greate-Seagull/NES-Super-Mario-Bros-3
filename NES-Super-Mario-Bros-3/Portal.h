@@ -20,10 +20,10 @@ public:
 
 	virtual int IsCollidable() { return 1; }
 	int IsBlocking() { return 0; }
-
+	/*
 	void GetNewPlayerPos(float& x, float& y)
 	{
 		x = this->new_x;
 		y = this->new_y;
-	}
+	}*/
 };

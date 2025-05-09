@@ -3,6 +3,7 @@
 
 #include "Mario.h"
 #include "Game.h"
+#include "PlayScene.h"
 
 #include "Goomba.h"
 #include "Coin.h"
@@ -10,10 +11,20 @@
 #include "BrickParticle.h"
 #include "Portal.h"
 #include "Platform.h"
+#include "Pipe.h"
 #include "SuperMushroom.h"
 #include "SuperLeaf.h"
 
 #include "Collision.h"
+
+float switchSceneTime = 0;
+#define MAX_SCENE_TIME 800
+
+float exitPipeTime = 0;
+bool finishedExitingPipe = false;
+#define MAX_EXIT_PIPE_TIME 800
+
+int sceneDestination;
 
 CMario::CMario(float x, float y):
 	CCreature(x, y)
@@ -30,6 +41,7 @@ CMario::CMario(float x, float y):
 	SetState(STATE_LIVE);
 	SetLife(MARIO_LEVEL_SMALL);
 }
+
 
 void CMario::Prepare(DWORD dt)
 {
@@ -53,18 +65,30 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	//DebugOutTitle(L"Momentum: %d, vx: %f", momentum, fabs(vx));
 	switch (state)
 	{
-	case STATE_LIVE:
-		Living(dt, coObjects);
-		break;
-	case MARIO_STATE_GAIN_POWER:
-		GainingPower(dt);
-		break;
-	case MARIO_STATE_LOSE_POWER:
-		LosingPower(dt);
-		break;
-	case STATE_DIE:
-		Dying(dt);
-		break;
+		case STATE_LIVE:
+			Living(dt, coObjects);
+			break;
+		case MARIO_STATE_GAIN_POWER:
+			GainingPower(dt);
+			break;
+		case MARIO_STATE_LOSE_POWER:
+			LosingPower(dt);
+			break;
+		case MARIO_PIPE_ENTRY_DOWN:
+			PipeEntryDown(dt);
+			break;
+		case MARIO_PIPE_ENTRY_UP:
+			PipeEntryUp(dt);
+			break;
+		case MARIO_PIPE_EXIT_DOWN:
+			PipeExitDown(dt);
+			break;
+		case MARIO_PIPE_EXIT_UP:
+			PipeExitUp(dt);
+			break;
+		case STATE_DIE:		
+			Dying(dt);
+			break;
 	}
 }
 
@@ -198,6 +222,10 @@ void CMario::OnCollisionWithHelpfulObject(LPCOLLISIONEVENT e)
 
 void CMario::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 {	
+	if (dynamic_cast<CPipe*>(e->obj))
+	{
+		Touch(e->obj);
+	}
 
 	if (e->ny)
 	{
@@ -261,41 +289,60 @@ void CMario::ChangeAnimation()
 	{
 		level = ID_ANI_BIG;
 	}
-	
+
 	int action;
 	DWORD timePerFrame = TIME_FRAME;
 	switch (state)
 	{
-		case STATE_LIVE:
-			ChangeAnimationInLivingState(action, timePerFrame);
-			break;
-		case MARIO_STATE_GAIN_POWER:
-			action = ID_ANI_LEVEL_UP;
-			break;
-		case MARIO_STATE_LOSE_POWER:
-			action = ID_ANI_LEVEL_DOWN;
-			break;
-		case STATE_DIE:
-			action = ID_ANI_DIE;
-			break;
+	case STATE_LIVE:
+		ChangeAnimationInLivingState(action, timePerFrame);
+		break;
+	case MARIO_STATE_GAIN_POWER:
+		action = ID_ANI_LEVEL_UP;
+		break;
+	case MARIO_STATE_LOSE_POWER:
+		action = ID_ANI_LEVEL_DOWN;
+		break;
+	case MARIO_PIPE_ENTRY_DOWN:
+		action = ID_ANI_PIPE_ENTER;
+		break;
+	case MARIO_PIPE_ENTRY_UP:
+		action = ID_ANI_PIPE_ENTER;
+		break;
+	case MARIO_PIPE_EXIT_DOWN:
+		action = ID_ANI_PIPE_ENTER;
+		break;
+	case MARIO_PIPE_EXIT_UP:
+		action = ID_ANI_PIPE_ENTER;
+		break;
+	case STATE_DIE:
+		action = ID_ANI_DIE;
+		break;
 	}
-	
+
 	int direction = 0;
-	if (nz)
+	if (state != MARIO_PIPE_ENTRY_DOWN &&
+		state != MARIO_PIPE_ENTRY_UP &&
+		state != MARIO_PIPE_EXIT_DOWN &&
+		state != MARIO_PIPE_EXIT_UP)
 	{
-		direction = (nz < 0) ? ID_ANI_FRONT : ID_ANI_BEHIND;
+		if (nz)
+		{
+			direction = (nz < 0) ? ID_ANI_FRONT : ID_ANI_BEHIND;
+		}
+		else
+		{
+			direction = (nx <= 0) ? ID_ANI_LEFT : ID_ANI_RIGHT;
+		}
 	}
-	else
-	{
-		direction = (nx <= 0) ? ID_ANI_LEFT : ID_ANI_RIGHT;
-	}
-	
 
-	aniID = ID_ANI_MARIO + level + action + direction;	
 
-	if(timePerFrame < TIME_FRAME)
+	aniID = ID_ANI_MARIO + level + action + direction;
+
+	if (timePerFrame < TIME_FRAME)
 		CAnimations::GetInstance()->Get(aniID)->ChangeTimePerFrame(timePerFrame);
-	
+
+
 	CAnimations::GetInstance()->Get(aniID)->SwitchSprite();
 }
 
@@ -391,7 +438,7 @@ bool CMario::SetSpecialAction(int actionID)
 void CMario::StartSpecialActions()
 {
 	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
-
+	
 	if (keyState->IsHold(VK_UP))
 	{
 		Fly();
@@ -400,7 +447,7 @@ void CMario::StartSpecialActions()
 	{
 		is_flying = false;
 	}	
-	
+
 	if (keyState->IsHold(VK_A))
 		Run();
 	else
@@ -719,6 +766,82 @@ void CMario::Kick()
 	SetSpecialAction(ID_ANI_KICK);
 
 	attacking_time = 0;	
+}
+
+void CMario::PipeEntry(int warp_direction, int scene_destination)
+{
+	DebugOut(L"PIPE ENTRY\n");
+	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
+
+	if (keyState->IsHold(VK_UP) && warp_direction == 1)
+	{
+		SetState(MARIO_PIPE_ENTRY_UP);
+		sceneDestination = scene_destination;
+		
+	}
+	else if (keyState->IsHold(VK_DOWN) && warp_direction == -1)
+	{
+		SetState(MARIO_PIPE_ENTRY_DOWN);
+		sceneDestination = scene_destination;
+	}
+}
+
+void CMario::PipeEntryUp(DWORD dt)
+{
+	y -= MARIO_PIPE_ENTRY_SPEED * dt;
+
+	switchSceneTime += dt;
+	if (switchSceneTime >= MAX_SCENE_TIME)
+	{
+		switchSceneTime = 0;
+		finishedExitingPipe = false;
+		CGame::GetInstance()->InitiateSwitchScene(sceneDestination);
+	}
+}
+
+void CMario::PipeEntryDown(DWORD dt)
+{
+	y += MARIO_PIPE_ENTRY_SPEED * dt;
+
+	switchSceneTime += dt;
+	if (switchSceneTime >= MAX_SCENE_TIME)
+	{
+		switchSceneTime = 0;
+		finishedExitingPipe = false;
+		CGame::GetInstance()->InitiateSwitchScene(sceneDestination);
+	}
+}
+
+void CMario::PipeExitUp(DWORD dt)
+{
+	y -= MARIO_PIPE_ENTRY_SPEED * dt;
+
+	if (!finishedExitingPipe)
+	{
+		exitPipeTime += dt;
+		if (exitPipeTime >= MAX_EXIT_PIPE_TIME)
+		{
+			exitPipeTime = 0;
+			finishedExitingPipe = true;
+			SetState(STATE_LIVE);
+		}
+	}
+}
+
+void CMario::PipeExitDown(DWORD dt)
+{
+	y += MARIO_PIPE_ENTRY_SPEED * dt;
+
+	if (!finishedExitingPipe)
+	{
+		exitPipeTime += dt;
+		if (exitPipeTime >= MAX_EXIT_PIPE_TIME)
+		{
+			exitPipeTime = 0;
+			finishedExitingPipe = true;
+			SetState(STATE_LIVE);
+		}
+	}
 }
 
 void CMario::Kicking(DWORD dt)

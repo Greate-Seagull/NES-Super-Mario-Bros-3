@@ -43,6 +43,25 @@
 #define MARIO_STATE_GAIN_POWER 10
 #define MARIO_STATE_LOSE_POWER 11
 
+//PIPE ENTERING/EXITING
+#define MARIO_PIPE_ENTRY_SPEED 0.03f
+#define MARIO_PIPE_ENTRY_DOWN 20
+#define MARIO_PIPE_ENTRY_UP 21
+#define MARIO_PIPE_EXIT_DOWN 30
+#define MARIO_PIPE_EXIT_UP 31
+
+#define MARIO_ACCEL_WALK_X	0.0005f
+#define MARIO_ACCEL_RUN_X	0.0007f
+
+#define MARIO_JUMP_SPEED_Y		0.5f
+#define MARIO_JUMP_RUN_SPEED_Y	0.6f
+
+#define MARIO_JUMP_DEFLECT_VX  -0.25f
+
+#pragma region ANIMATION_ID
+
+// 10000
+=======
 //ANIMATION
 //OBJECT
 #define ID_ANI_MARIO 0
@@ -69,6 +88,8 @@
 #define ID_ANI_RIGHT 1
 #define ID_ANI_FRONT 2
 #define ID_ANI_BEHIND 3
+// PIPE ACTION
+#define ID_ANI_PIPE_ENTER 150
 
 //BOUNDING BOX
 #define MARIO_SMALL_BBOX_WIDTH  12.0f
@@ -149,6 +170,7 @@ public:
 	void ReactionToRacoonize(CGameObject* by_another);
 
 	void SetLife(float l);
+	float GetLife() { return life; }
 
 	void SetState(int state);
 	void ToGainingPowerState();
@@ -188,6 +210,12 @@ public:
 
 	void Kick();
 	void Kicking(DWORD dt);
+
+	void PipeEntry(int warp_direction, int scene_destination);
+	void PipeEntryUp(DWORD dt);
+	void PipeEntryDown(DWORD dt);
+	void PipeExitUp(DWORD dt);
+	void PipeExitDown(DWORD dt);
 
 	void StartInvulnerable();
 	void Invulnerable(DWORD dt);

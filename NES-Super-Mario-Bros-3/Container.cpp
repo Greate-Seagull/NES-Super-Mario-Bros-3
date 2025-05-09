@@ -64,3 +64,9 @@ void CContainer::GetBoundingBox(float& l, float& t, float& r, float& b)
 	r = l + (length - 0.3) * cellWidth;
 	b = t + height * cellHeight;
 }
+
+int CContainer::IsDirectionColliable(float nx, float ny)
+{
+	if (nx == 0 && ny == -1) return 1;
+	else return 0;
+}

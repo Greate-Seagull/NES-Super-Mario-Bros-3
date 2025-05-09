@@ -23,6 +23,7 @@
 #include "Cloud.h"
 #include "MapIcon.h"
 #include "BrickParticle.h"
+#include "PButton.h"
 
 #include "SampleKeyEventHandler.h"
 
@@ -50,11 +51,12 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 #define SCREEN_HEIGHT 240
 #define OFFSET 32
 
-float tempCamPosY = 0;
+vector<LPGAMEOBJECT> bricksArchive;
 
 bool isStartSpawned = false;
+float newMarioX, newMarioY, newMarioLife, newMarioWarpDirection;
 
-int coin = 0;
+bool isAboveFlyingArea = false;
 
 void CPlayScene::_ParseSection_SPRITES(string line)
 {
@@ -219,23 +221,40 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 			DebugOut(L"[ERROR] MARIO object was created before!\n");
 			return;
 		}
-
+		
 		if (isStartSpawned)
 		{
-			CGame::GetInstance()->GetNewPlayerPos(x, y);
+			x = newMarioX;
+			y = newMarioY;
 		}
+
 		obj = new CMario(x,y); 
-		player = (CMario*)obj;  
+		player = (CMario*)obj;
+		if (isStartSpawned)
+		{
+			player->SetLife(newMarioLife);
+			if (newMarioWarpDirection == 1) player->SetState(MARIO_PIPE_EXIT_UP);
+			else if (newMarioWarpDirection == -1) player->SetState(MARIO_PIPE_EXIT_DOWN);
+		}
+
+		isStartSpawned = true;
 
 		DebugOut(L"[INFO] Player object has been created!\n");
-		isStartSpawned = true;
+		//isStartSpawned = true;
 		break;
 	case OBJECT_TYPE_GOOMBA: obj = new CGoomba(x,y); break;
 	case OBJECT_TYPE_PARAGOOMBA: obj = new CParagoomba(x,y); break;
 	case OBJECT_TYPE_VENUS_FIRE_TRAP: obj = new CVenusFireTrap(x, y); break;
 	case OBJECT_TYPE_PIRANHA_PLANT: obj = new CPiranhaPlant(x, y); break;
 	case OBJECT_TYPE_RED_KOOPA_TROOPA: obj = new CKoopaTroopa(x, y); break;
-	case OBJECT_TYPE_BRICK: obj = new CBrick(x,y); break;
+	case OBJECT_TYPE_BRICK:
+	{
+		int itemID = atoi(tokens[3].c_str());
+
+		obj = new CBrick(x, y, itemID);
+		bricksArchive.push_back((CBrick*)obj);
+		break;
+	}
 	case OBJECT_TYPE_STRIPED_BRICK: obj = new CStripedBrick(x, y); break;
 	case OBJECT_TYPE_COIN: obj = new CCoin(x, y); break;
 	case OBJECT_TYPE_SUPER_MUSHROOM: obj = new CSuperMushroom(x, y); break;
@@ -264,6 +283,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		obj = new CQuestionBlock(x, y, itemID);
 		break;
 	}
+	case OBJECT_TYPE_PBUTTON: obj = new CPButton(x, y); break;
 	case OBJECT_TYPE_PIPE:
 	{
 		float cell_width = (float)atof(tokens[3].c_str());
@@ -277,13 +297,28 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 
 		int face_direction = atoi(tokens[10].c_str());
 		int warp_direction = atoi(tokens[11].c_str());
+		int scene_destination = atoi(tokens[12].c_str());
 
-		obj = new CPipe(
-			x, y,
-			cell_width, cell_height, pipe_height, 
-			face_direction, warp_direction, 
-			sprite_id_begin_begin, sprite_id_end_begin, 
-			sprite_id_begin_end, sprite_id_end_end);
+		if (warp_direction == 0)
+			obj = new CPipe(
+				x, y,
+				cell_width, cell_height, pipe_height, 
+				face_direction, warp_direction, scene_destination, 
+				sprite_id_begin_begin, sprite_id_end_begin, 
+				sprite_id_begin_end, sprite_id_end_end);
+		else
+		{
+			float newX = (float)atof(tokens[13].c_str());
+			float newY = (float)atof(tokens[14].c_str());
+
+			obj = new CPipe(
+				x, y,
+				cell_width, cell_height, pipe_height,
+				face_direction, warp_direction, scene_destination,
+				sprite_id_begin_begin, sprite_id_end_begin,
+				sprite_id_begin_end, sprite_id_end_end,
+				newX, newY);
+		}
 		break;
 	}
 
@@ -465,6 +500,7 @@ void CPlayScene::Clear()
 		delete (*it);
 	}
 	objects.clear();
+	bricksArchive.clear();
 }
 
 /*
@@ -479,6 +515,7 @@ void CPlayScene::Unload()
 		delete objects[i];
 
 	objects.clear();
+	bricksArchive.clear();
 	player = NULL;
 
 	DebugOut(L"[INFO] Scene %d unloaded! \n", id);
@@ -490,6 +527,19 @@ void CPlayScene::Add(LPGAMEOBJECT newObj)
 {
 	if(newObj)
 		objects.push_back(newObj);
+}
+
+void CPlayScene::GetObjects(vector<LPGAMEOBJECT>& objArray)
+{
+	objArray = bricksArchive;
+}
+
+void CPlayScene::LoadWarpedMario(float newX, float newY, float newLife, float newDirection)
+{
+	newMarioX = newX;
+	newMarioY = newY;
+	newMarioLife = newLife;
+	newMarioWarpDirection = newDirection;
 }
 
 bool CPlayScene::IsInRange(LPGAMEOBJECT obj, float start_x, float end_x, float start_y, float end_y)
@@ -543,6 +593,10 @@ vector<LPGAMEOBJECT> CPlayScene::FilterByCam()
 	{
 		if (IsInRange(objects[i], start_x, end_x, start_y, end_y))
 			process_list.push_back(objects[i]);
+		else {
+			if (game->IsInCam(objects[i]))
+				process_list.push_back(objects[i]);
+		}
 	}
 
 	return process_list;
@@ -565,10 +619,25 @@ void CPlayScene::UpdateCamera()
 	{
 		cy = cy - game->GetBackBufferHeight() / 2.0f;
 		cy = fmin(CAM_MAX_Y, cy);
+		
+		if (cy < CAM_MAX_Y + game->GetBackBufferHeight() / 2.0f) isAboveFlyingArea = true;
 	}
 	else
 	{
-		cy = CAM_MAX_Y;
+		if (cy >= CAM_MAX_Y + game->GetBackBufferHeight() / 2.0f)
+		{
+			cy = CAM_MAX_Y;
+			isAboveFlyingArea = false;
+		}
+		else
+		{
+			if (isAboveFlyingArea)
+			{
+				cy = cy - game->GetBackBufferHeight() / 2.0f;
+				cy = fmin(CAM_MAX_Y, cy);
+			}
+			else cy = CAM_MAX_Y;
+		}
 		//cy = cy + player_bbox_height / 2.0f + 16.0f - game->GetBackBufferHeight();
 	}
 

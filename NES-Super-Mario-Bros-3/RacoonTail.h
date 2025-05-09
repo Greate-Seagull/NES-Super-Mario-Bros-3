@@ -2,6 +2,8 @@
 
 #include "Creature.h"
 
+#include "Brick.h"
+
 #define RACOON_TAIL_BBOX_WIDTH 9.0f
 #define RACOON_TAIL_BBOX_HEIGHT 5.0f
 
@@ -14,4 +16,5 @@ public:
 
 	void OnCollisionWith(LPCOLLISIONEVENT e);
 	void OnCollisionWithCreature(LPCOLLISIONEVENT e);
+	void OnCollisionWithBlock(LPCOLLISIONEVENT e);
 };
