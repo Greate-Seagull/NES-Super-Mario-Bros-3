@@ -35,7 +35,13 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 	player = NULL;
 	//key_handler = new CSampleKeyHandler(this);
 	background = NULL;	
-	HUD = NULL;
+	hud = NULL;
+	for (int i = 0; i < DIGIT_COUNT_SCORE; i++)
+		scoreDigits[i] = NULL;
+	for (int i = 0; i < DIGIT_COUNT_CURRENCY; i++)
+		coinDigits[i] = NULL;
+	for (int i = 0; i < DIGIT_COUNT_TIME; i++)
+		timeDigits[i] = NULL;
 }
 
 
@@ -51,6 +57,13 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
 #define OFFSET 32
+
+#define SCORE_OFFSET 68
+#define CURRENCY_OFFSET 148
+#define TIME_OFFSET 140
+
+#define OFFSET_Y_LINE1 168
+#define OFFSET_Y_LINE2 176
 
 float tempCamPosY = 0;
 
@@ -217,7 +230,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	case NON_OBJECT_TYPE_HUD:
 	{
 		obj = new CHud(x, y);
-		HUD = (CHud*)obj;
+		hud = (CHud*)obj;
 		break;
 	}
 
@@ -348,6 +361,25 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	obj->SetPosition(x, y);
 
 	objects.push_back(obj);
+
+	if (dynamic_cast<CHud*>(obj))
+	{
+		for (int i = 0; i < DIGIT_COUNT_SCORE; i++)
+		{
+			scoreDigits[i] = new CDigit(x + SCORE_OFFSET + i * DIGIT_NEAR_SPACING, y + OFFSET_Y_LINE2, false, 1);
+			objects.push_back(scoreDigits[i]);
+		}
+		for (int i = 0; i < DIGIT_COUNT_CURRENCY; i++)
+		{
+			coinDigits[i] = new CDigit(x + CURRENCY_OFFSET + i * DIGIT_NEAR_SPACING, y + OFFSET_Y_LINE1, false, 1);
+			objects.push_back(coinDigits[i]);
+		}
+		for (int i = 0; i < DIGIT_COUNT_TIME; i++)
+		{
+			timeDigits[i] = new CDigit(x + TIME_OFFSET + i * DIGIT_NEAR_SPACING, y + OFFSET_Y_LINE2, false, 1);
+			objects.push_back(timeDigits[i]);
+		}
+	}
 }
 
 void CPlayScene::LoadAssets(LPCWSTR assetFile)
@@ -520,6 +552,14 @@ void CPlayScene::Unload()
 
 	objects.clear();
 	player = NULL;
+	background = NULL;
+	hud = NULL;
+	for (int i = 0; i < DIGIT_COUNT_SCORE; i++)
+		scoreDigits[i] = NULL;
+	for (int i = 0; i < DIGIT_COUNT_TIME; i++)
+		timeDigits[i] = NULL;
+	for (int i = 0; i < DIGIT_COUNT_CURRENCY; i++)
+		coinDigits[i] = NULL;
 
 	DebugOut(L"[INFO] Scene %d unloaded! \n", id);
 }
@@ -631,9 +671,26 @@ void CPlayScene::UpdateCamera()
 
 	/*if (GetAsyncKeyState(VK_UP) & 0x8000) cy -= 10;
 	if (GetAsyncKeyState(VK_DOWN) & 0x8000) cy += 10;*/
-	float ox, oy;
-	HUD->GetOriginalPos(ox, oy);
-	HUD->SetPosition((int)(ox + cx), (int)(oy + cy));
+	float ox, oy; //for hud
+	hud->GetOriginalPos(ox, oy);
+	hud->SetPosition((int)(ox + cx), (int)(oy + cy));
+
+	float odx, ody; //for digits
+	for (int i = 0; i < DIGIT_COUNT_SCORE; i++)
+	{
+		scoreDigits[i]->GetOriginalPos(odx, ody);
+		scoreDigits[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
+	}
+	for (int i = 0; i < DIGIT_COUNT_TIME; i++)
+	{
+		timeDigits[i]->GetOriginalPos(odx, ody);
+		timeDigits[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
+	}
+	for (int i = 0; i < DIGIT_COUNT_CURRENCY; i++)
+	{
+		coinDigits[i]->GetOriginalPos(odx, ody);
+		coinDigits[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
+	}
 
 	CGame::GetInstance()->SetCamPos(cx, cy);
 }

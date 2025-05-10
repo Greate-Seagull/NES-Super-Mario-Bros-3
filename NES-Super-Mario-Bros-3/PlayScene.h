@@ -19,7 +19,10 @@ protected:
 	// A play scene has to have player, right? 
 	CMario* player;
 	LPGAMEOBJECT background;
-	CHud* HUD;
+	CHud* hud;
+	CDigit* scoreDigits[DIGIT_COUNT_SCORE];
+	CDigit* coinDigits[DIGIT_COUNT_CURRENCY];
+	CDigit* timeDigits[DIGIT_COUNT_TIME];
 
 	vector<LPGAMEOBJECT> objects;
 
