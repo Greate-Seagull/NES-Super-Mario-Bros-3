@@ -6,10 +6,11 @@
 #include "Brick.h"
 #include "Mario.h"
 #include "Paragoomba.h"
+#include "HUD.h"
 //#include "Koopas.h"
 
 
-#define CAM_MAX_Y 247.0f
+#define CAM_MAX_Y 283.0f
 #define COLLISION_RANGE 300.0f
 
 class CPlayScene: public CScene
@@ -18,6 +19,10 @@ protected:
 	// A play scene has to have player, right? 
 	CMario* player;
 	LPGAMEOBJECT background;
+	CHud* hud;
+	CDigit* scoreDigits[DIGIT_COUNT_SCORE];
+	CDigit* coinDigits[DIGIT_COUNT_CURRENCY];
+	CDigit* timeDigits[DIGIT_COUNT_TIME];
 
 	vector<LPGAMEOBJECT> objects;
 
