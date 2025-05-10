@@ -149,6 +149,7 @@
     <ClCompile Include="Goomba.cpp" />
     <ClCompile Include="HarmfulObject.cpp" />
     <ClCompile Include="HelpfulObject.cpp" />
+    <ClCompile Include="HUD.cpp" />
     <ClCompile Include="KeyStateManager.cpp" />
     <ClCompile Include="KoopaTroopa.cpp" />
     <ClCompile Include="main.cpp" />
@@ -198,6 +199,7 @@
     <ClInclude Include="Goomba.h" />
     <ClInclude Include="HarmfulObject.h" />
     <ClInclude Include="HelpfulObject.h" />
+    <ClInclude Include="HUD.h" />
     <ClInclude Include="KeyEventHandler.h" />
     <ClInclude Include="MapIcon.h" />
     <ClInclude Include="KeyStateManager.h" />

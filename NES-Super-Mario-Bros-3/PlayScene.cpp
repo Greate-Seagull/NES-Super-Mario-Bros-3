@@ -7,6 +7,7 @@
 #include "Textures.h"
 #include "Sprites.h"
 #include "Background.h"
+#include "HUD.h"
 #include "Portal.h"
 #include "DeadStateTrigger.h"
 #include "Coin.h"
@@ -34,6 +35,7 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 	player = NULL;
 	//key_handler = new CSampleKeyHandler(this);
 	background = NULL;	
+	HUD = NULL;
 }
 
 
@@ -210,6 +212,12 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		int icon_type = atoi(tokens[3].c_str());
 
 		obj = new CMapIcon(x, y, icon_type);
+		break;
+	}
+	case NON_OBJECT_TYPE_HUD:
+	{
+		obj = new CHud(x, y);
+		HUD = (CHud*)obj;
 		break;
 	}
 
@@ -566,7 +574,8 @@ vector<LPGAMEOBJECT> CPlayScene::FilterByPlayer(float range)
 	vector<LPGAMEOBJECT> process_list;
 	for (size_t i = 0; i < objects.size(); i++)
 	{
-		if (IsInRange(objects[i], start_x, end_x, start_y, end_y))
+		/*if (dynamic_cast<CHud*>(objects[i])) process_list.push_back(objects[i]);
+		else */if (IsInRange(objects[i], start_x, end_x, start_y, end_y))
 			process_list.push_back(objects[i]);
 	}
 
@@ -588,7 +597,8 @@ vector<LPGAMEOBJECT> CPlayScene::FilterByCam()
 	vector<LPGAMEOBJECT> process_list;
 	for (size_t i = 0; i < objects.size(); i++)
 	{
-		if (IsInRange(objects[i], start_x, end_x, start_y, end_y))
+		/*if (dynamic_cast<CHud*>(objects[i])) process_list.push_back(objects[i]);
+		else */if (IsInRange(objects[i], start_x, end_x, start_y, end_y))
 			process_list.push_back(objects[i]);
 	}
 
@@ -621,6 +631,9 @@ void CPlayScene::UpdateCamera()
 
 	/*if (GetAsyncKeyState(VK_UP) & 0x8000) cy -= 10;
 	if (GetAsyncKeyState(VK_DOWN) & 0x8000) cy += 10;*/
+	float ox, oy;
+	HUD->GetOriginalPos(ox, oy);
+	HUD->SetPosition((int)(ox + cx), (int)(oy + cy));
 
 	CGame::GetInstance()->SetCamPos(cx, cy);
 }
