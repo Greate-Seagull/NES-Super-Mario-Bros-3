@@ -52,12 +52,13 @@ public:
 			aniID = ID_ANI_DIGIT_EMPTY;
 			break;
 		}
-		DebugOut(L"%f, %f\n", x, y);
 	}
 	//void Render();
 	int IsCollidable() { return 1; }
 
 	void GetOriginalPos(float& ox, float& oy) { ox = originalX; oy = originalY; }
+	void SetEmpty(bool isEmpty) { this->isEmpty = isEmpty; }
+	void SetDigit(int digit) { this->digit = digit; }
 };
 
 class CHud : public CGameObject {

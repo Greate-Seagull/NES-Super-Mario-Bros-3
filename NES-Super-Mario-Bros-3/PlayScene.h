@@ -55,6 +55,11 @@ public:
 	vector<LPGAMEOBJECT> FilterByPlayer(float range = COLLISION_RANGE);
 	vector<LPGAMEOBJECT> FilterByCam();
 	void UpdateCamera();
+
+	void UpdateTime();
+	void CollectCoin();
+	void UpdateCoin();
+	void UpdateScore();
 };
 
 typedef CPlayScene* LPPLAYSCENE;

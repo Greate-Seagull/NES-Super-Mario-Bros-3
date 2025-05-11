@@ -65,11 +65,20 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 #define OFFSET_Y_LINE1 168
 #define OFFSET_Y_LINE2 176
 
+#define TIMER_VALUE 300000
+
 float tempCamPosY = 0;
 
 bool isStartSpawned = false;
 
+#pragma region HUD INFORMATION
 int coin = 0;
+
+float timer = TIMER_VALUE;
+bool timerPause = false;
+
+int score = 0;
+#pragma endregion
 
 void CPlayScene::_ParseSection_SPRITES(string line)
 {
@@ -366,17 +375,17 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	{
 		for (int i = 0; i < DIGIT_COUNT_SCORE; i++)
 		{
-			scoreDigits[i] = new CDigit(x + SCORE_OFFSET + i * DIGIT_NEAR_SPACING, y + OFFSET_Y_LINE2, false, 1);
+			scoreDigits[i] = new CDigit(x + SCORE_OFFSET + i * DIGIT_NEAR_SPACING, y + OFFSET_Y_LINE2, false, 0);
 			objects.push_back(scoreDigits[i]);
 		}
 		for (int i = 0; i < DIGIT_COUNT_CURRENCY; i++)
 		{
-			coinDigits[i] = new CDigit(x + CURRENCY_OFFSET + i * DIGIT_NEAR_SPACING, y + OFFSET_Y_LINE1, false, 1);
+			coinDigits[i] = new CDigit(x + CURRENCY_OFFSET + i * DIGIT_NEAR_SPACING, y + OFFSET_Y_LINE1, false, 0);
 			objects.push_back(coinDigits[i]);
 		}
 		for (int i = 0; i < DIGIT_COUNT_TIME; i++)
 		{
-			timeDigits[i] = new CDigit(x + TIME_OFFSET + i * DIGIT_NEAR_SPACING, y + OFFSET_Y_LINE2, false, 1);
+			timeDigits[i] = new CDigit(x + TIME_OFFSET + i * DIGIT_NEAR_SPACING, y + OFFSET_Y_LINE2, false, 0);
 			objects.push_back(timeDigits[i]);
 		}
 	}
@@ -509,9 +518,84 @@ void CPlayScene::Update(DWORD dt)
 	for (auto& obj : nearbyObjects)
 		obj->Update(dt, &nearbyObjects);
 
-	UpdateCamera();	
+	UpdateCamera();
+
+	// UPDATE HUD
+	if (!timerPause) timer -= dt;
+	UpdateTime();
+	UpdateCoin();
+	UpdateScore();
 
 	PurgeDeletedObjects();
+}
+
+void CPlayScene::UpdateTime()
+{
+	int currentTime = (int)(timer / 1000);
+	string str_currentTime = to_string(currentTime);
+
+	for (int i = 0; i < DIGIT_COUNT_TIME - str_currentTime.size(); i++)
+		str_currentTime = "0" + str_currentTime;
+
+	for (int i = 0; i < DIGIT_COUNT_TIME; i++)
+	{
+		string digit_str;
+		digit_str = digit_str + str_currentTime[i];
+		int digit = atoi(digit_str.c_str());
+		timeDigits[i]->SetDigit(digit);
+	}
+}
+
+void CPlayScene::CollectCoin() { coin++; }
+
+void CPlayScene::UpdateCoin()
+{
+	string str_coin = to_string(coin);
+	int str_length = str_coin.size();
+	
+	if (str_length == 1)
+	{
+		coinDigits[0]->SetEmpty(true);
+		coinDigits[1]->SetDigit(coin);
+	}
+	else
+	{
+		string digit_0_str, digit_1_str;
+
+		digit_0_str = digit_0_str + str_coin[str_length - 2];
+		digit_1_str = digit_1_str + str_coin[str_length - 1];
+
+		int digit_0 = atoi(digit_0_str.c_str());
+		int digit_1 = atoi(digit_1_str.c_str());
+
+		if (digit_0 == 0)
+		{
+			coinDigits[0]->SetEmpty(true);
+		}
+		else {
+			coinDigits[0]->SetEmpty(false);
+			coinDigits[0]->SetDigit(digit_0);
+		}
+		coinDigits[1]->SetDigit(digit_1);
+	}
+}
+
+void CPlayScene::UpdateScore()
+{
+	string str_score = to_string(score);
+	int str_length = str_score.size();
+	
+	for (int i = 0; i < DIGIT_COUNT_SCORE - str_length; i++)
+		str_score = "0" + str_score;
+
+	str_length = str_score.size();
+	for (int i = 0; i < DIGIT_COUNT_SCORE; i++)
+	{
+		string digit_str;
+		digit_str = digit_str + str_score[str_length - (DIGIT_COUNT_SCORE - i)];
+		int digit = atoi(digit_str.c_str());
+		scoreDigits[i]->SetDigit(digit);
+	}
 }
 
 void CPlayScene::Render()
@@ -671,6 +755,8 @@ void CPlayScene::UpdateCamera()
 
 	/*if (GetAsyncKeyState(VK_UP) & 0x8000) cy -= 10;
 	if (GetAsyncKeyState(VK_DOWN) & 0x8000) cy += 10;*/
+
+	// UPDATE HUD
 	float ox, oy; //for hud
 	hud->GetOriginalPos(ox, oy);
 	hud->SetPosition((int)(ox + cx), (int)(oy + cy));

@@ -50,6 +50,11 @@ void CQuestionBlock::Reaction(CGameObject* by_another, int action)
 		break;
 	case ACTION_TOUCH:
 		SetState(QUESTION_BLOCK_STATE_TOGGLE);
+		if (itemID == OBJECT_TYPE_COIN)
+		{
+			LPPLAYSCENE currentScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+			currentScene->CollectCoin();
+		}
 		break;
 	}	
 }
@@ -71,7 +76,7 @@ void CQuestionBlock::SetState(int state)
 			vy = 0.0f;
 			TriggerItem();
 			break;
-	}	
+	}
 }
 
 void CQuestionBlock::TakeItem()
