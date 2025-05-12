@@ -42,6 +42,8 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 		coinDigits[i] = NULL;
 	for (int i = 0; i < DIGIT_COUNT_TIME; i++)
 		timeDigits[i] = NULL;
+	for (int i = 0; i < P_METER_COUNT; i++)
+		pMeter[i] = NULL;
 }
 
 
@@ -58,15 +60,6 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 #define SCREEN_HEIGHT 240
 #define OFFSET 32
 
-#define SCORE_OFFSET 68
-#define CURRENCY_OFFSET 148
-#define TIME_OFFSET 140
-
-#define OFFSET_Y_LINE1 168
-#define OFFSET_Y_LINE2 176
-
-#define TIMER_VALUE 300000
-
 float tempCamPosY = 0;
 
 bool isStartSpawned = false;
@@ -78,6 +71,9 @@ float timer = TIMER_VALUE;
 bool timerPause = false;
 
 int score = 0;
+
+int p_progress = 7;
+float p_run_time = 0;
 #pragma endregion
 
 void CPlayScene::_ParseSection_SPRITES(string line)
@@ -388,6 +384,18 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 			timeDigits[i] = new CDigit(x + TIME_OFFSET + i * DIGIT_NEAR_SPACING, y + OFFSET_Y_LINE2, false, 0);
 			objects.push_back(timeDigits[i]);
 		}
+		for (int i = 0; i < P_METER_COUNT; i++)
+		{
+			int pType = 0;
+			int pOffset = 0;
+			if (i == P_METER_COUNT - 1)
+			{
+				pType = 1;
+				pOffset = P_SWITCH_WIDTH / 4;
+			}
+			pMeter[i] = new CPMeter(x + pOffset + P_METER_OFFSET + i * DIGIT_NEAR_SPACING, y + OFFSET_Y_LINE1, pType, false);
+			objects.push_back(pMeter[i]);
+		}
 	}
 }
 
@@ -526,6 +534,12 @@ void CPlayScene::Update(DWORD dt)
 	UpdateCoin();
 	UpdateScore();
 
+	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
+	if (keyState->IsHold(VK_A)) UpdateRunTime(dt, true);
+	else UpdateRunTime(dt, false);
+
+	UpdatePMeter();
+
 	PurgeDeletedObjects();
 }
 
@@ -596,6 +610,28 @@ void CPlayScene::UpdateScore()
 		int digit = atoi(digit_str.c_str());
 		scoreDigits[i]->SetDigit(digit);
 	}
+}
+
+void CPlayScene::UpdatePMeter()
+{
+	for (int i = 0; i < p_progress; i++)
+		pMeter[i]->SetToggle(true);
+	for (int i = p_progress; i < P_METER_COUNT; i++)
+		pMeter[i]->SetToggle(false);
+}
+
+void CPlayScene::UpdateRunTime(DWORD dt, bool isProgress)
+{
+	if (isProgress)
+	{
+		if ((int)(p_run_time / P_PROGRESS_DELAY) < P_METER_COUNT) p_run_time += dt;
+	}
+	else
+	{
+		if (p_run_time > 0)	p_run_time -= dt / 2;
+		else if (p_run_time < 0) p_run_time = 0;
+	}
+	p_progress = p_run_time / P_PROGRESS_DELAY;
 }
 
 void CPlayScene::Render()
@@ -776,6 +812,11 @@ void CPlayScene::UpdateCamera()
 	{
 		coinDigits[i]->GetOriginalPos(odx, ody);
 		coinDigits[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
+	}
+	for (int i = 0; i < P_METER_COUNT; i++)
+	{
+		pMeter[i]->GetOriginalPos(odx, ody);
+		pMeter[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
 	}
 
 	CGame::GetInstance()->SetCamPos(cx, cy);

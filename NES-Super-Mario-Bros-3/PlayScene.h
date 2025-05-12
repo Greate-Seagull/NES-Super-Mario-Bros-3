@@ -23,6 +23,7 @@ protected:
 	CDigit* scoreDigits[DIGIT_COUNT_SCORE];
 	CDigit* coinDigits[DIGIT_COUNT_CURRENCY];
 	CDigit* timeDigits[DIGIT_COUNT_TIME];
+	CPMeter* pMeter[P_METER_COUNT];
 
 	vector<LPGAMEOBJECT> objects;
 
@@ -60,6 +61,8 @@ public:
 	void CollectCoin();
 	void UpdateCoin();
 	void UpdateScore();
+	void UpdatePMeter();
+	void UpdateRunTime(DWORD dt, bool isProgress);
 };
 
 typedef CPlayScene* LPPLAYSCENE;
