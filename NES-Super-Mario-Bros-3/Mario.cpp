@@ -3,6 +3,7 @@
 
 #include "Mario.h"
 #include "Game.h"
+#include "PlayScene.h"
 
 #include "Goomba.h"
 #include "Coin.h"
@@ -162,7 +163,8 @@ void CMario::OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e)
 void CMario::OnCollisionWithCoin(LPCOLLISIONEVENT e)
 {
 	Touch(e->obj);
-	//coin++;
+	LPPLAYSCENE currentScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+	currentScene->CollectCoin();
 }
 
 void CMario::OnCollisionWithPortal(LPCOLLISIONEVENT e)
