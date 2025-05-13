@@ -45,7 +45,7 @@
 
 #define TIMER_VALUE 300000
 
-#define P_PROGRESS_DELAY 250
+#define P_PROGRESS_DELAY 150
 
 class CDigit : public CGameObject {
 protected:

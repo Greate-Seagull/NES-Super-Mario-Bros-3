@@ -538,14 +538,10 @@ void CPlayScene::Update(DWORD dt)
 	float vx, vy;
 	if (keyState->IsHold(VK_A))
 	{
-		if (keyState->IsHold(VK_LEFT) || keyState->IsHold(VK_RIGHT))
+		player->GetSpeed(vx, vy);
+		if (abs(vx) >= MARIO_SMALL_RUNNING_MAX_VX / 2)
 		{
-			player->GetSpeed(vx, vy);
-			if (abs(vx) != 0)
-			{
-				UpdateRunTime(dt, true);
-			}
-			else UpdateRunTime(dt, false);
+			UpdateRunTime(dt, true);
 		}
 		else UpdateRunTime(dt, false);
 	}
