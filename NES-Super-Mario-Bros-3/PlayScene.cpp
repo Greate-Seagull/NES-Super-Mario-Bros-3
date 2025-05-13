@@ -535,10 +535,27 @@ void CPlayScene::Update(DWORD dt)
 	UpdateScore();
 
 	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
-	if (keyState->IsHold(VK_A)) UpdateRunTime(dt, true);
+	float vx, vy;
+	if (keyState->IsHold(VK_A))
+	{
+		if (keyState->IsHold(VK_LEFT) || keyState->IsHold(VK_RIGHT))
+		{
+			player->GetSpeed(vx, vy);
+			if (abs(vx) != 0)
+			{
+				UpdateRunTime(dt, true);
+			}
+			else UpdateRunTime(dt, false);
+		}
+		else UpdateRunTime(dt, false);
+	}
 	else UpdateRunTime(dt, false);
 
 	UpdatePMeter();
+
+	float px, py;
+	player->GetPosition(px, py);
+	DebugOutTitle(L"%f, %f", px, py);
 
 	PurgeDeletedObjects();
 }
