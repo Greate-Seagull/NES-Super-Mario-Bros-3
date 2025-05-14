@@ -9,9 +9,10 @@
 #include "HUD.h"
 //#include "Koopas.h"
 
-
 #define CAM_MAX_Y 283.0f
 #define COLLISION_RANGE 300.0f
+
+#define CAM_SPEED 0.03f
 
 class CPlayScene: public CScene
 {
@@ -43,6 +44,8 @@ public:
 	virtual void Render();
 	virtual void Unload();
 
+	int GetCurrentSceneID() { return id; }
+
 	LPGAMEOBJECT GetPlayer() { return player; }
 	
 	void Clear();
@@ -55,7 +58,7 @@ public:
 	bool IsInRange(LPGAMEOBJECT obj, float start_x, float end_x, float start_y, float end_y);
 	vector<LPGAMEOBJECT> FilterByPlayer(float range = COLLISION_RANGE);
 	vector<LPGAMEOBJECT> FilterByCam();
-	void UpdateCamera();
+	void UpdateCamera(DWORD dt);
 
 	void UpdateTime();
 	void CollectCoin();

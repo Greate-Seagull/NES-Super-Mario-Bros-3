@@ -526,7 +526,7 @@ void CPlayScene::Update(DWORD dt)
 	for (auto& obj : nearbyObjects)
 		obj->Update(dt, &nearbyObjects);
 
-	UpdateCamera();
+	UpdateCamera(dt);
 
 	// UPDATE HUD
 	if (!timerPause) timer -= dt;
@@ -778,32 +778,43 @@ vector<LPGAMEOBJECT> CPlayScene::FilterByCam()
 	return process_list;
 }
 
-void CPlayScene::UpdateCamera()
+void CPlayScene::UpdateCamera(DWORD dt)
 {
 	// Update camera to follow mario
 	CGame* game = CGame::GetInstance();
+	LPPLAYSCENE curr = (LPPLAYSCENE)game->GetCurrentScene();
+	int sceneID = curr->GetCurrentSceneID();
 
 	float cx, cy;
-	player->GetPosition(cx, cy);
-
-	float player_bbox_height = player->GetBBoxHeight();
-
-	cx = cx - game->GetBackBufferWidth() / 2.0f;
-	cx = fmax(0.0f, cx);
-
-	if (player->IsFlying())
+	game->GetCamPos(cx, cy);
+	if (sceneID == 1)
 	{
-		cy = cy - game->GetBackBufferHeight() / 2.0f;
-		cy = fmin(CAM_MAX_Y, cy);
+		player->GetPosition(cx, cy);
+
+		float player_bbox_height = player->GetBBoxHeight();
+
+		cx = cx - game->GetBackBufferWidth() / 2.0f;
+		cx = fmax(0.0f, cx);
+
+		if (player->IsFlying())
+		{
+			cy = cy - game->GetBackBufferHeight() / 2.0f;
+			cy = fmin(CAM_MAX_Y, cy);
+		}
+		else
+		{
+			cy = CAM_MAX_Y;
+			//cy = cy + player_bbox_height / 2.0f + 16.0f - game->GetBackBufferHeight();
+		}
+
+		/*if (GetAsyncKeyState(VK_UP) & 0x8000) cy -= 10;
+		if (GetAsyncKeyState(VK_DOWN) & 0x8000) cy += 10;*/
 	}
-	else
+	else if (sceneID == 3)
 	{
+		cx += dt * CAM_SPEED;
 		cy = CAM_MAX_Y;
-		//cy = cy + player_bbox_height / 2.0f + 16.0f - game->GetBackBufferHeight();
 	}
-
-	/*if (GetAsyncKeyState(VK_UP) & 0x8000) cy -= 10;
-	if (GetAsyncKeyState(VK_DOWN) & 0x8000) cy += 10;*/
 
 	// UPDATE HUD
 	float ox, oy; //for hud
