@@ -19,6 +19,8 @@
 #define NON_OBJECT_TYPE_CLOUD -4
 #define NON_OBJECT_TYPE_MAP_ICON -5
 
+#define NON_OBJECT_TYPE_HUD -20 
+
 #define DEAD_STATE_TRIGGER -99
 
 #pragma endregion
