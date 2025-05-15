@@ -275,11 +275,13 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		int sprite_begin = atoi(tokens[7].c_str());
 		int sprite_middle = atoi(tokens[8].c_str());
 		int sprite_end = atoi(tokens[9].c_str());
+		int falling = atoi(tokens[10].c_str());
 
 		obj = new CPlatform(
 			x, y,
 			cell_width, cell_height, length, type,
-			sprite_begin, sprite_middle, sprite_end
+			sprite_begin, sprite_middle, sprite_end,
+			falling
 		);
 
 		break;
@@ -551,7 +553,6 @@ void CPlayScene::Update(DWORD dt)
 
 	float px, py;
 	player->GetPosition(px, py);
-	DebugOutTitle(L"%f, %f", px, py);
 
 	PurgeDeletedObjects();
 }
@@ -787,7 +788,7 @@ void CPlayScene::UpdateCamera(DWORD dt)
 
 	float cx, cy;
 	game->GetCamPos(cx, cy);
-	if (sceneID == 1)
+	if (sceneID == 1 || sceneID == 2)
 	{
 		player->GetPosition(cx, cy);
 

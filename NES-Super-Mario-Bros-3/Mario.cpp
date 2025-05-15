@@ -16,6 +16,8 @@
 
 #include "Collision.h"
 
+bool isOnPlatform = false;
+
 CMario::CMario(float x, float y):
 	CCreature(x, y)
 {
@@ -70,6 +72,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 void CMario::Living(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
 	Flying();
+	if (isOnPlatform) y = y + dt * PLATFORM_FALLING_SPEED;
 	Move(dt);
 
 	DoSpecialActions(dt, coObjects);
@@ -186,6 +189,11 @@ void CMario::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 	{
 		vx = 0.0f;
 	}
+
+	CPlatform* p = (CPlatform*)(e->obj);
+	p->SetState(PLATFORM_STATE_FALLING);
+	if (p->IsFallingType() == 1) isOnPlatform = true;
+	else isOnPlatform = false;
 }
 
 void CMario::OnCollisionWithHelpfulObject(LPCOLLISIONEVENT e)
@@ -195,7 +203,6 @@ void CMario::OnCollisionWithHelpfulObject(LPCOLLISIONEVENT e)
 
 void CMario::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 {	
-
 	if (e->ny)
 	{
 		vy = 0.0f;
@@ -472,6 +479,7 @@ void CMario::StartNormalActions(DWORD& t)
 	//jumping
 	if (isOnGround && keyState->IsPressed(VK_S))
 	{
+		isOnPlatform = false;
 		ny = DIRECTION_UP;
 		vy = ny * MARIO_START_JUMP_VY;
 		calculated_ay = 0.0f;
@@ -950,6 +958,11 @@ void CMario::Flying()
 	{
 		vy = 0.0f;
 	}
+}
+
+void CMario::SetFootPlatform(bool onPlatform)
+{
+	isOnPlatform = onPlatform;
 }
 
 void CMario::SetState(int state)
