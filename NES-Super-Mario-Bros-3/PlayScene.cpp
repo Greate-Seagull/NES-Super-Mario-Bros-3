@@ -215,15 +215,26 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		int sprite_begin_begin = atoi(tokens[6].c_str());
 		int sprite_middle_begin = atoi(tokens[7].c_str());
 		int sprite_end_begin = atoi(tokens[8].c_str());
-		int sprite_begin_end = atoi(tokens[9].c_str());
-		int sprite_middle_end = atoi(tokens[10].c_str());
-		int sprite_end_end = atoi(tokens[11].c_str());
 
-		obj = new CCloud
-		(x, y, cell_width, cell_height, length + 2,
-			sprite_begin_begin, sprite_middle_begin, sprite_end_begin,
-			sprite_begin_end, sprite_middle_end, sprite_end_end);
-		break;
+		if (tokens.size() > 9)
+		{
+			int sprite_begin_end = atoi(tokens[9].c_str());
+			int sprite_middle_end = atoi(tokens[10].c_str());
+			int sprite_end_end = atoi(tokens[11].c_str());
+
+			obj = new CCloud
+			(x, y, cell_width, cell_height, length + 2,
+				sprite_begin_begin, sprite_middle_begin, sprite_end_begin,
+				sprite_begin_end, sprite_middle_end, sprite_end_end);
+			break;
+		}
+		else
+		{
+			obj = new CCloud
+			(x, y, cell_width, cell_height, length, 
+				sprite_begin_begin, sprite_middle_begin, sprite_end_begin);
+			break;
+		}
 	}
 	case NON_OBJECT_TYPE_MAP_ICON:
 	{
