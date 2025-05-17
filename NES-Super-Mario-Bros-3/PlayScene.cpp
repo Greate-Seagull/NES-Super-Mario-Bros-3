@@ -46,7 +46,6 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 		pMeter[i] = NULL;
 }
 
-
 #define SCENE_SECTION_UNKNOWN -1
 #define SCENE_SECTION_ASSETS	1
 #define SCENE_SECTION_OBJECTS	2
@@ -59,6 +58,8 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
 #define OFFSET 32
+
+#define MAX_CAMERA_POSITION 1792
 
 float tempCamPosY = 0;
 
@@ -824,7 +825,14 @@ void CPlayScene::UpdateCamera(DWORD dt)
 	}
 	else if (sceneID == 3)
 	{
-		cx += dt * CAM_SPEED;
+		if (cx >= MAX_CAMERA_POSITION)
+		{
+			cx = MAX_CAMERA_POSITION;
+		}
+		else
+		{
+			cx += dt * CAM_SPEED;
+		}
 		cy = CAM_MAX_Y;
 	}
 
