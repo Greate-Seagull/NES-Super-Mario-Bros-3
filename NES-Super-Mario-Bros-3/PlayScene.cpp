@@ -800,7 +800,7 @@ void CPlayScene::UpdateCamera(DWORD dt)
 
 	float cx, cy;
 	game->GetCamPos(cx, cy);
-	if (sceneID == 1 || sceneID == 2)
+	if (sceneID == 1 || sceneID == 2 || sceneID == 4)
 	{
 		player->GetPosition(cx, cy);
 
