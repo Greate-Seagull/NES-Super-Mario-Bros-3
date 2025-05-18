@@ -30,6 +30,7 @@ stripedbrick.txt
 mapicon.txt
 levelend.txt
 particle.txt
+other.txt
 #
 [OBJECTS]
 # type	x	y	extra_settings per object type

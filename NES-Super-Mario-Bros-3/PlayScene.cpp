@@ -410,6 +410,13 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 			pMeter[i] = new CPMeter(x + pOffset + P_METER_OFFSET + i * DIGIT_NEAR_SPACING, y + OFFSET_Y_LINE1, pType, false);
 			objects.push_back(pMeter[i]);
 		}
+		for (int i = 0; i < HUD_CARD_COUNT; i++)
+		{
+			float xOffset = 7;
+			float yOffset = 4;
+			cards[i] = new CHUDCard(x + CARD_OFFSET + xOffset + i * CARD_NEAR_SPACING, y + OFFSET_Y_LINE1 + yOffset, 0);
+			objects.push_back(cards[i]);
+		}
 	}
 }
 
@@ -660,6 +667,19 @@ void CPlayScene::UpdateRunTime(DWORD dt, bool isProgress)
 	p_progress = p_run_time / P_PROGRESS_DELAY;
 }
 
+void CPlayScene::InsertCard(int type)
+{
+	for (int i = 0; i < HUD_CARD_COUNT; i++)
+	{
+		if (cards[i]->GetType() != 0) continue;
+		else
+		{
+			cards[i]->SetType(type);
+			break;
+		}
+	}
+}
+
 void CPlayScene::Render()
 {
 	//if (background) background->Render();
@@ -841,7 +861,7 @@ void CPlayScene::UpdateCamera(DWORD dt)
 	hud->GetOriginalPos(ox, oy);
 	hud->SetPosition((int)(ox + cx), (int)(oy + cy));
 
-	float odx, ody; //for digits
+	float odx, ody; //for digits & cards
 	for (int i = 0; i < DIGIT_COUNT_SCORE; i++)
 	{
 		scoreDigits[i]->GetOriginalPos(odx, ody);
@@ -861,6 +881,11 @@ void CPlayScene::UpdateCamera(DWORD dt)
 	{
 		pMeter[i]->GetOriginalPos(odx, ody);
 		pMeter[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
+	}
+	for (int i = 0; i < HUD_CARD_COUNT; i++)
+	{
+		cards[i]->GetOriginalPos(odx, ody);
+		cards[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
 	}
 
 	CGame::GetInstance()->SetCamPos(cx, cy);

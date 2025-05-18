@@ -3,8 +3,6 @@
 #include "Animation.h"
 #include "Animations.h"
 
-#define ID_ANI_REWARD_BASE -60
-
 #define REWARD_OFFSET_MAXIMUM_TIME 4
 
 void CBackground::GetBoundingBox(float& l, float& t, float& r, float& b) {
@@ -103,19 +101,11 @@ void CReward::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 			}
 			}
 		}
+		aniID = ID_ANI_REWARD_BASE - this->type;
 	}
-}
-
-void CReward::Render()
-{
-	CAnimations* animations = CAnimations::GetInstance();
-	animations->Get(ID_ANI_REWARD_BASE - this->type)->Render(x, y);
-}
-
-void CReward::GetBoundingBox(float& l, float& t, float& r, float& b)
-{
-	l = 0;
-	t = 0;
-	r = 0;
-	b = 0;
+	else
+	{
+		y -= REWARD_FLOATING_SPEED * dt;
+		aniID = ID_ANI_COLLECTED_REWARD_BASE - this->type;
+	}
 }

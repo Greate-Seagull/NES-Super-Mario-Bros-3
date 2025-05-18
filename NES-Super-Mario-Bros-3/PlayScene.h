@@ -25,6 +25,7 @@ protected:
 	CDigit* coinDigits[DIGIT_COUNT_CURRENCY];
 	CDigit* timeDigits[DIGIT_COUNT_TIME];
 	CPMeter* pMeter[P_METER_COUNT];
+	CHUDCard* cards[HUD_CARD_COUNT];
 
 	vector<LPGAMEOBJECT> objects;
 
@@ -66,6 +67,7 @@ public:
 	void UpdateScore();
 	void UpdatePMeter();
 	void UpdateRunTime(DWORD dt, bool isProgress);
+	void InsertCard(int type);
 };
 
 typedef CPlayScene* LPPLAYSCENE;

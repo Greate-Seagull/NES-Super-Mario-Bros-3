@@ -1,5 +1,5 @@
 [SETTINGS]
-start	4
+start	1
 width	320
 height	240
 
@@ -16,6 +16,7 @@ height	240
 # id	file 
 [TEXTURES]
 -100	textures\bbox.png
+-25	textures\goal_roulette.png
 -20	textures\HUD-inventory.png
 -10	textures\background.jpg
 0	textures\mario_left.png

@@ -37,8 +37,8 @@
 #define SCORE_OFFSET 68
 #define CURRENCY_OFFSET 148
 #define TIME_OFFSET 140
-
 #define P_METER_OFFSET 68
+#define CARD_OFFSET 177
 
 #define OFFSET_Y_LINE1 168
 #define OFFSET_Y_LINE2 176
@@ -46,6 +46,9 @@
 #define TIMER_VALUE 300000
 
 #define P_PROGRESS_DELAY 150
+
+#define HUD_CARD_COUNT 3
+#define CARD_NEAR_SPACING 24
 
 class CDigit : public CGameObject {
 protected:
@@ -123,6 +126,39 @@ public:
 		if (this->isToggled != isToggled)
 			this->isToggled = isToggled;
 	}
+};
+
+#define HUD_CARD_WIDTH 22
+#define HUD_CARD_HEIGHT 26
+
+#define ID_HUD_CARD_BASE -310
+
+class CHUDCard : public CGameObject {
+protected:
+	int type;
+
+	float originalX, originalY;
+public:
+	CHUDCard(float x, float y, int type) : CGameObject(x, y)
+	{
+		this->type = type;
+
+		originalX = x;
+		originalY = y;
+
+		aniID = ID_HUD_CARD_BASE - this->type;
+
+		SetBoundingBox(HUD_CARD_WIDTH, HUD_CARD_HEIGHT);
+	}
+	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+	{
+		aniID = ID_HUD_CARD_BASE - this->type;
+		RenderBoundingBox();
+	}
+
+	void GetOriginalPos(float& ox, float& oy) { ox = originalX; oy = originalY; }
+	void SetType(int type) { this->type = type; }
+	int GetType() { return this->type; }
 };
 
 class CHud : public CGameObject {

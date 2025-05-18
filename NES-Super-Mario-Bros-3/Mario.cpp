@@ -13,6 +13,7 @@
 #include "Platform.h"
 #include "SuperMushroom.h"
 #include "SuperLeaf.h"
+#include "Background.h"
 
 #include "Collision.h"
 
@@ -102,6 +103,8 @@ void CMario::OnCollisionWith(LPCOLLISIONEVENT e)
 		OnCollisionWithHelpfulObject(e);
 	else if (dynamic_cast<CPortal*>(e->obj))
 		OnCollisionWithPortal(e);
+	else if (dynamic_cast<CRandomCard*>(e->obj))
+		OnCollisionWithReward(e);
 	/*else if (dynamic_cast<CDeadStateTrigger*>(e->obj))
 		OnCollisionWithDeadTrigger(e);*/
 	/*else if (dynamic_cast<CRandomCard*>(e->obj))
@@ -223,6 +226,12 @@ void CMario::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 	{
 		vx = 0.0f;
 	}
+}
+
+void CMario::OnCollisionWithReward(LPCOLLISIONEVENT e)
+{
+	CRandomCard* rC = (CRandomCard*)(e->obj);
+	rC->Switch(false);
 }
 
 void CMario::Render()
