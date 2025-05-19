@@ -65,6 +65,7 @@ public:
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 
 	void Switch(bool run) { this->run = run; }
+	bool IsRunning() { return this->run; }
 	int GetType() { return type; }
 };
 
@@ -112,19 +113,22 @@ public:
 	int IsBlocking() { return 0; }
 
 	void Switch(bool run)
-	{ 
-		reward->Switch(run);
-		if (!run)
+	{
+		if (reward->IsRunning())
 		{
-			courseClear = new CClearText(x, y - 64, COURSE_CLEAR_TEXT);
-			youGotACard = new CClearText(x - 16, y - 48, YOU_GOT_A_CARD_TEXT);
-			card = new CHUDCard(x + 64, y - 40, reward->GetType());
+			reward->Switch(run);
+			if (!run)
+			{
+				courseClear = new CClearText(x, y - 64, COURSE_CLEAR_TEXT);
+				youGotACard = new CClearText(x - 16, y - 48, YOU_GOT_A_CARD_TEXT);
+				card = new CHUDCard(x + 64, y - 40, reward->GetType());
 
-			LPPLAYSCENE playScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
-			playScene->Insert(courseClear, -1);
-			playScene->Insert(youGotACard, -1);
-			playScene->Insert(card, -1);
-			playScene->InsertCard(reward->GetType());
+				LPPLAYSCENE playScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+				playScene->Insert(courseClear, -1);
+				playScene->Insert(youGotACard, -1);
+				playScene->Insert(card, -1);
+				playScene->InsertCard(reward->GetType());
+			}
 		}
 	}
 
