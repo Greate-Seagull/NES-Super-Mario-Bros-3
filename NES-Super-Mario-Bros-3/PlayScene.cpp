@@ -71,6 +71,7 @@ int coin = 0;
 float timer = TIMER_VALUE;
 bool timerPause = false;
 
+#define SCORE_PER_SECOND 50
 int score = 0;
 
 int p_progress = 7;
@@ -676,6 +677,24 @@ void CPlayScene::InsertCard(int type)
 		{
 			cards[i]->SetType(type);
 			break;
+		}
+	}
+}
+
+void CPlayScene::CollectingScore()
+{
+	timerPause = true;
+	if (timer > 0)
+	{
+		if (timer >= 10000)
+		{
+			score = score + 10 * SCORE_PER_SECOND;
+			timer -= 10000;
+		}
+		else if (timer >= 1000)
+		{
+			score = score + SCORE_PER_SECOND;
+			timer -= 1000;
 		}
 	}
 }

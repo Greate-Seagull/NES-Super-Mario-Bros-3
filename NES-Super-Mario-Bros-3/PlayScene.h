@@ -68,6 +68,8 @@ public:
 	void UpdatePMeter();
 	void UpdateRunTime(DWORD dt, bool isProgress);
 	void InsertCard(int type);
+
+	void CollectingScore();
 };
 
 typedef CPlayScene* LPPLAYSCENE;

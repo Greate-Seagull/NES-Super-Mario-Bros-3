@@ -107,5 +107,8 @@ void CReward::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	{
 		y -= REWARD_FLOATING_SPEED * dt;
 		aniID = ID_ANI_COLLECTED_REWARD_BASE - this->type;
+
+		LPPLAYSCENE playScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+		playScene->CollectingScore();
 	}
 }
