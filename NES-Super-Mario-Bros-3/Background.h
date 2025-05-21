@@ -69,6 +69,10 @@ public:
 	int GetType() { return type; }
 };
 
+#define COURSE_CLEAR_TIME 1730
+#define YOU_GOT_A_CARD_TIME 2600
+#define SCORE_COLLECTING_TIME 3470
+
 class CRandomCard : public CGameObject
 {
 protected:
@@ -82,6 +86,9 @@ protected:
 	CClearText* courseClear;
 	CClearText* youGotACard;
 	CHUDCard* card;
+
+	bool scene_switch_ready;
+	float wait_time;
 public:
 	CRandomCard(float x, float y,
 		int sprite_id_begin_begin, int sprite_id_middle_begin, int sprite_id_end_begin,
@@ -104,33 +111,18 @@ public:
 		reward = new CReward(x + cellWidth, y - cellHeight);
 		LPPLAYSCENE playScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
 		playScene->Insert(reward, -1);
+
+		scene_switch_ready = false;
+		wait_time = 0;
 	}
 	void Render();
-	void Update(DWORD dt) {}
+	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 	void GetBoundingBox(float& l, float& t, float& r, float& b);
 
 	int IsCollidable() { return 1; }
 	int IsBlocking() { return 0; }
 
-	void Switch(bool run)
-	{
-		if (reward->IsRunning())
-		{
-			reward->Switch(run);
-			if (!run)
-			{
-				courseClear = new CClearText(x, y - 64, COURSE_CLEAR_TEXT);
-				youGotACard = new CClearText(x - 16, y - 48, YOU_GOT_A_CARD_TEXT);
-				card = new CHUDCard(x + 64, y - 40, reward->GetType());
-
-				LPPLAYSCENE playScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
-				playScene->Insert(courseClear, -1);
-				playScene->Insert(youGotACard, -1);
-				playScene->Insert(card, -1);
-				playScene->InsertCard(reward->GetType());
-			}
-		}
-	}
+	void Switch(bool run);
 
 	~CRandomCard() 
 	{

@@ -61,15 +61,19 @@ public:
 	vector<LPGAMEOBJECT> FilterByCam();
 	void UpdateCamera(DWORD dt);
 
+	void AddHudDetail(float x, float y);
+
 	void UpdateTime();
 	void CollectCoin();
 	void UpdateCoin();
 	void UpdateScore();
 	void UpdatePMeter();
 	void UpdateRunTime(DWORD dt, bool isProgress);
+	void BeginCard();
 	void InsertCard(int type);
 
 	void CollectingScore();
+	void ToggleSceneSwitch();
 };
 
 typedef CPlayScene* LPPLAYSCENE;

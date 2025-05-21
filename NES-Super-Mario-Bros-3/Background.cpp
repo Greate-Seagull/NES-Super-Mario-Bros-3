@@ -71,6 +71,61 @@ void CRandomCard::GetBoundingBox(float& l, float& t, float& r, float& b)
 	b = t + cellWidth;
 }
 
+void CRandomCard::Switch(bool run)
+{
+	if (reward->IsRunning())
+	{
+		reward->Switch(run);
+		if (!run)
+		{
+			scene_switch_ready = true;
+
+			LPPLAYSCENE playScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+			playScene->ToggleSceneSwitch();
+		}
+	}
+}
+
+void CRandomCard::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+{
+	if (scene_switch_ready)
+	{
+		wait_time += dt;
+
+		if (wait_time > COURSE_CLEAR_TIME)
+		{
+			if (wait_time > SCORE_COLLECTING_TIME)
+			{
+				LPPLAYSCENE playScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+				playScene->CollectingScore();
+			}
+			else if (wait_time > YOU_GOT_A_CARD_TIME)
+			{
+				if (youGotACard == NULL)
+				{
+					youGotACard = new CClearText(x - 8, y - 48, YOU_GOT_A_CARD_TEXT);
+					card = new CHUDCard(x + 72, y - 40, reward->GetType());
+
+					LPPLAYSCENE playScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+					playScene->Insert(youGotACard, -1);
+					playScene->Insert(card, -1);
+					playScene->InsertCard(reward->GetType());
+				}
+			}
+			else
+			{
+				if (courseClear == NULL)
+				{
+					courseClear = new CClearText(x + 8, y - 64, COURSE_CLEAR_TEXT);
+
+					LPPLAYSCENE playScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+					playScene->Insert(courseClear, -1);
+				}
+			}
+		}
+	}
+}
+
 void CReward::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
 	if (run)
@@ -107,8 +162,5 @@ void CReward::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	{
 		y -= REWARD_FLOATING_SPEED * dt;
 		aniID = ID_ANI_COLLECTED_REWARD_BASE - this->type;
-
-		LPPLAYSCENE playScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
-		playScene->CollectingScore();
 	}
 }

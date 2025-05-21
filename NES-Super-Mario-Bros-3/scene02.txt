@@ -7,6 +7,7 @@ coin.txt
 brick.txt
 stripedbrick.txt
 pipe.txt
+other.txt
 #
 [OBJECTS]
 # MARIO
