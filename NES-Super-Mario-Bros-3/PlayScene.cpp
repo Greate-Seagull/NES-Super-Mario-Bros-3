@@ -7,6 +7,7 @@
 #include "Textures.h"
 #include "Sprites.h"
 #include "Background.h"
+#include "HUD.h"
 #include "Portal.h"
 #include "DeadStateTrigger.h"
 #include "Coin.h"
@@ -34,8 +35,16 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 	player = NULL;
 	//key_handler = new CSampleKeyHandler(this);
 	background = NULL;	
+	hud = NULL;
+	for (int i = 0; i < DIGIT_COUNT_SCORE; i++)
+		scoreDigits[i] = NULL;
+	for (int i = 0; i < DIGIT_COUNT_CURRENCY; i++)
+		coinDigits[i] = NULL;
+	for (int i = 0; i < DIGIT_COUNT_TIME; i++)
+		timeDigits[i] = NULL;
+	for (int i = 0; i < P_METER_COUNT; i++)
+		pMeter[i] = NULL;
 }
-
 
 #define SCENE_SECTION_UNKNOWN -1
 #define SCENE_SECTION_ASSETS	1
@@ -50,11 +59,32 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 #define SCREEN_HEIGHT 240
 #define OFFSET 32
 
+#define MAX_CAMERA_POSITION 1792
+
+#define SCENE_SWITCH_WAIT_TIME 6000
+
 float tempCamPosY = 0;
 
 bool isStartSpawned = false;
 
+bool toggleSceneSwitch = false;
+float wait_time = 0;
+int next_level_scene;
+
+#pragma region HUD INFORMATION
 int coin = 0;
+
+float timer = TIMER_VALUE;
+bool timerPause = false;
+
+#define SCORE_PER_SECOND 50
+int score = 0;
+
+int p_progress = 7;
+float p_run_time = 0;
+
+int cardID[HUD_CARD_COUNT] = { 0, 0, 0 };
+#pragma endregion
 
 void CPlayScene::_ParseSection_SPRITES(string line)
 {
@@ -156,10 +186,13 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		int sprite_middle_end = atoi(tokens[10].c_str());
 		int sprite_end_end = atoi(tokens[11].c_str());
 
+		int next_level = atoi(tokens[12].c_str());
+
 		obj = new CRandomCard(x, y,
 			sprite_begin_begin, sprite_middle_begin, sprite_end_begin,
 			sprite_begin_middle, sprite_middle_middle, sprite_end_middle,
 			sprite_begin_end, sprite_middle_end, sprite_end_end);
+		next_level_scene = next_level;
 		break;
 	}
 	case DEAD_STATE_TRIGGER:
@@ -195,21 +228,43 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		int sprite_begin_begin = atoi(tokens[6].c_str());
 		int sprite_middle_begin = atoi(tokens[7].c_str());
 		int sprite_end_begin = atoi(tokens[8].c_str());
-		int sprite_begin_end = atoi(tokens[9].c_str());
-		int sprite_middle_end = atoi(tokens[10].c_str());
-		int sprite_end_end = atoi(tokens[11].c_str());
 
-		obj = new CCloud
-		(x, y, cell_width, cell_height, length + 2,
-			sprite_begin_begin, sprite_middle_begin, sprite_end_begin,
-			sprite_begin_end, sprite_middle_end, sprite_end_end);
-		break;
+		if (tokens.size() > 9)
+		{
+			int sprite_begin_end = atoi(tokens[9].c_str());
+			int sprite_middle_end = atoi(tokens[10].c_str());
+			int sprite_end_end = atoi(tokens[11].c_str());
+
+			obj = new CCloud
+			(x, y, cell_width, cell_height, length + 2,
+				sprite_begin_begin, sprite_middle_begin, sprite_end_begin,
+				sprite_begin_end, sprite_middle_end, sprite_end_end);
+			break;
+		}
+		else
+		{
+			obj = new CCloud
+			(x, y, cell_width, cell_height, length, 
+				sprite_begin_begin, sprite_middle_begin, sprite_end_begin);
+			break;
+		}
 	}
 	case NON_OBJECT_TYPE_MAP_ICON:
 	{
 		int icon_type = atoi(tokens[3].c_str());
 
 		obj = new CMapIcon(x, y, icon_type);
+		break;
+	}
+	case NON_OBJECT_TYPE_HUD:
+	{
+		obj = new CHud(x, y);
+		if (hud)
+		{
+			hud->SetPosition(x, y);
+			break;
+		}
+		hud = (CHud*)obj;
 		break;
 	}
 
@@ -220,15 +275,16 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 			return;
 		}
 
-		if (isStartSpawned)
+		if (isStartSpawned) // This is mainly used for Mario's pipe entering.
+							// Don't delete this because it's important!
 		{
 			CGame::GetInstance()->GetNewPlayerPos(x, y);
+			isStartSpawned = false;
 		}
 		obj = new CMario(x,y); 
 		player = (CMario*)obj;  
 
 		DebugOut(L"[INFO] Player object has been created!\n");
-		isStartSpawned = true;
 		break;
 	case OBJECT_TYPE_GOOMBA: obj = new CGoomba(x,y); break;
 	case OBJECT_TYPE_PARAGOOMBA: obj = new CParagoomba(x,y); break;
@@ -249,11 +305,13 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		int sprite_begin = atoi(tokens[7].c_str());
 		int sprite_middle = atoi(tokens[8].c_str());
 		int sprite_end = atoi(tokens[9].c_str());
+		int falling = atoi(tokens[10].c_str());
 
 		obj = new CPlatform(
 			x, y,
 			cell_width, cell_height, length, type,
-			sprite_begin, sprite_middle, sprite_end
+			sprite_begin, sprite_middle, sprite_end,
+			falling
 		);
 
 		break;
@@ -340,6 +398,12 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	obj->SetPosition(x, y);
 
 	objects.push_back(obj);
+
+	if (dynamic_cast<CHud*>(obj))
+	{
+		AddHudDetail(x, y);
+		BeginCard();
+	}
 }
 
 void CPlayScene::LoadAssets(LPCWSTR assetFile)
@@ -469,9 +533,230 @@ void CPlayScene::Update(DWORD dt)
 	for (auto& obj : nearbyObjects)
 		obj->Update(dt, &nearbyObjects);
 
-	UpdateCamera();	
+	UpdateCamera(dt);
+
+	// UPDATE HUD
+	if (!timerPause) timer -= dt;
+	UpdateTime();
+	UpdateCoin();
+	UpdateScore();
+
+	if (toggleSceneSwitch)
+	{
+		wait_time += dt;
+		if (wait_time >= SCENE_SWITCH_WAIT_TIME)
+		{
+			toggleSceneSwitch = false;
+			wait_time = 0;
+
+			if (next_level_scene != id)	CGame::GetInstance()->InitiateSwitchScene(next_level_scene);
+			
+			if (next_level_scene == 3)
+			{
+				float cx, cy;
+				CGame::GetInstance()->GetCamPos(cx, cy);
+				CGame::GetInstance()->SetCamPos(0, cy);
+			}
+
+			timer = TIMER_VALUE;
+			timerPause = false;
+		}
+	}
+
+	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
+	float vx, vy;
+	if (keyState->IsHold(VK_A))
+	{
+		player->GetSpeed(vx, vy);
+		if (abs(vx) >= MARIO_SMALL_RUNNING_MAX_VX / 2)
+		{
+			UpdateRunTime(dt, true);
+		}
+		else UpdateRunTime(dt, false);
+	}
+	else UpdateRunTime(dt, false);
+
+	UpdatePMeter();
+
+	float px, py;
+	player->GetPosition(px, py);
 
 	PurgeDeletedObjects();
+}
+
+void CPlayScene::AddHudDetail(float x, float y)
+{
+	for (int i = 0; i < DIGIT_COUNT_SCORE; i++)
+	{
+		scoreDigits[i] = new CDigit(x + SCORE_OFFSET + i * DIGIT_NEAR_SPACING, y + OFFSET_Y_LINE2, false, 0);
+		objects.push_back(scoreDigits[i]);
+	}
+	for (int i = 0; i < DIGIT_COUNT_CURRENCY; i++)
+	{
+		coinDigits[i] = new CDigit(x + CURRENCY_OFFSET + i * DIGIT_NEAR_SPACING, y + OFFSET_Y_LINE1, false, 0);
+		objects.push_back(coinDigits[i]);
+	}
+	for (int i = 0; i < DIGIT_COUNT_TIME; i++)
+	{
+		timeDigits[i] = new CDigit(x + TIME_OFFSET + i * DIGIT_NEAR_SPACING, y + OFFSET_Y_LINE2, false, 0);
+		objects.push_back(timeDigits[i]);
+	}
+	for (int i = 0; i < P_METER_COUNT; i++)
+	{
+		int pType = 0;
+		int pOffset = 0;
+		if (i == P_METER_COUNT - 1)
+		{
+			pType = 1;
+			pOffset = P_SWITCH_WIDTH / 4;
+		}
+		pMeter[i] = new CPMeter(x + pOffset + P_METER_OFFSET + i * DIGIT_NEAR_SPACING, y + OFFSET_Y_LINE1, pType, false);
+		objects.push_back(pMeter[i]);
+	}
+	for (int i = 0; i < HUD_CARD_COUNT; i++)
+	{
+		float xOffset = 7;
+		float yOffset = 4;
+		cards[i] = new CHUDCard(x + CARD_OFFSET + xOffset + i * CARD_NEAR_SPACING, y + OFFSET_Y_LINE1 + yOffset, 0);
+		objects.push_back(cards[i]);
+	}
+}
+
+void CPlayScene::UpdateTime()
+{
+	int currentTime = (int)(timer / 1000);
+	string str_currentTime = to_string(currentTime);
+
+	for (int i = 0; i < DIGIT_COUNT_TIME - str_currentTime.size(); i++)
+		str_currentTime = "0" + str_currentTime;
+
+	for (int i = 0; i < DIGIT_COUNT_TIME; i++)
+	{
+		string digit_str;
+		digit_str = digit_str + str_currentTime[i];
+		int digit = atoi(digit_str.c_str());
+		timeDigits[i]->SetDigit(digit);
+	}
+}
+
+void CPlayScene::CollectCoin() { coin++; }
+
+void CPlayScene::UpdateCoin()
+{
+	string str_coin = to_string(coin);
+	int str_length = str_coin.size();
+	
+	if (str_length == 1)
+	{
+		coinDigits[0]->SetEmpty(true);
+		coinDigits[1]->SetDigit(coin);
+	}
+	else
+	{
+		string digit_0_str, digit_1_str;
+
+		digit_0_str = digit_0_str + str_coin[str_length - 2];
+		digit_1_str = digit_1_str + str_coin[str_length - 1];
+
+		int digit_0 = atoi(digit_0_str.c_str());
+		int digit_1 = atoi(digit_1_str.c_str());
+
+		if (digit_0 == 0)
+		{
+			coinDigits[0]->SetEmpty(true);
+		}
+		else {
+			coinDigits[0]->SetEmpty(false);
+			coinDigits[0]->SetDigit(digit_0);
+		}
+		coinDigits[1]->SetDigit(digit_1);
+	}
+}
+
+void CPlayScene::UpdateScore()
+{
+	string str_score = to_string(score);
+	int str_length = str_score.size();
+	
+	for (int i = 0; i < DIGIT_COUNT_SCORE - str_length; i++)
+		str_score = "0" + str_score;
+
+	str_length = str_score.size();
+	for (int i = 0; i < DIGIT_COUNT_SCORE; i++)
+	{
+		string digit_str;
+		digit_str = digit_str + str_score[str_length - (DIGIT_COUNT_SCORE - i)];
+		int digit = atoi(digit_str.c_str());
+		scoreDigits[i]->SetDigit(digit);
+	}
+}
+
+void CPlayScene::UpdatePMeter()
+{
+	for (int i = 0; i < p_progress; i++)
+		pMeter[i]->SetToggle(true);
+	for (int i = p_progress; i < P_METER_COUNT; i++)
+		pMeter[i]->SetToggle(false);
+}
+
+void CPlayScene::UpdateRunTime(DWORD dt, bool isProgress)
+{
+	if (isProgress)
+	{
+		if ((int)(p_run_time / P_PROGRESS_DELAY) < P_METER_COUNT) p_run_time += dt;
+	}
+	else
+	{
+		if (p_run_time > 0)	p_run_time -= dt / 2;
+		else if (p_run_time < 0) p_run_time = 0;
+	}
+	p_progress = p_run_time / P_PROGRESS_DELAY;
+}
+
+void CPlayScene::BeginCard()
+{
+	for (int i = 0; i < HUD_CARD_COUNT; i++)
+	{
+		cards[i]->SetType(cardID[i]);
+	}
+}
+
+void CPlayScene::InsertCard(int type)
+{
+	for (int i = 0; i < HUD_CARD_COUNT; i++)
+	{
+		if (cardID[i] != 0) continue;
+		else
+		{
+			cardID[i] = type;
+			cards[i]->SetType(type);
+			break;
+		}
+	}
+}
+
+void CPlayScene::CollectingScore()
+{
+	timerPause = true;
+	if (timer > 0)
+	{
+		if (timer >= 10000)
+		{
+			score = score + 10 * SCORE_PER_SECOND;
+			timer -= 10000;
+		}
+		else if (timer >= 1000)
+		{
+			score = score + SCORE_PER_SECOND;
+			timer -= 1000;
+		}
+	}
+}
+
+void CPlayScene::ToggleSceneSwitch()
+{
+	toggleSceneSwitch = true;
+	timerPause = true;
 }
 
 void CPlayScene::Render()
@@ -512,6 +797,14 @@ void CPlayScene::Unload()
 
 	objects.clear();
 	player = NULL;
+	background = NULL;
+	hud = NULL;
+	for (int i = 0; i < DIGIT_COUNT_SCORE; i++)
+		scoreDigits[i] = NULL;
+	for (int i = 0; i < DIGIT_COUNT_TIME; i++)
+		timeDigits[i] = NULL;
+	for (int i = 0; i < DIGIT_COUNT_CURRENCY; i++)
+		coinDigits[i] = NULL;
 
 	DebugOut(L"[INFO] Scene %d unloaded! \n", id);
 }
@@ -566,7 +859,8 @@ vector<LPGAMEOBJECT> CPlayScene::FilterByPlayer(float range)
 	vector<LPGAMEOBJECT> process_list;
 	for (size_t i = 0; i < objects.size(); i++)
 	{
-		if (IsInRange(objects[i], start_x, end_x, start_y, end_y))
+		/*if (dynamic_cast<CHud*>(objects[i])) process_list.push_back(objects[i]);
+		else */if (IsInRange(objects[i], start_x, end_x, start_y, end_y))
 			process_list.push_back(objects[i]);
 	}
 
@@ -588,39 +882,90 @@ vector<LPGAMEOBJECT> CPlayScene::FilterByCam()
 	vector<LPGAMEOBJECT> process_list;
 	for (size_t i = 0; i < objects.size(); i++)
 	{
-		if (IsInRange(objects[i], start_x, end_x, start_y, end_y))
+		/*if (dynamic_cast<CHud*>(objects[i])) process_list.push_back(objects[i]);
+		else */if (IsInRange(objects[i], start_x, end_x, start_y, end_y))
 			process_list.push_back(objects[i]);
 	}
 
 	return process_list;
 }
 
-void CPlayScene::UpdateCamera()
+void CPlayScene::UpdateCamera(DWORD dt)
 {
 	// Update camera to follow mario
 	CGame* game = CGame::GetInstance();
+	LPPLAYSCENE curr = (LPPLAYSCENE)game->GetCurrentScene();
+	int sceneID = curr->GetCurrentSceneID();
 
 	float cx, cy;
-	player->GetPosition(cx, cy);
-
-	float player_bbox_height = player->GetBBoxHeight();
-
-	cx = cx - game->GetBackBufferWidth() / 2.0f;
-	cx = fmax(0.0f, cx);
-
-	if (player->IsFlying())
+	game->GetCamPos(cx, cy);
+	if (sceneID == 1 || sceneID == 2 || sceneID == 4)
 	{
-		cy = cy - game->GetBackBufferHeight() / 2.0f;
-		cy = fmin(CAM_MAX_Y, cy);
+		player->GetPosition(cx, cy);
+
+		float player_bbox_height = player->GetBBoxHeight();
+
+		cx = cx - game->GetBackBufferWidth() / 2.0f;
+		cx = fmax(0.0f, cx);
+
+		if (player->IsFlying())
+		{
+			cy = cy - game->GetBackBufferHeight() / 2.0f;
+			cy = fmin(CAM_MAX_Y, cy);
+		}
+		else
+		{
+			cy = CAM_MAX_Y;
+			//cy = cy + player_bbox_height / 2.0f + 16.0f - game->GetBackBufferHeight();
+		}
+
+		/*if (GetAsyncKeyState(VK_UP) & 0x8000) cy -= 10;
+		if (GetAsyncKeyState(VK_DOWN) & 0x8000) cy += 10;*/
 	}
-	else
+	else if (sceneID == 3)
 	{
+		if (cx >= MAX_CAMERA_POSITION)
+		{
+			cx = MAX_CAMERA_POSITION;
+		}
+		else
+		{
+			cx += dt * CAM_SPEED;
+		}
 		cy = CAM_MAX_Y;
-		//cy = cy + player_bbox_height / 2.0f + 16.0f - game->GetBackBufferHeight();
 	}
 
-	/*if (GetAsyncKeyState(VK_UP) & 0x8000) cy -= 10;
-	if (GetAsyncKeyState(VK_DOWN) & 0x8000) cy += 10;*/
+	// UPDATE HUD
+	float ox, oy; //for hud
+	hud->GetOriginalPos(ox, oy);
+	hud->SetPosition((int)(ox + cx), (int)(oy + cy));
+
+	float odx, ody; //for digits & cards
+	for (int i = 0; i < DIGIT_COUNT_SCORE; i++)
+	{
+		scoreDigits[i]->GetOriginalPos(odx, ody);
+		scoreDigits[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
+	}
+	for (int i = 0; i < DIGIT_COUNT_TIME; i++)
+	{
+		timeDigits[i]->GetOriginalPos(odx, ody);
+		timeDigits[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
+	}
+	for (int i = 0; i < DIGIT_COUNT_CURRENCY; i++)
+	{
+		coinDigits[i]->GetOriginalPos(odx, ody);
+		coinDigits[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
+	}
+	for (int i = 0; i < P_METER_COUNT; i++)
+	{
+		pMeter[i]->GetOriginalPos(odx, ody);
+		pMeter[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
+	}
+	for (int i = 0; i < HUD_CARD_COUNT; i++)
+	{
+		cards[i]->GetOriginalPos(odx, ody);
+		cards[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
+	}
 
 	CGame::GetInstance()->SetCamPos(cx, cy);
 }

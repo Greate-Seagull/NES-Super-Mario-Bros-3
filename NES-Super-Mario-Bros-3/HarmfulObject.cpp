@@ -1,4 +1,5 @@
 #include "HarmfulObject.h"
+#include "debug.h"
 
 CHarmfulObject::CHarmfulObject(float x, float y):
 	CMovableObject(x, y)
@@ -9,6 +10,7 @@ CHarmfulObject::CHarmfulObject(float x, float y):
 
 void CHarmfulObject::Reaction(CGameObject* by_another, int action)
 {
+	DebugOut(L"%d\n", action);
 	switch (action)
 	{
 	case ACTION_CARRY:

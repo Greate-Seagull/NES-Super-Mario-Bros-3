@@ -3,6 +3,7 @@
 
 #include "Mario.h"
 #include "Game.h"
+#include "PlayScene.h"
 
 #include "Goomba.h"
 #include "Coin.h"
@@ -12,8 +13,11 @@
 #include "Platform.h"
 #include "SuperMushroom.h"
 #include "SuperLeaf.h"
+#include "Background.h"
 
 #include "Collision.h"
+
+bool isOnPlatform = false;
 
 CMario::CMario(float x, float y):
 	CCreature(x, y)
@@ -69,6 +73,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 void CMario::Living(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
 	Flying();
+	if (isOnPlatform) y = y + dt * PLATFORM_FALLING_SPEED;
 	Move(dt);
 
 	DoSpecialActions(dt, coObjects);
@@ -98,6 +103,8 @@ void CMario::OnCollisionWith(LPCOLLISIONEVENT e)
 		OnCollisionWithHelpfulObject(e);
 	else if (dynamic_cast<CPortal*>(e->obj))
 		OnCollisionWithPortal(e);
+	else if (dynamic_cast<CRandomCard*>(e->obj))
+		OnCollisionWithReward(e);
 	/*else if (dynamic_cast<CDeadStateTrigger*>(e->obj))
 		OnCollisionWithDeadTrigger(e);*/
 	/*else if (dynamic_cast<CRandomCard*>(e->obj))
@@ -162,7 +169,8 @@ void CMario::OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e)
 void CMario::OnCollisionWithCoin(LPCOLLISIONEVENT e)
 {
 	Touch(e->obj);
-	//coin++;
+	LPPLAYSCENE currentScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+	currentScene->CollectCoin();
 }
 
 void CMario::OnCollisionWithPortal(LPCOLLISIONEVENT e)
@@ -184,6 +192,11 @@ void CMario::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 	{
 		vx = 0.0f;
 	}
+
+	CPlatform* p = (CPlatform*)(e->obj);
+	p->SetState(PLATFORM_STATE_FALLING);
+	if (p->IsFallingType() == 1) isOnPlatform = true;
+	else isOnPlatform = false;
 }
 
 void CMario::OnCollisionWithHelpfulObject(LPCOLLISIONEVENT e)
@@ -193,7 +206,6 @@ void CMario::OnCollisionWithHelpfulObject(LPCOLLISIONEVENT e)
 
 void CMario::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 {	
-
 	if (e->ny)
 	{
 		vy = 0.0f;
@@ -214,6 +226,12 @@ void CMario::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 	{
 		vx = 0.0f;
 	}
+}
+
+void CMario::OnCollisionWithReward(LPCOLLISIONEVENT e)
+{
+	CRandomCard* rC = (CRandomCard*)(e->obj);
+	rC->Switch(false);
 }
 
 void CMario::Render()
@@ -470,6 +488,7 @@ void CMario::StartNormalActions(DWORD& t)
 	//jumping
 	if (isOnGround && keyState->IsPressed(VK_S))
 	{
+		isOnPlatform = false;
 		ny = DIRECTION_UP;
 		vy = ny * MARIO_START_JUMP_VY;
 		calculated_ay = 0.0f;
@@ -948,6 +967,11 @@ void CMario::Flying()
 	{
 		vy = 0.0f;
 	}
+}
+
+void CMario::SetFootPlatform(bool onPlatform)
+{
+	isOnPlatform = onPlatform;
 }
 
 void CMario::SetState(int state)
