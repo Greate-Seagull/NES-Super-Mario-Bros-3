@@ -467,7 +467,11 @@ void CPlayScene::Update(DWORD dt)
 		collisionProcessor->SolveCollisionWithNonBlocking(obj, dt, &nonBlockingColliders);
 
 	for (auto& obj : nearbyObjects)
+	{
+		if (dynamic_cast<CKoopaTroopa*>(obj))
+			int i = 0;
 		obj->Update(dt, &nearbyObjects);
+	}
 
 	UpdateCamera();	
 

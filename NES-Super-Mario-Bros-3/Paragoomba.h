@@ -38,7 +38,7 @@ public:
 	void ChangeAnimation();
 	void Render();
 
-	void ReactionToAttack1(CGameObject* by_another);
+	void OnReactionToAttack1(LPCOLLISIONEVENT e);
 
 	void SetState(int state);
 	void ToStateLiving();

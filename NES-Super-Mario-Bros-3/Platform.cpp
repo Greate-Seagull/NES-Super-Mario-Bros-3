@@ -69,5 +69,5 @@ int CPlatform::IsDirectionColliable(float nx, float ny)
 
 void CPlatform::OnCollisionWith(LPCOLLISIONEVENT e)
 {
-	e->obj->Reaction(this, ACTION_ATTACK_LEVEL_3);
+	e->obj->OnReactionTo(e, ACTION_ATTACK_LEVEL_3);
 }

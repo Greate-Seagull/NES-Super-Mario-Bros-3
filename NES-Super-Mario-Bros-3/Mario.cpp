@@ -77,6 +77,11 @@ void CMario::Living(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	Invulnerable(dt);
 }
 
+int CMario::IsLinkedTo(CGameObject* obj)
+{
+	return obj == weapon;
+}
+
 void CMario::OnNoCollisionWithBlocking(DWORD dt)
 {
 	isOnGround = false;
@@ -104,43 +109,38 @@ void CMario::OnCollisionWith(LPCOLLISIONEVENT e)
 		OnCollisionWithRandomCard(e);*/
 }
 
-void CMario::ReactionToTouch(CGameObject* by_another)
+void CMario::OnReactionToTouching(LPCOLLISIONEVENT e)
 {
-	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();	
+	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
+	e->Reverse();
 
 	if (keyState->IsHold(VK_A))
-		Carry((CHarmfulObject*)by_another);
+		Carry(e);
 	else
 		Kick();
 }
 
-void CMario::ReactionToAttack1(CGameObject* by_another)
+void CMario::OnReactionToAttack1(LPCOLLISIONEVENT e)
 {
-	if (this->y + this->bbox_height / 2.0f <= by_another->GetY() - by_another->GetBBoxHeight() / 2.0f)
-	{
-		CHarmfulObject::Attack(by_another);
-		BackJump();
-	}
-	else
-		UnderAttack((CHarmfulObject*) by_another);
+	UnderAttack(e->src_obj);
 }
 
-void CMario::ReactionToAttack2(CGameObject* by_another)
+void CMario::OnReactionToAttack2(LPCOLLISIONEVENT e)
 {
-	UnderAttack(by_another);
+	UnderAttack(e->src_obj);
 }
 
-void CMario::ReactionToAttack3(CGameObject* by_another)
+void CMario::OnReactionToAttack3(LPCOLLISIONEVENT e)
 {
-	UnderAttack(by_another);
+	UnderAttack(e->src_obj);
 }
 
-void CMario::ReactionToBigger(CGameObject* by_another)
+void CMario::OnReactionToBigger(LPCOLLISIONEVENT e)
 {
 	SetState(MARIO_STATE_GAIN_POWER);
 }
 
-void CMario::ReactionToRacoonize(CGameObject* by_another)
+void CMario::OnReactionToRacoonize(LPCOLLISIONEVENT e)
 {
 	SetState(MARIO_STATE_GAIN_POWER);
 }
@@ -152,16 +152,16 @@ void CMario::OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e)
 
 	if (e->ny < 0)
 	{
-		CHarmfulObject::Attack(enemy);
+		CHarmfulObject::Attack(e);
 		BackJump();
 	}
-	else if (keyState->IsHold(VK_A) && Grab(enemy)); //case collision on the left or right or below
-	else Touch(enemy);
+	else if (keyState->IsHold(VK_A) && Grab(e)); //case collision on the left or right or below
+	else Touch(e);
 }
 
 void CMario::OnCollisionWithCoin(LPCOLLISIONEVENT e)
 {
-	Touch(e->obj);
+	Touch(e);
 	//coin++;
 }
 
@@ -188,7 +188,7 @@ void CMario::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 
 void CMario::OnCollisionWithHelpfulObject(LPCOLLISIONEVENT e)
 {
-	Touch(e->obj);
+	Touch(e);
 }
 
 void CMario::OnCollisionWithBlock(LPCOLLISIONEVENT e)
@@ -201,7 +201,7 @@ void CMario::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 		if (e->ny > 0)
 		{
 			is_jumping = false;
-			Touch(e->obj);
+			Touch(e);
 		}
 		else
 		{
@@ -680,14 +680,14 @@ void CMario::Jump()
 {
 }
 
-bool CMario::Grab(CHarmfulObject* weapon)
+bool CMario::Grab(LPCOLLISIONEVENT e)
 {
 	if (this->weapon)
 		return false;
 
 	SetSpecialAction(ID_ANI_CARRY);
 
-	CCreature::Carry(weapon);
+	CCreature::Carry(e);
 
 	return true;
 }
@@ -717,7 +717,11 @@ bool CMario::Tosh()
 	if (!weapon)
 		return false;
 
-	Touch(weapon);
+	//PIECE OF SHIT, I just need an event
+	CCollisionEventPool* pool = CCollision::GetInstance()->GetPool();
+	LPCOLLISIONEVENT e = pool->Allocate(0.0f, nx, ny, 0.0f, 0.0f, weapon, this);
+	Touch(e);
+	pool->VirtualDelete();
 	return Kick();
 }
 

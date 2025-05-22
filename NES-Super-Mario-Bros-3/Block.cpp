@@ -12,7 +12,7 @@ CBlock::CBlock(float x, float y, int itemID):
 void CBlock::OnCollisionWith(LPCOLLISIONEVENT e)
 {
 	if (CCreature* creature = dynamic_cast<CCreature*>(e->obj))
-		creature->Reaction(this, ACTION_ATTACK_LEVEL_3);
+		creature->OnReactionTo(e, ACTION_ATTACK_LEVEL_3);
 }
 
 void CBlock::UseDefaultItemPosition()

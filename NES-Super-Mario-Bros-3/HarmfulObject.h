@@ -23,18 +23,18 @@ public:
 	CHarmfulObject(float x, float y);
 	virtual int IsCollidable() { return 1; }
 
-	virtual void Reaction(CGameObject* by_another, int action);
-	virtual void ReactionToCarry(CGameObject* by_another);
-	virtual void ReactionToTouch(CGameObject* by_another);
-	virtual void ReactionToAttack1(CGameObject* by_another);
-	virtual void ReactionToAttack2(CGameObject* by_another);
-	virtual void ReactionToAttack3(CGameObject* by_another);
-	virtual void ReactionToBigger(CGameObject* by_another);
-	virtual void ReactionToRacoonize(CGameObject* by_another);
+	virtual void OnReactionTo(LPCOLLISIONEVENT e, int action);
+	virtual void OnReactionToCarrying(LPCOLLISIONEVENT e);
+	virtual void OnReactionToTouching(LPCOLLISIONEVENT e);
+	virtual void OnReactionToAttack1(LPCOLLISIONEVENT e);
+	virtual void OnReactionToAttack2(LPCOLLISIONEVENT e);
+	virtual void OnReactionToAttack3(LPCOLLISIONEVENT e);
+	virtual void OnReactionToBigger(LPCOLLISIONEVENT e);
+	virtual void OnReactionToRacoonize(LPCOLLISIONEVENT e);
 
-	virtual void Attack(CGameObject* another);
-	virtual void HigherAttack(CGameObject* another);
-	virtual void Destroy(CGameObject* another);
+	virtual void Attack(LPCOLLISIONEVENT e);
+	virtual void HigherAttack(LPCOLLISIONEVENT e);
+	virtual void Destroy(LPCOLLISIONEVENT e);
 	virtual void FlyOut(int attack_direction);
 	virtual void SetHighPower();
 	virtual void LoseHighPower();

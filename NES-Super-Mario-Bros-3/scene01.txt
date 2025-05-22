@@ -266,7 +266,7 @@ other.txt
 12	1448	143	40
 
 # MARIO
-0	24	415
+0	530	300
 
 #Goomba
 20	232	415
@@ -278,7 +278,7 @@ other.txt
 21	958	399
 
 #Red Koopa Troopa
-23	560	378
+23	560	375
 
 #Pipe										dir	warpDir	item
 13	360	415	16	16	3	13001	13002	13003	13004	1	0	25

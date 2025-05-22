@@ -143,6 +143,7 @@
     <ClCompile Include="DeadStateTrigger.cpp" />
     <ClCompile Include="Creature.cpp" />
     <ClCompile Include="debug.cpp" />
+    <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="Fireball.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameObject.cpp" />
@@ -192,6 +193,7 @@
     <ClInclude Include="DeadStateTrigger.h" />
     <ClInclude Include="Creature.h" />
     <ClInclude Include="debug.h" />
+    <ClInclude Include="Enemy.h" />
     <ClInclude Include="Fireball.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameObject.h" />

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Creature.h"
+#include "Enemy.h"
 #include "Fireball.h"
 
 #define PIRANHA_VX 0.0f
@@ -29,7 +29,7 @@
 //Actions
 #define ANI_ID_PIRANHA_BITE 0
 
-class CPiranhaPlant : public CCreature
+class CPiranhaPlant : public CEnemy
 {
 protected:
 	//pot
@@ -67,11 +67,11 @@ public:
 	virtual void ToStateDig();
 	virtual void ToStateHide();
 
-	virtual void ReactionToCarry(CGameObject* by_another);
-	virtual void ReactionToTouch(CGameObject* by_another);
-	virtual void ReactionToAttack1(CGameObject* by_another);
-	virtual void ReactionToAttack2(CGameObject* by_another);
-	virtual void ReactionToAttack3(CGameObject* by_another);
+	virtual void OnReactionToCarrying(LPCOLLISIONEVENT e);
+	virtual void OnReactionToTouching(LPCOLLISIONEVENT e);
+	virtual void OnReactionToAttack1(LPCOLLISIONEVENT e);
+	virtual void OnReactionToAttack2(LPCOLLISIONEVENT e);
+	virtual void OnReactionToAttack3(LPCOLLISIONEVENT e);
 
 	virtual void LookforMario();
 };

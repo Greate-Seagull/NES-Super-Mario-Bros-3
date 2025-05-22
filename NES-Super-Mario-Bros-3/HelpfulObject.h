@@ -19,5 +19,5 @@ public:
 	virtual void ReactionToBigger(CGameObject* by_another);	
 	virtual void ReactionToRacoonize(CGameObject* by_another);*/
 
-	virtual void LaunchEffect(CCreature* creature);
+	virtual void LaunchEffect(LPCOLLISIONEVENT e);
 };

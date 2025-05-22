@@ -1,5 +1,5 @@
 #pragma once
-#include "Creature.h"
+#include "Enemy.h"
 
 #define GOOMBA_VX 0.03125f
 #define GOOMBA_VY 0.0f
@@ -19,7 +19,7 @@
 #define ANI_ID_GOOMBA_WALK 0
 #define ANI_ID_GOOMBA_DIE 10
 
-class CGoomba : public CCreature
+class CGoomba : public CEnemy
 {
 protected:
 	int die_start;
@@ -36,11 +36,13 @@ public:
 	virtual void OnCollisionWith(LPCOLLISIONEVENT e);
 	virtual void OnCollisionWithPlatform(LPCOLLISIONEVENT e);
 	virtual void OnCollisionWithBlock(LPCOLLISIONEVENT e);
-	virtual void OnCollisionWithCreature(LPCOLLISIONEVENT e);
+	virtual void OnCollisionWithMario(LPCOLLISIONEVENT e);
+	virtual void OnCollisionWithEnemy(LPCOLLISIONEVENT e);
 
-	virtual void ReactionToAttack1(CGameObject* by_another);
-	virtual void ReactionToAttack2(CGameObject* by_another);
-	virtual void ReactionToAttack3(CGameObject* by_another);
+	virtual void OnReactionToTouching(LPCOLLISIONEVENT e);
+	virtual void OnReactionToAttack1(LPCOLLISIONEVENT e);
+	virtual void OnReactionToAttack2(LPCOLLISIONEVENT e);
+	virtual void OnReactionToAttack3(LPCOLLISIONEVENT e);
 	
 	virtual void SetState(int state);
 	virtual void ToStateLiving();

@@ -133,17 +133,18 @@ public:
 	void Render();
 
 	int IsCollidable() { return state == STATE_LIVE; }
+	int IsLinkedTo(CGameObject* obj);
 
 	void OnNoCollisionWithBlocking(DWORD dt);
 	void OnCollisionWith(LPCOLLISIONEVENT e);
 
 	//void ReactionToCarry(CGameObject* by_another);
-	void ReactionToTouch(CGameObject* by_another);
-	void ReactionToAttack1(CGameObject* by_another);
-	void ReactionToAttack2(CGameObject* by_another);
-	void ReactionToAttack3(CGameObject* by_another);
-	void ReactionToBigger(CGameObject* by_another);
-	void ReactionToRacoonize(CGameObject* by_another);
+	void OnReactionToTouching(LPCOLLISIONEVENT e);
+	void OnReactionToAttack1(LPCOLLISIONEVENT e);
+	void OnReactionToAttack2(LPCOLLISIONEVENT e);
+	void OnReactionToAttack3(LPCOLLISIONEVENT e);
+	void OnReactionToBigger(LPCOLLISIONEVENT e);
+	void OnReactionToRacoonize(LPCOLLISIONEVENT e);
 
 	void SetLife(float l);
 	void ToSmallLevel();
@@ -183,7 +184,7 @@ public:
 	void BackJump();
 	void Jump();
 
-	bool Grab(CHarmfulObject* weapon);
+	bool Grab(LPCOLLISIONEVENT e);
 	void Carrying();
 	bool Tosh();
 

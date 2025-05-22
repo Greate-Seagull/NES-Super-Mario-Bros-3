@@ -34,10 +34,12 @@ public:
 	virtual void SetSpeed(float vx, float vy) { this->vx = vx; this->vy = vy; }
 	virtual void GetSpeed(float& vx, float& vy);
 
+	virtual void SetNx(float nx) { this->nx = nx; }
+	virtual void SetNy(float ny) { this->ny = ny; }
+	virtual int GetNx() { return nx; }
+	virtual int GetNy() { return ny; }
+	virtual int GetNz() { return nz; }
+
 	virtual void ChangeDirection();
 	virtual void Stop();
-
-	int GetNx() { return nx; }
-	int GetNy() { return ny; }
-	int GetNz() { return nz; }
 };

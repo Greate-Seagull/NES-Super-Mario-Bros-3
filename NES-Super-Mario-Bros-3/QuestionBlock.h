@@ -34,9 +34,9 @@ public:
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 
 	void Render();
-	void Reaction(CGameObject* by_another, int action);
+	void OnReactionTo(LPCOLLISIONEVENT e, int action);
 	void SetState(int state);
 
 	void TakeItem();
-	void TriggerItem();
+	void TriggerItem(LPCOLLISIONEVENT e, int action);
 };

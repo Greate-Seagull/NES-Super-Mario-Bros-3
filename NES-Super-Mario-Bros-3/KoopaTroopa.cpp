@@ -5,7 +5,7 @@
 #include "PlayScene.h"
 
 CKoopaTroopa::CKoopaTroopa(float x, float y):
-	CCreature(x, y)
+	CEnemy(x, y)
 {	
 	vy = KOOPA_VY;	
 	SetState(STATE_LIVE);
@@ -98,29 +98,26 @@ void CKoopaTroopa::OnCollisionWith(LPCOLLISIONEVENT e)
 		OnCollisionWithPlatform(e);
 	else if (dynamic_cast<CBlock*>(e->obj))
 		OnCollisionWithBlock(e);
-	else if (dynamic_cast<CHarmfulObject*>(e->obj))
-		OnCollisionWithHarmfulObject(e);
+	else if (dynamic_cast<CMario*>(e->obj))
+		OnCollisionWithMario(e);
+	else if (dynamic_cast<CEnemy*>(e->obj))
+		OnCollisionWithEnemy(e);
 }
 
 void CKoopaTroopa::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 {
 	if (e->ny)
-	{
-		vy = 0.0f;
+	{		
+		if (isOnGround == false && (state == KOOPA_STATE_POP || state == KOOPA_STATE_POP))
+			Bounce();
+		else
+			vy = 0.0f;
 
-		if (e->ny < 0) 
+		if (e->ny < 0)
 		{
 			isOnGround = true;
 			on_ground_x = x;
 			on_ground_y = y;
-		}
-
-		switch (state)
-		{
-		case KOOPA_STATE_POP:
-		case KOOPA_STATE_HIDE:
-			Bounce();
-			break;
 		}
 	}
 
@@ -157,34 +154,34 @@ void CKoopaTroopa::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 		Bounce();
 		break;
 	case KOOPA_STATE_ROLL:
-		Destroy(e->obj);
+		Destroy(e);
 		break;
 	}
 }
 
-void CKoopaTroopa::OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e)
+void CKoopaTroopa::OnCollisionWithMario(LPCOLLISIONEVENT e)
 {
-	CHarmfulObject* obj = dynamic_cast<CHarmfulObject*>(e->obj);
-
 	switch (state)
 	{
-		case STATE_LIVE:
-			Attack(obj);
-			break;
-		case KOOPA_STATE_HIDE:
-		case KOOPA_STATE_POP:
-			if (dynamic_cast<CMario*>(obj) == nullptr)
-			{
-				Destroy(obj);
-				Die();
-			}
-			break;
-		case KOOPA_STATE_ROLL:
-			if (dynamic_cast<CRacoonTail*>(obj) == nullptr)
-				Destroy(obj);
-			break;
-		case STATE_DIE:
-			break;
+	case STATE_LIVE:
+		Attack(e);
+		break;
+	case KOOPA_STATE_ROLL:
+		Destroy(e);
+		break;
+	}
+}
+
+void CKoopaTroopa::OnCollisionWithEnemy(LPCOLLISIONEVENT e)
+{
+	switch (state)
+	{
+	case KOOPA_STATE_ROLL:
+		break;
+	default:
+		nx = -nx;
+		vx = nx * abs(vx);		
+		Touch(e);
 	}
 }
 
@@ -275,6 +272,7 @@ void CKoopaTroopa::SetState(int state)
 		case KOOPA_STATE_HIDE:
 			y += (bbox_height - KOOPA_BBOX_HEIGHT_HIDE) / 2.0f - 0.01f;
 			SetBoundingBox(KOOPA_BBOX_WIDTH_HIDE, KOOPA_BBOX_HEIGHT_HIDE);
+			vx = 0.0f;
 			recovering_time = 0;
 			SetHighPower();
 			break;
@@ -291,16 +289,18 @@ void CKoopaTroopa::SetState(int state)
 	}
 }
 
-void CKoopaTroopa::ReactionToCarry(CGameObject* by_another)
+void CKoopaTroopa::OnReactionToCarrying(LPCOLLISIONEVENT e)
 {
 	switch (state)
 	{
 	case STATE_LIVE:
-		Attack(by_another);
+		e->Reverse();
+		Attack(e);
 		AgainstControl();
 		break;
 	case KOOPA_STATE_ROLL:
-		Destroy(by_another);
+		e->Reverse();
+		Destroy(e);
 		AgainstControl();
 		break;
 	case KOOPA_STATE_POP:
@@ -310,114 +310,64 @@ void CKoopaTroopa::ReactionToCarry(CGameObject* by_another)
 	}
 }
 
-void CKoopaTroopa::ReactionToTouch(CGameObject* by_another)
+void CKoopaTroopa::OnReactionToTouching(LPCOLLISIONEVENT e)
 {
 	switch (state)
 	{
-	case STATE_LIVE:
-		Attack(by_another);
-		break;
 	case KOOPA_STATE_ROLL:
-		Destroy(by_another);
-		AgainstControl();
+		e->Reverse();
+		Destroy(e);
 		break;
-	case KOOPA_STATE_POP:
-	case KOOPA_STATE_HIDE:
-		if (CMario* mario = dynamic_cast<CMario*>(by_another)) //mario attacks
+	case STATE_LIVE:
+		if (dynamic_cast<CMario*>(e->src_obj))
 		{
-			nx = (x < mario->GetX()) ? DIRECTION_LEFT : DIRECTION_RIGHT;
-			this->SetState(KOOPA_STATE_ROLL);
-
-			Touch(mario);
+			e->Reverse();
+			Attack(e);
 		}
 		else
 		{
-			Destroy(by_another);
-			Die();
+			nx = -nx;
+			vx = nx * abs(vx);
+		}
+		break;
+	case KOOPA_STATE_POP:
+	case KOOPA_STATE_HIDE:
+		if (CMario* mario = dynamic_cast<CMario*>(e->src_obj))
+		{
+			SetNx(mario->GetNx());
+			SetState(KOOPA_STATE_ROLL);
 		}
 		break;
 	}
 }
 
-void CKoopaTroopa::ReactionToAttack1(CGameObject* by_another)
+void CKoopaTroopa::OnReactionToAttack1(LPCOLLISIONEVENT e)
 {
 	switch (state)
 	{
-	case STATE_LIVE:
-		UnderAttack(by_another);
-		SetState(KOOPA_STATE_HIDE);
-		break;
-	case KOOPA_STATE_ROLL:
-		if (dynamic_cast<CMario*>(by_another)) SetState(KOOPA_STATE_HIDE);
-		else Destroy((CHarmfulObject*)by_another);
-		break;
 	case KOOPA_STATE_POP:
 	case KOOPA_STATE_HIDE:
-		if (CMario* mario = dynamic_cast<CMario*>(by_another)) //mario attacks
+		if (CMario* mario = dynamic_cast<CMario*>(e->src_obj))
 		{
-			nx = (x < mario->GetX()) ? DIRECTION_LEFT : DIRECTION_RIGHT;
-			this->SetState(KOOPA_STATE_ROLL);
-
-			Touch(mario);
-		}
-		else
-		{
-			Destroy(by_another);
-			Die();
+			SetNx(e->dx / fabs(e->dx));
+			SetState(KOOPA_STATE_ROLL);
 		}
 		break;
+	default:
+		SetState(KOOPA_STATE_HIDE);
+		break;
 	}
+
 }
 
-void CKoopaTroopa::ReactionToAttack2(CGameObject* by_another)
+void CKoopaTroopa::OnReactionToAttack2(LPCOLLISIONEVENT e)
 {
-	switch (state)
-	{
-	case STATE_LIVE:
-		UnderAttack(by_another);
-		SetState(KOOPA_STATE_HIDE);
-		break;
-	case KOOPA_STATE_ROLL:
-		if (dynamic_cast<CMario*>(by_another)) SetState(KOOPA_STATE_HIDE);
-		else Destroy((CHarmfulObject*)by_another);
-		break;
-	case KOOPA_STATE_POP:
-	case KOOPA_STATE_HIDE:
-		if (CMario* mario = dynamic_cast<CMario*>(by_another)) //mario attacks
-		{
-			nx = (x < mario->GetX()) ? DIRECTION_LEFT : DIRECTION_RIGHT;
-			this->SetState(KOOPA_STATE_ROLL);
-
-			Touch(mario);
-		}
-		else
-		{
-			Destroy(by_another);
-			Die();
-		}
-		break;
-	}
+	SetState(KOOPA_STATE_HIDE);
 }
 
-void CKoopaTroopa::ReactionToAttack3(CGameObject* by_another)
+void CKoopaTroopa::OnReactionToAttack3(LPCOLLISIONEVENT e)
 {
-	switch (state)
-	{
-	case STATE_LIVE:
-		UnderAttack(by_another);
-		UnderDestructrion(by_another);
-		SetState(KOOPA_STATE_HIDE);
-		break;
-	case KOOPA_STATE_ROLL:
-		UnderDestructrion(by_another);
-		SetState(KOOPA_STATE_HIDE);
-		break;
-	case KOOPA_STATE_POP:
-	case KOOPA_STATE_HIDE:
-		UnderDestructrion(by_another);
-		SetState(KOOPA_STATE_HIDE);
-		break;
-	}
+	SetState(KOOPA_STATE_HIDE);
 }
 
 void CKoopaTroopa::UnderAttack(CGameObject* by_another)

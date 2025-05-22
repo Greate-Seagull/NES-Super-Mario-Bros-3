@@ -4,11 +4,11 @@
 #include "Block.h"
 #include "Platform.h"
 
-CGoomba::CGoomba(float x, float y):
-	CCreature(x, y)
+CGoomba::CGoomba(float x, float y) :
+	CEnemy(x, y)
 {
 	SetBoundingBox(GOOMBA_BBOX_WIDTH, GOOMBA_BBOX_HEIGHT);
-	
+
 	nx = DIRECTION_LEFT;
 	life = GOOMBA_LIFE;
 	SetState(STATE_LIVE);
@@ -21,8 +21,10 @@ void CGoomba::OnCollisionWith(LPCOLLISIONEVENT e)
 		OnCollisionWithPlatform(e);
 	else if (dynamic_cast<CBlock*>(e->obj))
 		OnCollisionWithBlock(e);
-	else if (dynamic_cast<CCreature*>(e->obj))
-		OnCollisionWithCreature(e);
+	else if (dynamic_cast<CMario*>(e->obj))
+		OnCollisionWithMario(e);
+	else if (dynamic_cast<CEnemy*>(e->obj))
+		OnCollisionWithEnemy(e);
 }
 
 void CGoomba::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
@@ -43,6 +45,7 @@ void CGoomba::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 	if (e->ny)
 	{
 		vy = 0.0f;
+		isOnGround = true;
 	}
 	if (e->nx)
 	{
@@ -50,25 +53,45 @@ void CGoomba::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 	}
 }
 
-void CGoomba::OnCollisionWithCreature(LPCOLLISIONEVENT e)
+void CGoomba::OnCollisionWithEnemy(LPCOLLISIONEVENT e)
 {
-	if (dynamic_cast<CGoomba*>(e->obj));
-		//Do nothing to fellows
+	/*nx = -nx;
+	vx = nx * GOOMBA_VX;*/
+	Touch(e);
+	vx = -vx;
+}
+
+void CGoomba::OnCollisionWithMario(LPCOLLISIONEVENT e)
+{
+	Attack(e);
+}
+
+void CGoomba::OnReactionToTouching(LPCOLLISIONEVENT e)
+{
+	if (dynamic_cast<CMario*>(e->src_obj))
+	{
+		e->Reverse();
+		Attack(e);
+	}
 	else
-		Attack(e->obj);
+	{
+		/*nx = -nx;
+		vx = nx * GOOMBA_VX;*/
+		vx = -vx;
+	}
 }
 
-void CGoomba::ReactionToAttack1(CGameObject* by_another)
+void CGoomba::OnReactionToAttack1(LPCOLLISIONEVENT e)
 {
 	Die();
 }
 
-void CGoomba::ReactionToAttack2(CGameObject* by_another)
+void CGoomba::OnReactionToAttack2(LPCOLLISIONEVENT e)
 {
 	Die();
 }
 
-void CGoomba::ReactionToAttack3(CGameObject* by_another)
+void CGoomba::OnReactionToAttack3(LPCOLLISIONEVENT e)
 {
 	Die();
 }
@@ -84,12 +107,12 @@ void CGoomba::SetState(int state)
 
 	switch (state)
 	{
-		case STATE_LIVE:
-			ToStateLiving();
-			break;
-		case STATE_DIE:
-			ToStateDying();
-			break;
+	case STATE_LIVE:
+		ToStateLiving();
+		break;
+	case STATE_DIE:
+		ToStateDying();
+		break;
 	}
 }
 
@@ -122,7 +145,7 @@ void CGoomba::Dying(DWORD dt)
 	}
 }
 
-void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
+void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
 	switch (state)
 	{
@@ -150,6 +173,6 @@ void CGoomba::ChangeAnimation()
 void CGoomba::Render()
 {
 	ChangeAnimation();
-	CAnimations::GetInstance()->Get(aniID)->Render(x,y);
+	CAnimations::GetInstance()->Get(aniID)->Render(x, y);
 	//RenderBoundingBox();
 }

@@ -6,7 +6,7 @@
 #include "debug.h"
 
 CPiranhaPlant::CPiranhaPlant(float x, float y):
-	CCreature(x, y)
+	CEnemy(x, y)
 {
 	start_y = y;
 
@@ -141,35 +141,45 @@ void CPiranhaPlant::ToStateHide()
 	vy = 0.0f;
 }
 
-void CPiranhaPlant::ReactionToCarry(CGameObject* by_another)
+void CPiranhaPlant::OnReactionToCarrying(LPCOLLISIONEVENT e)
 {
 	if(pot)
 	{
 		AgainstControl();
-		HigherAttack(by_another);
+
+		if (dynamic_cast<CMario*>(e->src_obj))
+		{
+			e->Reverse();
+			Attack(e);
+		}
 	}
 	else
 	{
-		pot = by_another;
+		pot = e->src_obj;
 	}
 }
 
-void CPiranhaPlant::ReactionToTouch(CGameObject* by_another)
+void CPiranhaPlant::OnReactionToTouching(LPCOLLISIONEVENT e)
 {
-	HigherAttack(by_another);
+	if (dynamic_cast<CMario*>(e->src_obj))
+	{
+		e->Reverse();
+		Attack(e);
+	}
 }
 
-void CPiranhaPlant::ReactionToAttack1(CGameObject* by_another)
+void CPiranhaPlant::OnReactionToAttack1(LPCOLLISIONEVENT e)
 {
-	HigherAttack(by_another);
+	e->Reverse();
+	Attack(e);
 }
 
-void CPiranhaPlant::ReactionToAttack2(CGameObject* by_another)
+void CPiranhaPlant::OnReactionToAttack2(LPCOLLISIONEVENT e)
 {
 	Die();
 }
 
-void CPiranhaPlant::ReactionToAttack3(CGameObject* by_another)
+void CPiranhaPlant::OnReactionToAttack3(LPCOLLISIONEVENT e)
 {
 	Die();
 }

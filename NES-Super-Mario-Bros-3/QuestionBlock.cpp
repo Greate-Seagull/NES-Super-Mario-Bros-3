@@ -37,7 +37,7 @@ void CQuestionBlock::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	}
 }
 
-void CQuestionBlock::Reaction(CGameObject* by_another, int action)
+void CQuestionBlock::OnReactionTo(LPCOLLISIONEVENT e, int action)
 {
 	if (state == STATE_DIE)
 		return;
@@ -51,7 +51,9 @@ void CQuestionBlock::Reaction(CGameObject* by_another, int action)
 	case ACTION_TOUCH:
 		SetState(QUESTION_BLOCK_STATE_TOGGLE);
 		break;
-	}	
+	}
+
+	TriggerItem(e, action);
 }
 
 void CQuestionBlock::SetState(int state)
@@ -64,12 +66,10 @@ void CQuestionBlock::SetState(int state)
 	switch (state)
 	{
 		case QUESTION_BLOCK_STATE_TOGGLE:
-			vy = QUESTION_BLOCK_SHAKE_VY;			
-			TriggerItem();
+			vy = QUESTION_BLOCK_SHAKE_VY;						
 			break;
 		case STATE_DIE:
 			vy = 0.0f;
-			TriggerItem();
 			break;
 	}	
 }
@@ -82,8 +82,12 @@ void CQuestionBlock::TakeItem()
 	switch (itemID)
 	{
 	case OBJECT_TYPE_COIN:
-		item = new CCoin(x, y);
+	{
+		CCoin* coin = new CCoin(x, y);
+		coin->SetContained();
+		item = coin;
 		break;
+	}
 	case OBJECT_TYPE_SUPER_MUSHROOM:
 		item = new CSuperMushroom(x, y);
 		break;
@@ -95,14 +99,14 @@ void CQuestionBlock::TakeItem()
 	}
 }
 
-void CQuestionBlock::TriggerItem()
+void CQuestionBlock::TriggerItem(LPCOLLISIONEVENT e, int action)
 {
 	if (item)
 	{
 		LPPLAYSCENE ps = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
 		ps->Insert(item, ps->Find(this));
 
-		item->Reaction(this, ACTION_TOUCH);
+		item->OnReactionTo(e, action);
 
 		item = nullptr;
 	}

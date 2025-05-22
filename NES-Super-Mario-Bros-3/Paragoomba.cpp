@@ -34,17 +34,17 @@ void CParagoomba::Living(DWORD dt)
 	Flutter();
 }
 
-void CParagoomba::ReactionToAttack1(CGameObject* by_another)
+void CParagoomba::OnReactionToAttack1(LPCOLLISIONEVENT e)
 {
 	switch (state)
 	{
 	case STATE_LIVE:
-		UnderAttack((CHarmfulObject*)by_another);
+		UnderAttack((CHarmfulObject*)e->src_obj);
 		LoseWings();
 		SetState(PARAGOOMBA_STATE_GOOMBA);
 		break;
 	case PARAGOOMBA_STATE_GOOMBA:
-		CGoomba::ReactionToAttack1(by_another);
+		CGoomba::OnReactionToAttack1(e);
 		break;
 	}
 }

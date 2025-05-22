@@ -129,36 +129,39 @@ void CSuperMushroom::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 
 void CSuperMushroom::OnCollisionWithMario(LPCOLLISIONEVENT e)
 {
-	CMario* mario = dynamic_cast<CMario*>(e->obj);
-	CHelpfulObject::LaunchEffect(mario);
-	SetState(STATE_DIE);
+	if (CMario* mario = dynamic_cast<CMario*>(e->obj))
+	{
+		CHelpfulObject::LaunchEffect(e);
+		SetState(STATE_DIE);
+	}
 }
 
-void CSuperMushroom::Reaction(CGameObject* by_another, int action)
+void CSuperMushroom::OnReactionTo(LPCOLLISIONEVENT e, int action)
 {
 	switch (state)
 	{		
 		case MUSHROOM_STATE_SLEEP:
-			ReactionInSleepingState(by_another, action);
+			ReactionInSleepingState(e, action);
 			break;
 		case MUSHROOM_STATE_EMERGE:
 		case MUSHROOM_STATE_RUN:
-			ReactionInRunningState(by_another, action);
+			ReactionInRunningState(e, action);
 			break;
 	}
 }
 
-void CSuperMushroom::ReactionInSleepingState(CGameObject* by_another, int action)
+void CSuperMushroom::ReactionInSleepingState(LPCOLLISIONEVENT e, int action)
 {	
-	LookAwayFromMario();
+	nx = (e->src_obj->GetX() <= this->x) ? DIRECTION_RIGHT : DIRECTION_LEFT;
 	SetState(MUSHROOM_STATE_WAKEUP);
 }
 
-void CSuperMushroom::ReactionInRunningState(CGameObject* by_another, int action)
+void CSuperMushroom::ReactionInRunningState(LPCOLLISIONEVENT e, int action)
 {
-	if (CMario* mario = dynamic_cast<CMario*>(by_another))
+	if (CMario* mario = dynamic_cast<CMario*>(e->src_obj))
 	{
-		CHelpfulObject::LaunchEffect(mario);
+		e->Reverse();
+		CHelpfulObject::LaunchEffect(e);
 		SetState(STATE_DIE);
 	}
 }
@@ -168,21 +171,6 @@ void CSuperMushroom::Render()
 	if(state > MUSHROOM_STATE_WAKEUP)
 		CAnimations::GetInstance()->Get(aniID)->Render(x, y);
 	//RenderBoundingBox();
-}
-
-void CSuperMushroom::LookAwayFromMario()
-{
-	//Get target
-	LPPLAYSCENE playScene = (LPPLAYSCENE)(CGame::GetInstance()->GetCurrentScene());
-	CMario* mario = (CMario*)playScene->GetPlayer();
-
-	//Determine target position
-	float mario_x, mario_y;
-	mario->GetPosition(mario_x, mario_y);
-
-	//Look away
-	nx = (mario_x <= x) ? DIRECTION_LEFT : DIRECTION_RIGHT;
-	nx = -nx;
 }
 
 void CSuperMushroom::WakeUp(DWORD dt)
