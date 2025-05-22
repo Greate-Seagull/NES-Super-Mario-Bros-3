@@ -334,7 +334,7 @@ void CKoopaTroopa::OnReactionToTouching(LPCOLLISIONEVENT e)
 	case KOOPA_STATE_HIDE:
 		if (CMario* mario = dynamic_cast<CMario*>(e->src_obj))
 		{
-			SetNx(mario->GetNx());
+			SetNx(e->dx / fabs(e->dx));
 			SetState(KOOPA_STATE_ROLL);
 		}
 		break;

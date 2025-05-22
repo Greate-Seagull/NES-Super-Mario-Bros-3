@@ -146,6 +146,7 @@ public:
 	void OnReactionToBigger(LPCOLLISIONEVENT e);
 	void OnReactionToRacoonize(LPCOLLISIONEVENT e);
 
+	float GetLife() { return life; }
 	void SetLife(float l);
 	void ToSmallLevel();
 	void ToBigLevel();

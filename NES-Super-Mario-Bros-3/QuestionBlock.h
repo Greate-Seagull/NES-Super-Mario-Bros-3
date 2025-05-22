@@ -1,6 +1,14 @@
 ﻿#pragma once
 
 #include "Block.h"
+#include "QuestionBlock.h"
+
+#include "Coin.h"
+#include "SuperMushroom.h"
+#include "SuperLeaf.h"
+
+#include "PlayScene.h"
+
 
 #define QUESTION_BLOCK_BBOX_WIDTH 16.0f
 #define QUESTION_BLOCK_BBOX_HEIGHT 16.0f
@@ -25,8 +33,6 @@ public:
 
 		SetState(STATE_LIVE);
 		SetBoundingBox(QUESTION_BLOCK_BBOX_WIDTH, QUESTION_BLOCK_BBOX_HEIGHT);
-
-		TakeItem();
 	}
 
 	void Prepare(DWORD dt);
@@ -38,5 +44,6 @@ public:
 	void SetState(int state);
 
 	void TakeItem();
+	void DetermineItem(CMario* mario);
 	void TriggerItem(LPCOLLISIONEVENT e, int action);
 };

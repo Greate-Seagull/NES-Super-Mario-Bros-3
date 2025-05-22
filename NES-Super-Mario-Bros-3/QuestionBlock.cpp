@@ -1,11 +1,5 @@
 #include "QuestionBlock.h"
 
-#include "Coin.h"
-#include "SuperMushroom.h"
-#include "SuperLeaf.h"
-
-#include "PlayScene.h"
-
 void CQuestionBlock::Render()
 {
 	aniID = ID_ANI_QUESTION_BLOCK + (state != STATE_LIVE);
@@ -99,11 +93,28 @@ void CQuestionBlock::TakeItem()
 	}
 }
 
+void CQuestionBlock::DetermineItem(CMario* mario)
+{
+	if (mario->GetLife() < MARIO_LEVEL_BIG)
+		itemID = OBJECT_TYPE_SUPER_MUSHROOM;
+	else
+		itemID = OBJECT_TYPE_SUPER_LEAF;
+}
+
 void CQuestionBlock::TriggerItem(LPCOLLISIONEVENT e, int action)
 {
-	if (item)
+	if (item == nullptr)
 	{
 		LPPLAYSCENE ps = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+
+		if (itemID == OBJECT_TYPE_AMBIGUOUS_EFFECT)
+		{
+			CMario* mario = dynamic_cast<CMario*>(ps->GetPlayer());
+			DetermineItem(mario);
+		}
+
+		TakeItem();
+
 		ps->Insert(item, ps->Find(this));
 
 		item->OnReactionTo(e, action);
