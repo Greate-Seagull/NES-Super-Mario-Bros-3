@@ -14,10 +14,20 @@
 #include "SuperMushroom.h"
 #include "SuperLeaf.h"
 #include "Background.h"
+#include "Pipe.h"
 
 #include "Collision.h"
 
 bool isOnPlatform = false;
+
+float switchSceneTime = 0;
+#define MAX_SCENE_TIME 800
+
+float exitPipeTime = 0;
+bool finishedExitingPipe = false;
+#define MAX_EXIT_PIPE_TIME 800
+
+int sceneDestination;
 
 CMario::CMario(float x, float y):
 	CCreature(x, y)
@@ -48,6 +58,18 @@ void CMario::Prepare(DWORD dt)
 		break;
 	case MARIO_STATE_LOSE_POWER:
 		LosingPower(dt);
+		break;
+	case MARIO_PIPE_ENTRY_DOWN:
+		PipeEntryDown(dt);
+		break;
+	case MARIO_PIPE_ENTRY_UP:
+		PipeEntryUp(dt);
+		break;
+	case MARIO_PIPE_EXIT_DOWN:
+		PipeExitDown(dt);
+		break;
+	case MARIO_PIPE_EXIT_UP:
+		PipeExitUp(dt);
 		break;
 	case STATE_DIE:		
 		changing_state_time += dt;
@@ -206,6 +228,11 @@ void CMario::OnCollisionWithHelpfulObject(LPCOLLISIONEVENT e)
 
 void CMario::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 {	
+	if (dynamic_cast<CPipe*>(e->obj))
+	{
+		Touch(e->obj);
+	}
+
 	if (e->ny)
 	{
 		vy = 0.0f;
@@ -288,19 +315,37 @@ void CMario::ChangeAnimation()
 		case MARIO_STATE_LOSE_POWER:
 			action = ID_ANI_LEVEL_DOWN;
 			break;
+		case MARIO_PIPE_ENTRY_DOWN:
+			action = ID_ANI_PIPE_ENTER;
+			break;
+		case MARIO_PIPE_ENTRY_UP:
+			action = ID_ANI_PIPE_ENTER;
+			break;
+		case MARIO_PIPE_EXIT_DOWN:
+			action = ID_ANI_PIPE_ENTER;
+			break;
+		case MARIO_PIPE_EXIT_UP:
+			action = ID_ANI_PIPE_ENTER;
+			break;
 		case STATE_DIE:
 			action = ID_ANI_DIE;
 			break;
 	}
 	
 	int direction = 0;
-	if (nz)
+	if (state != MARIO_PIPE_ENTRY_DOWN &&
+		state != MARIO_PIPE_ENTRY_UP &&
+		state != MARIO_PIPE_EXIT_DOWN &&
+		state != MARIO_PIPE_EXIT_UP)
 	{
-		direction = (nz < 0) ? ID_ANI_FRONT : ID_ANI_BEHIND;
-	}
-	else
-	{
-		direction = (nx <= 0) ? ID_ANI_LEFT : ID_ANI_RIGHT;
+		if (nz)
+		{
+			direction = (nz < 0) ? ID_ANI_FRONT : ID_ANI_BEHIND;
+		}
+		else
+		{
+			direction = (nx <= 0) ? ID_ANI_LEFT : ID_ANI_RIGHT;
+		}
 	}
 
 	aniID = ID_ANI_MARIO + level + action + direction;
@@ -969,6 +1014,86 @@ void CMario::Flying()
 	}
 }
 
+void CMario::PipeEntry(int warp_direction, int scene_destination)
+{
+	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
+
+	if (keyState->IsHold(VK_UP) && warp_direction == 1)
+	{
+		SetState(MARIO_PIPE_ENTRY_UP);
+		sceneDestination = scene_destination;
+	}
+	else if (keyState->IsHold(VK_DOWN) && warp_direction == -1)
+	{
+		SetState(MARIO_PIPE_ENTRY_DOWN);
+		sceneDestination = scene_destination;
+	}
+}
+
+void CMario::PipeEntryUp(DWORD dt)
+{
+	y -= MARIO_PIPE_ENTRY_SPEED * dt;
+
+	switchSceneTime += dt;
+	if (switchSceneTime >= MAX_SCENE_TIME)
+	{
+		switchSceneTime = 0;
+		finishedExitingPipe = false;
+		CGame::GetInstance()->InitiateSwitchScene(sceneDestination);
+	}
+
+	LPPLAYSCENE curr = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+	curr->TogglePipeSwitch(true);
+}
+
+void CMario::PipeEntryDown(DWORD dt)
+{
+	y += MARIO_PIPE_ENTRY_SPEED * dt;
+
+	switchSceneTime += dt;
+	if (switchSceneTime >= MAX_SCENE_TIME)
+	{
+		switchSceneTime = 0;
+		finishedExitingPipe = false;
+		CGame::GetInstance()->InitiateSwitchScene(sceneDestination);
+	}
+
+	LPPLAYSCENE curr = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+	curr->TogglePipeSwitch(true);
+}
+
+void CMario::PipeExitUp(DWORD dt)
+{
+	y -= MARIO_PIPE_ENTRY_SPEED * dt;
+
+	if (!finishedExitingPipe)
+	{
+		exitPipeTime += dt;
+		if (exitPipeTime >= MAX_EXIT_PIPE_TIME)
+		{
+			exitPipeTime = 0;
+			finishedExitingPipe = true;
+			SetState(STATE_LIVE);
+		}
+	}
+}
+
+void CMario::PipeExitDown(DWORD dt)
+{
+	y += MARIO_PIPE_ENTRY_SPEED * dt;
+
+	if (!finishedExitingPipe)
+	{
+		exitPipeTime += dt;
+		if (exitPipeTime >= MAX_EXIT_PIPE_TIME)
+		{
+			exitPipeTime = 0;
+			finishedExitingPipe = true;
+			SetState(STATE_LIVE);
+		}
+	}
+}
+
 void CMario::SetFootPlatform(bool onPlatform)
 {
 	isOnPlatform = onPlatform;
@@ -995,5 +1120,6 @@ void CMario::SetState(int state)
 		case STATE_DIE:
 			ToDyingState();			
 			break;
+		default: this->state = state;
 	}
 }

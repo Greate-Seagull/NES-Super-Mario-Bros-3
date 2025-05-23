@@ -126,12 +126,6 @@ public:
 
 	void _ParseSection_TEXTURES(string line);
 
-	void SetNewPlayerPos(float x, float y) {
-		new_x = x; new_y = y;
-		DebugOut(L"YES\n");
-	}
-	void GetNewPlayerPos(float& x, float& y) { x = new_x; y = new_y; }
-
 	~CGame();
 };
 typedef CGame* LPGAME;

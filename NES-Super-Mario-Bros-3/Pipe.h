@@ -11,12 +11,15 @@ class CPipe : public CBlock {
 protected:
 	int face_direction;
 	int warp_direction;
+	int scene_destination;
 
 	int spriteIdBeginBegin, spriteIdEndBegin;
 	int spriteIdBeginEnd, spriteIdEndEnd;
 
 	float cell_width, cell_height;
 	float height;
+
+	float newX, newY;
 public:
 	/*
 	CPipe(float x, float y) : CBlock(x, y) {}
@@ -28,7 +31,8 @@ public:
 		float cell_width, float cell_height, float height,
 		int faceDirection, int warpDirection,
 		int sprite_id_begin_begin, int sprite_id_end_begin,
-		int sprite_id_begin_end, int sprite_id_end_end, int itemID)
+		int sprite_id_begin_end, int sprite_id_end_end, int itemID,
+		int scene_destination = 0, float newX = 0, float newY = 0)
 		: CBlock(x, y, itemID)
 	{
 		this->cell_width = cell_width;
@@ -36,6 +40,7 @@ public:
 		this->height = height;
 		this->face_direction = faceDirection;
 		this->warp_direction = warpDirection;
+		this->scene_destination = scene_destination;
 		this->spriteIdBeginBegin = sprite_id_begin_begin;
 		this->spriteIdEndBegin = sprite_id_end_begin;
 		this->spriteIdBeginEnd = sprite_id_begin_end;
@@ -44,11 +49,18 @@ public:
 		this->bbox_height = cell_height * height;
 		this->bbox_width = PIPE_BBOX_WIDTH;
 
+		this->newX = newX;
+		this->newY = newY;
+
 		TakeItem();
 		TriggerItem();
 	}
 	void Render();
 	void RenderBoundingBox();
+
+	void Reaction(CGameObject* by_another, int action);
+	int GetWarpDirection() { return warp_direction; }
+	void GetNewWarpPosition(float& newX, float& newY) { newX = this->newX; newY = this->newY; }
 
 	void GetBoundingBox(float& left, float& top, float& right, float& bottom);
 

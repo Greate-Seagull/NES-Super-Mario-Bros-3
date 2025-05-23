@@ -24,6 +24,8 @@
 #define MARIO_VX_BAND 0.02f
 #define MARIO_MAX_MOMENTUM 7
 
+#define MARIO_PIPE_ENTRY_SPEED 0.03f
+
 //TIME
 #define MARIO_BIG_TRANSFORM_TIME 600
 #define MARIO_RACOON_TRANSFORM_TIME 350
@@ -42,6 +44,11 @@
 //STATE
 #define MARIO_STATE_GAIN_POWER 10
 #define MARIO_STATE_LOSE_POWER 11
+
+#define MARIO_PIPE_ENTRY_DOWN 20
+#define MARIO_PIPE_ENTRY_UP 21
+#define MARIO_PIPE_EXIT_DOWN 30
+#define MARIO_PIPE_EXIT_UP 31
 
 //ANIMATION
 //OBJECT
@@ -64,6 +71,7 @@
 #define ID_ANI_KICK 90
 #define ID_ANI_DIE 200
 #define ID_ANI_CARRY 100
+#define ID_ANI_PIPE_ENTER 150
 //DIRECTIONS
 #define ID_ANI_LEFT 0
 #define ID_ANI_RIGHT 1
@@ -147,6 +155,7 @@ public:
 	void ReactionToRacoonize(CGameObject* by_another);
 
 	void SetLife(float l);
+	float GetLife() { return life; }
 	void ToSmallLevel();
 	void ToBigLevel();
 	void ToRacoonLevel();
@@ -202,6 +211,12 @@ public:
 	bool IsFlying() { return is_flying; }
 	void Fly();
 	void Flying();
+
+	void PipeEntry(int warp_direction, int scene_destination);
+	void PipeEntryUp(DWORD dt);
+	void PipeEntryDown(DWORD dt);
+	void PipeExitUp(DWORD dt);
+	void PipeExitDown(DWORD dt);
 
 	void SetFootPlatform(bool);
 };

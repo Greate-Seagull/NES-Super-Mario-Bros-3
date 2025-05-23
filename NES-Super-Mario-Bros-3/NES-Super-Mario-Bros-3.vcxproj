@@ -155,6 +155,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MapIcon.cpp" />
     <ClCompile Include="Mario.cpp" />
+    <ClCompile Include="PButton.cpp" />
     <ClCompile Include="Pipe.cpp" />
     <ClCompile Include="MovableObject.cpp" />
     <ClCompile Include="Paragoomba.cpp" />
@@ -205,6 +206,7 @@
     <ClInclude Include="KeyStateManager.h" />
     <ClInclude Include="KoopaTroopa.h" />
     <ClInclude Include="Mario.h" />
+    <ClInclude Include="PButton.h" />
     <ClInclude Include="Pipe.h" />
     <ClInclude Include="MovableObject.h" />
     <ClInclude Include="Paragoomba.h" />

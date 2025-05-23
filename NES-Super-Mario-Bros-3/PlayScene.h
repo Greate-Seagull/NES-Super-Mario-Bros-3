@@ -57,9 +57,14 @@ public:
 	void Insert(LPGAMEOBJECT newObj, int index);
 	int Find(LPGAMEOBJECT obj);
 	bool IsInRange(LPGAMEOBJECT obj, float start_x, float end_x, float start_y, float end_y);
+	vector<LPGAMEOBJECT> GetBrickObjects();
 	vector<LPGAMEOBJECT> FilterByPlayer(float range = COLLISION_RANGE);
 	vector<LPGAMEOBJECT> FilterByCam();
 	void UpdateCamera(DWORD dt);
+
+	void SaveMarioLife();
+	void TogglePipeSwitch(bool pipeSwitch);
+	void LoadWarpedMario(float newX, float newY, float newLife, float newDirection);
 
 	void AddHudDetail(float x, float y);
 

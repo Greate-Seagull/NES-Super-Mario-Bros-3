@@ -90,13 +90,14 @@ void CRandomCard::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
 	if (scene_switch_ready)
 	{
+		LPPLAYSCENE playScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+		playScene->SaveMarioLife();
 		wait_time += dt;
 
 		if (wait_time > COURSE_CLEAR_TIME)
 		{
 			if (wait_time > SCORE_COLLECTING_TIME)
 			{
-				LPPLAYSCENE playScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
 				playScene->CollectingScore();
 			}
 			else if (wait_time > YOU_GOT_A_CARD_TIME)
@@ -106,7 +107,6 @@ void CRandomCard::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 					youGotACard = new CClearText(x - 8, y - 48, YOU_GOT_A_CARD_TEXT);
 					card = new CHUDCard(x + 72, y - 40, reward->GetType());
 
-					LPPLAYSCENE playScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
 					playScene->Insert(youGotACard, -1);
 					playScene->Insert(card, -1);
 					playScene->InsertCard(reward->GetType());
@@ -118,7 +118,6 @@ void CRandomCard::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 				{
 					courseClear = new CClearText(x + 8, y - 64, COURSE_CLEAR_TEXT);
 
-					LPPLAYSCENE playScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
 					playScene->Insert(courseClear, -1);
 				}
 			}

@@ -24,6 +24,7 @@
 #include "Cloud.h"
 #include "MapIcon.h"
 #include "BrickParticle.h"
+#include "PButton.h"
 
 #include "SampleKeyEventHandler.h"
 
@@ -65,7 +66,10 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 
 float tempCamPosY = 0;
 
-bool isStartSpawned = false;
+bool isPipeSpawned = false;
+float newMarioX, newMarioY;
+float newMarioLife = MARIO_LEVEL_SMALL;
+float newMarioWarpDirection;
 
 bool toggleSceneSwitch = false;
 float wait_time = 0;
@@ -275,14 +279,25 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 			return;
 		}
 
-		if (isStartSpawned) // This is mainly used for Mario's pipe entering.
-							// Don't delete this because it's important!
+		if (isPipeSpawned)
 		{
-			CGame::GetInstance()->GetNewPlayerPos(x, y);
-			isStartSpawned = false;
+			x = newMarioX;
+			y = newMarioY;
 		}
 		obj = new CMario(x,y); 
-		player = (CMario*)obj;  
+		player = (CMario*)obj;
+		player->SetLife(newMarioLife);
+
+		if (isPipeSpawned)
+		{
+			if (newMarioWarpDirection == 1) player->SetState(MARIO_PIPE_EXIT_UP);
+			else if (newMarioWarpDirection == -1)
+			{
+				if (id != 4) player->SetState(MARIO_PIPE_EXIT_DOWN);
+				else player->SetState(MARIO_PIPE_EXIT_UP);
+			}
+			isPipeSpawned = false;
+		}
 
 		DebugOut(L"[INFO] Player object has been created!\n");
 		break;
@@ -291,7 +306,17 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	case OBJECT_TYPE_VENUS_FIRE_TRAP: obj = new CVenusFireTrap(x, y); break;
 	case OBJECT_TYPE_PIRANHA_PLANT: obj = new CPiranhaPlant(x, y); break;
 	case OBJECT_TYPE_RED_KOOPA_TROOPA: obj = new CKoopaTroopa(x, y); break;
-	case OBJECT_TYPE_BRICK: obj = new CBrick(x,y); break;
+	case OBJECT_TYPE_BRICK:
+	{
+		if (tokens.size() > 3)
+		{
+			int itemID = atoi(tokens[3].c_str());
+			obj = new CBrick(x, y, itemID);
+			break;
+		}
+		obj = new CBrick(x, y);
+		break;
+	}
 	case OBJECT_TYPE_STRIPED_BRICK: obj = new CStripedBrick(x, y); break;
 	case OBJECT_TYPE_COIN: obj = new CCoin(x, y); break;
 	case OBJECT_TYPE_SUPER_MUSHROOM: obj = new CSuperMushroom(x, y); break;
@@ -316,6 +341,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 
 		break;
 	}
+	case OBJECT_TYPE_PBUTTON: obj = new CPButton(x, y); break;
 	case OBJECT_TYPE_QUESTION_BLOCK: 
 	{
 		int itemID = atoi(tokens[3].c_str());
@@ -337,8 +363,22 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		int warp_direction = atoi(tokens[11].c_str());
 
 		int itemID = atoi(tokens[12].c_str());
+		if (warp_direction != 0)
+		{
+			int scene_destination = atoi(tokens[13].c_str());
+			float newX = (float)atof(tokens[14].c_str());
+			float newY = (float)atof(tokens[15].c_str());
 
-		obj = new CPipe(
+			obj = new CPipe(
+				x, y,
+				cell_width, cell_height, pipe_height,
+				face_direction, warp_direction,
+				sprite_id_begin_begin, sprite_id_end_begin,
+				sprite_id_begin_end, sprite_id_end_end,
+				itemID, scene_destination, newX, newY);
+			break;
+		}
+		else obj = new CPipe(
 			x, y,
 			cell_width, cell_height, pipe_height, 
 			face_direction, warp_direction, 
@@ -517,7 +557,10 @@ void CPlayScene::Update(DWORD dt)
 
 			collisionTracker->Allocate(obj);
 		}
-	}	
+	}
+
+	if (isPipeSpawned) DebugOutTitle(L"YES\n");
+	else DebugOutTitle(L"NO\n");
 
 	//solve collision with blocking objects first
 	for (auto& obj : movingColliders) //For moving objects
@@ -830,6 +873,34 @@ int CPlayScene::Find(LPGAMEOBJECT obj)
 				return i;
 	}
 	return -1;
+}
+
+void CPlayScene::LoadWarpedMario(float newX, float newY, float newLife, float newDirection)
+{
+	newMarioX = newX;
+	newMarioY = newY;
+	newMarioLife = newLife;
+	newMarioWarpDirection = newDirection;
+}
+
+void CPlayScene::SaveMarioLife()
+{
+	newMarioLife = player->GetLife();
+}
+
+void CPlayScene::TogglePipeSwitch(bool pipeSwitch)
+{
+	isPipeSpawned = pipeSwitch;
+}
+
+vector<LPGAMEOBJECT> CPlayScene::GetBrickObjects()
+{
+	vector<LPGAMEOBJECT> listOfBricks;
+	for (int i = 0; i < objects.size(); i++)
+	{
+		if (dynamic_cast<CBrick*>(objects[i])) listOfBricks.push_back(objects[i]);
+	}
+	return listOfBricks;
 }
 
 bool CPlayScene::IsInRange(LPGAMEOBJECT obj, float start_x, float end_x, float start_y, float end_y)
