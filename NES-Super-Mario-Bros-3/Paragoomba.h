@@ -11,7 +11,7 @@
 #define PARAGOOMBA_BBOX_WIDTH 16.0f
 #define PARAGOOMBA_BBOX_DIE_HEIGHT 9
 
-#define PARAGOOMBA_STATE_GOOMBA 10
+#define PARAGOOMBA_STATE_WING 10
 
 #define PARAGOOMBA_CHASE_RUN_DURATION 30 * 16
 #define PARAGOOMBA_CHASE_MAX_MOMENTUM 4
@@ -35,19 +35,19 @@ class CParagoomba : public CGoomba
 public:
 	CParagoomba(float x, float y);
 
+	int IsCollidable() { return state == STATE_LIVE || state == PARAGOOMBA_STATE_WING; };
+
 	void ChangeAnimation();
 	void Render();
 
 	void OnReactionToAttack1(LPCOLLISIONEVENT e);
+	void OnReactionToAttack2(LPCOLLISIONEVENT e);
+	void OnReactionToAttack3(LPCOLLISIONEVENT e);
 
-	void SetState(int state);
-	void ToStateLiving();
-	void ToStateDying();
+	void ToDefaultState();
 
-	void Prepare(DWORD dt);
-
-	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
-	void Living(DWORD dt);
+	void DefaultPrepare(DWORD dt);
+	void DefaultUpdate(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 
 	//chasing
 	void LookforMario();

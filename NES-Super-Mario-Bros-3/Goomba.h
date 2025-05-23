@@ -17,7 +17,7 @@
 #define ANI_ID_GOOMBA 20000
 //actions
 #define ANI_ID_GOOMBA_WALK 0
-#define ANI_ID_GOOMBA_DIE 10
+#define ANI_ID_GOOMBA_DIE 100
 
 class CGoomba : public CEnemy
 {
@@ -27,12 +27,16 @@ protected:
 public:
 	CGoomba(float x, float y);
 	
+	virtual void Prepare(DWORD dt);
+	virtual void DefaultPrepare(DWORD dt) {};
+
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects);
+	virtual void DefaultUpdate(DWORD dt, vector<LPGAMEOBJECT>* coObjects) {};
 
 	virtual void ChangeAnimation();
 	virtual void Render();
 
-	virtual int IsCollidable() { return state != STATE_DIE; };
+	virtual int IsCollidable() { return state == STATE_LIVE; };
 	virtual void OnCollisionWith(LPCOLLISIONEVENT e);
 	virtual void OnCollisionWithPlatform(LPCOLLISIONEVENT e);
 	virtual void OnCollisionWithBlock(LPCOLLISIONEVENT e);
@@ -47,6 +51,7 @@ public:
 	virtual void SetState(int state);
 	virtual void ToStateLiving();
 	virtual void ToStateDying();
+	virtual void ToDefaultState() {};
 
 	virtual void Living(DWORD dt);
 	virtual void Dying(DWORD dt);

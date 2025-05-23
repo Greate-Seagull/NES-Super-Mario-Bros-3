@@ -12,6 +12,7 @@ CPiranhaPlant::CPiranhaPlant(float x, float y):
 
 	SetBoundingBox(PIRANHA_BBOX_WIDTH, PIRANHA_BBOX_HEIGHT);	
 
+	maxVx = PIRANHA_VX;
 	vx = PIRANHA_VX;
 	vy = PIRANHA_VY;
 
@@ -40,6 +41,9 @@ void CPiranhaPlant::Prepare(DWORD dt)
 		break;
 	case PIRANHA_STATE_HIDE:
 		Hiding(dt);
+		break;
+	case STATE_DIE:
+		Dying(dt);
 		break;
 	}	
 }
@@ -90,6 +94,15 @@ void CPiranhaPlant::Hiding(DWORD dt)
 	}
 }
 
+void CPiranhaPlant::Dying(DWORD dt)
+{
+	die_time += dt;
+	if (die_time >= PIRANHA_DIE_TIME)
+	{
+		Delete();
+	}
+}
+
 void CPiranhaPlant::SetState(int state) //Start state
 {
 	if (this->state == state)
@@ -114,7 +127,7 @@ void CPiranhaPlant::SetState(int state) //Start state
 			ToStateHide();
 			break;
 		case STATE_DIE:
-			Delete();
+			ToStateDie();
 			break;
 	}
 }
@@ -139,6 +152,11 @@ void CPiranhaPlant::ToStateHide()
 {
 	start_action_time = 0;
 	vy = 0.0f;
+}
+
+void CPiranhaPlant::ToStateDie()
+{
+	die_time = 0;
 }
 
 void CPiranhaPlant::OnReactionToCarrying(LPCOLLISIONEVENT e)
@@ -204,7 +222,16 @@ void CPiranhaPlant::ChangeAnimation()
 {
 	int object = ANI_ID_PIRANHA;
 
-	int action = ANI_ID_PIRANHA_BITE;
+	int action;
+	switch (state)
+	{
+	case STATE_DIE:
+		action = ANI_ID_PIRANHA_DIE;
+		break;
+	default:
+		action = ANI_ID_PIRANHA_BITE;
+		break;
+	}
 
 	aniID = object + action;
 }

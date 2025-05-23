@@ -9,6 +9,7 @@ CGoomba::CGoomba(float x, float y) :
 {
 	SetBoundingBox(GOOMBA_BBOX_WIDTH, GOOMBA_BBOX_HEIGHT);
 
+	maxVx = GOOMBA_VX;
 	nx = DIRECTION_LEFT;
 	life = GOOMBA_LIFE;
 	SetState(STATE_LIVE);
@@ -92,8 +93,8 @@ void CGoomba::OnReactionToAttack2(LPCOLLISIONEVENT e)
 }
 
 void CGoomba::OnReactionToAttack3(LPCOLLISIONEVENT e)
-{
-	Die();
+{	
+	CHarmfulObject::OnReactionToAttack3(e);	
 }
 
 void CGoomba::SetState(int state)
@@ -112,6 +113,11 @@ void CGoomba::SetState(int state)
 		break;
 	case STATE_DIE:
 		ToStateDying();
+		break;
+	case STATE_FLYINGOUT:
+		break;
+	default:
+		ToDefaultState();
 		break;
 	}
 }
@@ -145,27 +151,56 @@ void CGoomba::Dying(DWORD dt)
 	}
 }
 
-void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+void CGoomba::Prepare(DWORD dt)
 {
 	switch (state)
 	{
+	case STATE_FLYINGOUT:
 	case STATE_LIVE:
-		Living(dt);
+		CMovableObject::Prepare(dt);
 		break;
 	case STATE_DIE:
 		Dying(dt);
 		break;
+	default:
+		DefaultPrepare(dt);
+		break;
 	}
+}
+
+void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+{
+	switch (state)
+	{
+	case STATE_FLYINGOUT:
+	case STATE_LIVE:
+		Living(dt);
+		break;
+	case STATE_DIE:
+		break;
+	default:
+		DefaultUpdate(dt, coObjects);
+		break;
+	}	
 }
 
 void CGoomba::ChangeAnimation()
 {
 	int object = ANI_ID_GOOMBA;
-	int action = ANI_ID_GOOMBA_WALK;
-	if (state == STATE_DIE)
+	int action;
+
+	switch (state)
 	{
+	case STATE_FLYINGOUT:
+		action = ANI_ID_GOOMBA_WALK + ID_ANI_DIRECTION_UP;
+		break;
+	case STATE_DIE:
 		action = ANI_ID_GOOMBA_DIE;
-	}
+		break;
+	default:
+		action = ANI_ID_GOOMBA_WALK;
+		break;
+	}	
 
 	aniID = object + action;
 }

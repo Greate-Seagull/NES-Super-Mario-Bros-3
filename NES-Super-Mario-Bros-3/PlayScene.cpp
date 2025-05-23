@@ -434,9 +434,6 @@ void CPlayScene::Update(DWORD dt)
 	vector<LPGAMEOBJECT> nonBlockingColliders;
 	for (auto& obj : nearbyObjects)
 	{	
-		if (dynamic_cast<CCoin*>(obj))
-			int t = 0;
-
 		if (obj->IsCollidable())
 		{
 			//Collide with objects
@@ -468,8 +465,6 @@ void CPlayScene::Update(DWORD dt)
 
 	for (auto& obj : nearbyObjects)
 	{
-		if (dynamic_cast<CKoopaTroopa*>(obj))
-			int i = 0;
 		obj->Update(dt, &nearbyObjects);
 	}
 

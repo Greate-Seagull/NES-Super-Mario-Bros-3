@@ -20,6 +20,8 @@ protected:
 	float ax, ay; //accelerator
 	int nx, ny, nz; //Direction
 
+	float maxVx;
+
 	bool isOnGround;
 public:
 	CMovableObject(float x, float y);

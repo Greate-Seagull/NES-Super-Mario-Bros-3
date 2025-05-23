@@ -78,7 +78,6 @@ public:
 	virtual void SetState(int state);
 
 	virtual void UnderAttack(CGameObject* by_another);
-	virtual void UnderDestructrion(CGameObject* by_another);
 
 	virtual void Bounce();
 	virtual void Hide(DWORD dt);

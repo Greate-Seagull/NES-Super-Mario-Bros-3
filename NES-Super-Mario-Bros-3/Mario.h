@@ -85,8 +85,6 @@
 
 class CMario : public CCreature
 {
-	float maxVx;
-
 	bool is_invulnerable;
 	bool is_jumping;
 

@@ -6,7 +6,6 @@
 #include "Brick.h"
 #include "Mario.h"
 #include "Paragoomba.h"
-//#include "Koopas.h"
 
 
 #define CAM_MAX_Y 247.0f

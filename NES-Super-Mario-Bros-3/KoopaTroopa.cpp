@@ -7,6 +7,7 @@
 CKoopaTroopa::CKoopaTroopa(float x, float y):
 	CEnemy(x, y)
 {	
+	maxVx = KOOPA_VX;
 	vy = KOOPA_VY;	
 	SetState(STATE_LIVE);
 	life = KOOPA_LIFE;
@@ -108,7 +109,7 @@ void CKoopaTroopa::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 {
 	if (e->ny)
 	{		
-		if (isOnGround == false && (state == KOOPA_STATE_POP || state == KOOPA_STATE_POP))
+		if (isOnGround == false && (state == KOOPA_STATE_HIDE || state == KOOPA_STATE_POP))
 			Bounce();
 		else
 			vy = 0.0f;
@@ -131,7 +132,10 @@ void CKoopaTroopa::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 {	
 	if (e->ny)
 	{
-		vy = 0.0f;
+		if (isOnGround == false && (state == KOOPA_STATE_HIDE || state == KOOPA_STATE_POP))
+			Bounce();
+		else
+			vy = 0.0f;
 
 		if (e->ny < 0)
 		{
@@ -154,7 +158,7 @@ void CKoopaTroopa::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 		Bounce();
 		break;
 	case KOOPA_STATE_ROLL:
-		Destroy(e);
+		Attack(e);
 		break;
 	}
 }
@@ -168,6 +172,9 @@ void CKoopaTroopa::OnCollisionWithMario(LPCOLLISIONEVENT e)
 		break;
 	case KOOPA_STATE_ROLL:
 		Destroy(e);
+		break;
+	default:
+		Touch(e);
 		break;
 	}
 }
@@ -257,6 +264,9 @@ void CKoopaTroopa::SetState(int state)
 		return;
 	}*/
 
+	if (state == STATE_FLYINGOUT)
+		return;
+
 	this->state = state;
 
 	switch (state)
@@ -272,7 +282,6 @@ void CKoopaTroopa::SetState(int state)
 		case KOOPA_STATE_HIDE:
 			y += (bbox_height - KOOPA_BBOX_HEIGHT_HIDE) / 2.0f - 0.01f;
 			SetBoundingBox(KOOPA_BBOX_WIDTH_HIDE, KOOPA_BBOX_HEIGHT_HIDE);
-			vx = 0.0f;
 			recovering_time = 0;
 			SetHighPower();
 			break;
@@ -305,7 +314,7 @@ void CKoopaTroopa::OnReactionToCarrying(LPCOLLISIONEVENT e)
 		break;
 	case KOOPA_STATE_POP:
 	case KOOPA_STATE_HIDE:
-		vy = 0.0f;
+		Stop();
 		break;
 	}
 }
@@ -334,7 +343,9 @@ void CKoopaTroopa::OnReactionToTouching(LPCOLLISIONEVENT e)
 	case KOOPA_STATE_HIDE:
 		if (CMario* mario = dynamic_cast<CMario*>(e->src_obj))
 		{
-			SetNx(e->dx / fabs(e->dx));
+			e->Reverse();
+			Touch(e);
+			SetNx(this->x < e->src_obj->GetX() ? DIRECTION_LEFT : DIRECTION_RIGHT);
 			SetState(KOOPA_STATE_ROLL);
 		}
 		break;
@@ -349,12 +360,15 @@ void CKoopaTroopa::OnReactionToAttack1(LPCOLLISIONEVENT e)
 	case KOOPA_STATE_HIDE:
 		if (CMario* mario = dynamic_cast<CMario*>(e->src_obj))
 		{
-			SetNx(e->dx / fabs(e->dx));
+			e->Reverse();
+			Touch(e);
+			SetNx(this-> x < e->src_obj->GetX() ? DIRECTION_LEFT: DIRECTION_RIGHT);
 			SetState(KOOPA_STATE_ROLL);
 		}
 		break;
 	default:
 		SetState(KOOPA_STATE_HIDE);
+		Stop();
 		break;
 	}
 
@@ -368,6 +382,7 @@ void CKoopaTroopa::OnReactionToAttack2(LPCOLLISIONEVENT e)
 void CKoopaTroopa::OnReactionToAttack3(LPCOLLISIONEVENT e)
 {
 	SetState(KOOPA_STATE_HIDE);
+	CHarmfulObject::OnReactionToAttack3(e);
 }
 
 void CKoopaTroopa::UnderAttack(CGameObject* by_another)
@@ -378,26 +393,16 @@ void CKoopaTroopa::UnderAttack(CGameObject* by_another)
 	}
 }
 
-void CKoopaTroopa::UnderDestructrion(CGameObject* by_another)
-{
-	float enemy_x, enemy_y;
-	by_another->GetPosition(enemy_x, enemy_y);
-
-	int fly_out_direction = (x <= enemy_x) ? DIRECTION_LEFT : DIRECTION_RIGHT;
-	FlyOut(fly_out_direction);	
-}
-
 void CKoopaTroopa::Bounce()
 {
 	if (fabs(vy) > 0.16f)
 	{
-		vx = nx * ATTACK_BOOM_VX;
+		vx = nx * fabs(maxVx);
 		vy = ny * KOOPA_BOUNCE_VY;
 	}
 	else
 	{
-		vx = 0.0f;
-		vy = 0.0f;
+		Stop();
 	}
 }
 

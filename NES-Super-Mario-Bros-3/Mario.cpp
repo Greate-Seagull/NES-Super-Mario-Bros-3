@@ -242,6 +242,8 @@ void CMario::Render()
 	}		
 
 	//Render
+	/*aniID = 1030;
+	CAnimations::GetInstance()->Get(aniID)->Render(x, y);*/
 	CAnimations::GetInstance()->Get(aniID)->Render(draw_x, draw_y, true);
 }
 
@@ -386,10 +388,10 @@ void CMario::StartSpecialActions()
 {
 	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
 
-	/*if (keyState->IsPressed(VK_UP))
+	if (keyState->IsPressed(VK_UP))
 		SetLife(life + 1.0f);
 	else if (keyState->IsPressed(VK_DOWN))
-		SetLife(life - 1.0f);*/
+		SetLife(life - 1.0f);
 
 	if (keyState->IsHold(VK_UP))
 		Fly();
@@ -719,7 +721,7 @@ bool CMario::Tosh()
 
 	//PIECE OF SHIT, I just need an event
 	CCollisionEventPool* pool = CCollision::GetInstance()->GetPool();
-	LPCOLLISIONEVENT e = pool->Allocate(0.0f, nx, ny, 0.0f, 0.0f, weapon, this);
+	LPCOLLISIONEVENT e = pool->Allocate(0.0f, nx, ny, nx, ny, weapon, this);
 	Touch(e);
 	pool->VirtualDelete();
 	return Kick();

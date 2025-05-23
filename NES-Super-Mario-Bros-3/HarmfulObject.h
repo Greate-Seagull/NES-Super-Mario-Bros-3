@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MovableObject.h"
+#include "EffectsManager.h"
 
 #define ACTION_CARRY -1
 #define ACTION_TOUCH 0
@@ -13,6 +14,8 @@
 
 #define ATTACK_BOOM_VX 0.08f
 #define ATTACK_BOOM_VY 0.3f
+
+#define STATE_FLYINGOUT -10
 
 class CHarmfulObject : public CMovableObject
 {

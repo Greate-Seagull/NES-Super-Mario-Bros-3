@@ -59,6 +59,7 @@ void CHarmfulObject::OnReactionToAttack2(LPCOLLISIONEVENT e)
 
 void CHarmfulObject::OnReactionToAttack3(LPCOLLISIONEVENT e)
 {
+	FlyOut(this->x <= e->src_obj->GetX() ? DIRECTION_LEFT : DIRECTION_RIGHT);
 }
 
 void CHarmfulObject::OnReactionToBigger(LPCOLLISIONEVENT e)
@@ -81,14 +82,18 @@ void CHarmfulObject::HigherAttack(LPCOLLISIONEVENT e)
 
 void CHarmfulObject::Destroy(LPCOLLISIONEVENT e)
 {
-	//Effect boom
+	float effect_x = x - e->nx * bbox_width / 2.0f;
+	float effect_y = y - e->ny * bbox_height / 2.0f;
+	CEffectsManager::GetInstance()->CreateAttackEffect(effect_x, effect_y);
 	e->obj->OnReactionTo(e, ACTION_ATTACK_LEVEL_3);
 }
 
 void CHarmfulObject::FlyOut(int attack_direction)
 {
+	SetState(STATE_FLYINGOUT);
+
 	nx = attack_direction;
-	vx = nx * ATTACK_BOOM_VX;
+	vx = nx * fabs(maxVx);
 
 	ny = DIRECTION_UP;
 	vy = ny * ATTACK_BOOM_VY;
