@@ -2,6 +2,7 @@
 [ASSETS]
 #Priority
 effects.txt
+hud.txt
 #
 mario.txt
 goomba.txt
@@ -34,8 +35,6 @@ other.txt
 # type	x	y	extra_settings per object type
 # See OBJECT_TYPE constants in AssetIDs.h
 
-# BACKGROUND
--1	1270	-28
 # ENDING OF A LEVEL & RANDOM CARD
 -10	2488	415	21	26	-50001	-50002
 
@@ -313,6 +312,9 @@ other.txt
 
 15	2264	383
 15	2280	383
+
+# HUD
+-20	128	180
 
 #Portal 
 #50	300	110	316	140	2	236	10
