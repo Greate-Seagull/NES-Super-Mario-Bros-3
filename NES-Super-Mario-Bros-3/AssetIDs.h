@@ -19,6 +19,8 @@
 #define NON_OBJECT_TYPE_CLOUD -4
 #define NON_OBJECT_TYPE_MAP_ICON -5
 
+#define NON_OBJECT_TYPE_HUD -20 
+
 #define DEAD_STATE_TRIGGER -99
 
 #pragma endregion
@@ -48,6 +50,7 @@
 //
 #define OBJECT_TYPE_COIN 40
 //
+#define OBJECT_TYPE_PBUTTON 45
 #define OBJECT_TYPE_PORTAL 50
 #define OBJECT_TYPE_EFFECT 60
 #define OBJECT_TYPE_GROUND 70

@@ -1,0 +1,14 @@
+# id	left	top	right	bottom	texture_id
+[SPRITES]
+#CONSTRUCTED
+800	386	163	401	178	21
+801	404	163	419	178	21
+802	422	163	437	178	21
+
+#PRESSED
+810	386	181	401	196	21
+
+# ani_id	sprite1_id	time1	sprite2_id	time2	...
+[ANIMATIONS]
+7500	800	2000	801	2000	802	2000
+7501	810	1000

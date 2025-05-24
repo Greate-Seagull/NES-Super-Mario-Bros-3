@@ -6,11 +6,13 @@
 #include "Brick.h"
 #include "Mario.h"
 #include "Paragoomba.h"
+#include "HUD.h"
 //#include "Koopas.h"
 
-
-#define CAM_MAX_Y 247.0f
+#define CAM_MAX_Y 283.0f
 #define COLLISION_RANGE 300.0f
+
+#define CAM_SPEED 0.03f
 
 class CPlayScene: public CScene
 {
@@ -18,6 +20,12 @@ protected:
 	// A play scene has to have player, right? 
 	CMario* player;
 	LPGAMEOBJECT background;
+	CHud* hud;
+	CDigit* scoreDigits[DIGIT_COUNT_SCORE];
+	CDigit* coinDigits[DIGIT_COUNT_CURRENCY];
+	CDigit* timeDigits[DIGIT_COUNT_TIME];
+	CPMeter* pMeter[P_METER_COUNT];
+	CHUDCard* cards[HUD_CARD_COUNT];
 
 	vector<LPGAMEOBJECT> objects;
 
@@ -37,6 +45,8 @@ public:
 	virtual void Render();
 	virtual void Unload();
 
+	int GetCurrentSceneID() { return id; }
+
 	LPGAMEOBJECT GetPlayer() { return player; }
 	
 	void Clear();
@@ -47,9 +57,30 @@ public:
 	void Insert(LPGAMEOBJECT newObj, int index);
 	int Find(LPGAMEOBJECT obj);
 	bool IsInRange(LPGAMEOBJECT obj, float start_x, float end_x, float start_y, float end_y);
+	vector<LPGAMEOBJECT> GetBrickObjects();
 	vector<LPGAMEOBJECT> FilterByPlayer(float range = COLLISION_RANGE);
 	vector<LPGAMEOBJECT> FilterByCam();
-	void UpdateCamera();
+	void UpdateCamera(DWORD dt);
+
+	void PushPlayer();
+
+	void SaveMarioLife();
+	void TogglePipeSwitch(bool pipeSwitch);
+	void LoadWarpedMario(float newX, float newY, float newLife, float newDirection);
+
+	void AddHudDetail(float x, float y);
+
+	void UpdateTime();
+	void CollectCoin();
+	void UpdateCoin();
+	void UpdateScore();
+	void UpdatePMeter();
+	void UpdateRunTime(DWORD dt, bool isProgress);
+	void BeginCard();
+	void InsertCard(int type);
+
+	void CollectingScore();
+	void ToggleSceneSwitch();
 };
 
 typedef CPlayScene* LPPLAYSCENE;
