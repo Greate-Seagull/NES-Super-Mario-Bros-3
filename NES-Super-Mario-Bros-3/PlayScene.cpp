@@ -64,6 +64,8 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 
 #define SCENE_SWITCH_WAIT_TIME 6000
 
+#define MARIO_LEFT_BOUNDARY 8
+
 float tempCamPosY = 0;
 
 bool isPipeSpawned = false;
@@ -308,13 +310,20 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	case OBJECT_TYPE_RED_KOOPA_TROOPA: obj = new CKoopaTroopa(x, y); break;
 	case OBJECT_TYPE_BRICK:
 	{
-		if (tokens.size() > 3)
+		if (tokens.size() == 4)
 		{
 			int itemID = atoi(tokens[3].c_str());
 			obj = new CBrick(x, y, itemID);
 			break;
 		}
-		obj = new CBrick(x, y);
+		else if (tokens.size() == 5)
+		{
+			int itemID = atoi(tokens[3].c_str());
+			int bounceCount = atoi(tokens[4].c_str());
+			obj = new CBrick(x, y, itemID, bounceCount);
+			break;
+		}
+		else obj = new CBrick(x, y);
 		break;
 	}
 	case OBJECT_TYPE_STRIPED_BRICK: obj = new CStripedBrick(x, y); break;
@@ -577,6 +586,7 @@ void CPlayScene::Update(DWORD dt)
 		obj->Update(dt, &nearbyObjects);
 
 	UpdateCamera(dt);
+	PushPlayer();
 
 	// UPDATE HUD
 	if (!timerPause) timer -= dt;
@@ -625,6 +635,16 @@ void CPlayScene::Update(DWORD dt)
 	player->GetPosition(px, py);
 
 	PurgeDeletedObjects();
+}
+
+void CPlayScene::PushPlayer()
+{
+	float pX, pY;
+	player->GetPosition(pX, pY);
+	float cX, cY;
+	CGame::GetInstance()->GetCamPos(cX, cY);
+	if (pX < cX + MARIO_LEFT_BOUNDARY)
+		player->SetPosition(cX + MARIO_LEFT_BOUNDARY, pY);
 }
 
 void CPlayScene::AddHudDetail(float x, float y)
@@ -970,7 +990,7 @@ void CPlayScene::UpdateCamera(DWORD dt)
 
 	float cx, cy;
 	game->GetCamPos(cx, cy);
-	if (sceneID == 1 || sceneID == 2 || sceneID == 4)
+	if (sceneID != 3)
 	{
 		player->GetPosition(cx, cy);
 
@@ -993,7 +1013,7 @@ void CPlayScene::UpdateCamera(DWORD dt)
 		/*if (GetAsyncKeyState(VK_UP) & 0x8000) cy -= 10;
 		if (GetAsyncKeyState(VK_DOWN) & 0x8000) cy += 10;*/
 	}
-	else if (sceneID == 3)
+	else
 	{
 		if (cx >= MAX_CAMERA_POSITION)
 		{

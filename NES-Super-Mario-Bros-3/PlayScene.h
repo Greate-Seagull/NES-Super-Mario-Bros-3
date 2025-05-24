@@ -62,6 +62,8 @@ public:
 	vector<LPGAMEOBJECT> FilterByCam();
 	void UpdateCamera(DWORD dt);
 
+	void PushPlayer();
+
 	void SaveMarioLife();
 	void TogglePipeSwitch(bool pipeSwitch);
 	void LoadWarpedMario(float newX, float newY, float newLife, float newDirection);

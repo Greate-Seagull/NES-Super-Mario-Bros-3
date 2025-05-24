@@ -6,6 +6,7 @@
 #include "Game.h"
 
 #define BLOCK_WITHOUT_ITEM -1
+#define BLOCK_WITHOUT_ITEM_BREAKER -2
 
 class CBlock : public CMovableObject
 {

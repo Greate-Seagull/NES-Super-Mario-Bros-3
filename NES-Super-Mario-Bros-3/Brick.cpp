@@ -1,12 +1,18 @@
 #include "Brick.h"
 #include "PButton.h"
 #include "PlayScene.h"
+#include "SuperMushroom.h"
+#include "SuperLeaf.h"
+#include "Coin.h"
+#include "KoopaTroopa.h"
+
+#include "debug.h"
 
 void CBrick::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
 	InPhase(dt, coObjects);
 
-	if (state == STATE_DIE && itemID == 45) aniID = ID_ANI_BRICK_DIE;
+	if (state == STATE_DIE && itemID != BLOCK_WITHOUT_ITEM) aniID = ID_ANI_BRICK_DIE;
 	else aniID = ID_ANI_BRICK;
 }
 
@@ -22,7 +28,7 @@ void CBrick::InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 
 void CBrick::Reaction(CGameObject* by_another, int action)
 {
-	if (state == STATE_DIE)
+	if (state == STATE_DIE || by_another == NULL)
 		return;
 
 	switch (action)
@@ -36,11 +42,26 @@ void CBrick::Reaction(CGameObject* by_another, int action)
 				this->Delete();
 				break;
 			}
-			case OBJECT_TYPE_PBUTTON: SetState(BRICK_STATE_TOGGLE); break;
+			case BLOCK_WITHOUT_ITEM_BREAKER:
+			{
+				BlastingBrickParticles();
+				this->Delete();
+				break;
+			}
+			default: SetState(BRICK_STATE_TOGGLE); break;
 		}
 		break;
 	case ACTION_TOUCH:
-		SetState(BRICK_STATE_TOGGLE);
+		switch (itemID)
+		{
+			case BLOCK_WITHOUT_ITEM_BREAKER:
+			{
+				BlastingBrickParticles();
+				this->Delete();
+				break;
+			}
+			default: SetState(BRICK_STATE_TOGGLE); break;
+		}
 		break;
 	}
 
@@ -70,17 +91,18 @@ void CBrick::TriggerItem()
 {
 	switch (itemID)
 	{
-	case OBJECT_TYPE_PBUTTON:
-	{
-		item = new CPButton(x, y - BRICK_WIDTH);
-		break;
-	}
+		case OBJECT_TYPE_PBUTTON: item = new CPButton(x, y - BRICK_WIDTH); break;
+		case OBJECT_TYPE_SUPER_MUSHROOM: item = new CSuperMushroom(x, y); break;
+		case OBJECT_TYPE_SUPER_LEAF: item = new CSuperLeaf(x, y); break;
+		case OBJECT_TYPE_COIN: item = new CCoin(x, y); break;
 	default: return;
 	}
 
 	item->Reaction(this, ACTION_TOUCH);
 	LPPLAYSCENE ps = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
-	ps->Insert(item, -1);
+	int index = ps->Find(this);
+	if (itemID != OBJECT_TYPE_PBUTTON) ps->Insert(item, index - 1);
+	else ps->Insert(item, -1);
 }
 
 void CBrick::Shaking(DWORD dt)
@@ -96,7 +118,12 @@ void CBrick::Shaking(DWORD dt)
 	{
 		y = origin_y;
 		opposite = false;
-		if (itemID != BLOCK_WITHOUT_ITEM) SetState(STATE_DIE);
+		if (itemID != BLOCK_WITHOUT_ITEM)
+		{
+			bounceCount--;
+			if (bounceCount > 0) SetState(STATE_LIVE);
+			else SetState(STATE_DIE);
+		}
 		else SetState(STATE_LIVE);
 	}
 }

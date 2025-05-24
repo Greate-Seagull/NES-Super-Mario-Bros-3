@@ -20,8 +20,10 @@ class CBrick : public CBlock {
 protected:
 	float origin_y;
 	bool opposite = false;
+
+	int bounceCount;
 public:
-	CBrick(float x, float y, int itemID = BLOCK_WITHOUT_ITEM) :CBlock(x, y, itemID)
+	CBrick(float x, float y, int itemID = BLOCK_WITHOUT_ITEM, int bounceCount = 0) :CBlock(x, y, itemID)
 	{
 		bbox_width = BRICK_BBOX_WIDTH;
 		bbox_height = BRICK_BBOX_HEIGHT;
@@ -29,6 +31,7 @@ public:
 		aniID = ID_ANI_BRICK;
 
 		this->origin_y = y;
+		this->bounceCount = bounceCount;
 
 		SetState(STATE_LIVE);
 		SetBoundingBox(bbox_width, bbox_height);
