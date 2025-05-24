@@ -8,16 +8,18 @@
 #include "debug.h"
 
 //MOVING
-#define MARIO_SMALL_WALKING_MAX_VX 0.1f
+#define MARIO_SMALL_WALKING_MAX_VX 0.09f
 #define MARIO_SMALL_RUNNING_MAX_VX 0.25f
 #define MARIO_SMALL_JUMPING_MAX_VY 0.15f
 #define MARIO_SMALL_RUNNING_AX 0.0002f//0.0002f
 
 #define MARIO_DECELERATE_AX 0.00016f
-#define MARIO_BRAKE_AX 0.0004f
+#define MARIO_BRAKE_AX 0.00075f
 
 #define MARIO_START_JUMP_VY 0.25f
 #define MARIO_MAX_JUMP_HEIGHT 60.0f
+
+#define MARIO_FLY_V 0.1f
 
 #define MARIO_JUMP_DEFLECT_VY  -0.25f
 
@@ -32,7 +34,9 @@
 #define MARIO_ATTACK_PHASE_TIME 60
 #define MARIO_KICK_TIME 200
 #define MARIO_DYING_TIME 700
-#define MARIO_MOMENTUM_TIME 300
+#define MARIO_MOMENTUM_TIME 250//300
+#define MARIO_FLY_COOLDOWN 250
+#define MARIO_FLY_TIME 3500
 
 //LIFE
 #define	MARIO_LEVEL_SMALL	1.0f
@@ -53,7 +57,9 @@
 //ACTIONS
 #define ID_ANI_IDLE 0
 #define ID_ANI_JUMP 10
+#define ID_ANI_SUPER_JUMP 15
 #define ID_ANI_FALL 20
+#define ID_ANI_SUPER_FALL 25
 #define ID_ANI_SIT 30
 #define ID_ANI_RUN 40
 #define ID_ANI_SUPER_RUN 45
@@ -62,8 +68,9 @@
 #define ID_ANI_LEVEL_DOWN 70
 #define ID_ANI_ATTACK 80
 #define ID_ANI_KICK 90
-#define ID_ANI_DIE 200
 #define ID_ANI_CARRY 100
+#define ID_ANI_FLY 200
+#define ID_ANI_DIE 999
 //DIRECTIONS
 #define ID_ANI_LEFT 0
 #define ID_ANI_RIGHT 1
@@ -102,6 +109,8 @@ class CMario : public CCreature
 	int decrease_momentum_time;
 
 	bool is_flying;
+	DWORD fly_cooldown;
+	DWORD total_fly_time;
 
 	bool is_boosting;
 
