@@ -21,10 +21,13 @@ LPANIMATION_FRAME CAnimation::GetCurrentFrame()
 
 void CAnimation::Render(float x, float y, bool is_switched)
 {
-	if(is_switched == false)
-		SwitchSprite();
+	if (this != NULL)
+	{
+		if (is_switched == false)
+			SwitchSprite();
 
-	frames[currentFrame]->GetSprite()->Draw(x, y);
+		frames[currentFrame]->GetSprite()->Draw(x, y);
+	}
 }
 
 void CAnimation::ChangeTimePerFrame(DWORD time)

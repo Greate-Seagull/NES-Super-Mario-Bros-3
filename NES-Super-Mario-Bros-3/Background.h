@@ -2,11 +2,15 @@
 
 #include "Game.h"
 #include "PlayScene.h"
+#include "HUD.h"
 #include "GameObject.h"
 #include "Animation.h"
 #include "Animations.h"
 
 #define ID_ANI_BACKGROUND -10000
+
+#define ID_ANI_REWARD_BASE -60
+#define ID_ANI_COLLECTED_REWARD_BASE -70
 
 #define BACKGROUND_WIDTH 2560
 #define BACKGROUND_HEIGHT 393
@@ -16,6 +20,31 @@ public:
 	CBackground(float x, float y) : CGameObject(x, y) { aniID = ID_ANI_BACKGROUND; }
 	void GetBoundingBox(float& l, float& t, float& r, float& b);
 };
+
+#define COURSE_CLEAR_TEXT -300
+#define YOU_GOT_A_CARD_TEXT -301
+
+#define COURSE_CLEAR_WIDTH 128
+#define COURSE_CLEAR_HEIGHT 16
+
+#define YOU_GOT_A_CARD_WIDTH 128
+#define YOU_GOT_A_CARD_HEIGHT 16
+
+class CClearText : public CGameObject {
+public:
+	CClearText(float x, float y, int aniID) : CGameObject(x, y)
+	{
+		this->aniID = aniID;
+
+		if (aniID == COURSE_CLEAR_TEXT) SetBoundingBox(COURSE_CLEAR_WIDTH, COURSE_CLEAR_HEIGHT);
+		else if (aniID == YOU_GOT_A_CARD_TEXT) SetBoundingBox(YOU_GOT_A_CARD_WIDTH, YOU_GOT_A_CARD_HEIGHT);
+	}
+};
+
+#define REWARD_WIDTH 19
+#define REWARD_HEIGHT 26
+
+#define REWARD_FLOATING_SPEED 0.05f
 
 class CReward : public CGameObject
 {
@@ -30,13 +59,19 @@ public:
 		run = true;
 		time_elapsed = 0;
 		type = 3;
+		aniID = ID_ANI_REWARD_BASE - this->type;
+		SetBoundingBox(REWARD_WIDTH, REWARD_HEIGHT);
 	}
-	void Render();
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
-	void GetBoundingBox(float& l, float& t, float& r, float& b);
 
 	void Switch(bool run) { this->run = run; }
+	bool IsRunning() { return this->run; }
+	int GetType() { return type; }
 };
+
+#define COURSE_CLEAR_TIME 1730
+#define YOU_GOT_A_CARD_TIME 2600
+#define SCORE_COLLECTING_TIME 3470
 
 class CRandomCard : public CGameObject
 {
@@ -47,6 +82,13 @@ protected:
 	int spriteIdBeginEnd, spriteIdMiddleEnd, spriteIdEndEnd;
 
 	CReward* reward;
+
+	CClearText* courseClear;
+	CClearText* youGotACard;
+	CHUDCard* card;
+
+	bool scene_switch_ready;
+	float wait_time;
 public:
 	CRandomCard(float x, float y,
 		int sprite_id_begin_begin, int sprite_id_middle_begin, int sprite_id_end_begin,
@@ -69,17 +111,25 @@ public:
 		reward = new CReward(x + cellWidth, y - cellHeight);
 		LPPLAYSCENE playScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
 		playScene->Insert(reward, -1);
+
+		scene_switch_ready = false;
+		wait_time = 0;
 	}
 	void Render();
-	void Update(DWORD dt) {}
+	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 	void GetBoundingBox(float& l, float& t, float& r, float& b);
 
 	int IsCollidable() { return 1; }
 	int IsBlocking() { return 0; }
 
-	void Switch(bool run) { reward->Switch(run); }
+	void Switch(bool run);
 
-	~CRandomCard() { delete reward; }
+	~CRandomCard() 
+	{
+		delete reward;
+		if (courseClear) delete courseClear;
+		if (youGotACard) delete youGotACard;
+	}
 };
 
 class CEndLevel : public CGameObject {

@@ -484,5 +484,5 @@ void CKoopaTroopa::LookForMario()
 
 	float mario_x, mario_y;
 	mario->GetPosition(mario_x, mario_y);
-	nx = (mario_x < x) ? DIRECTION_LEFT: DIRECTION_RIGHT;
+	nx = (mario_x < x) ? DIRECTION_LEFT : DIRECTION_RIGHT;
 }
