@@ -99,5 +99,5 @@ public:
 
 	static bool IsDeleted(const LPGAMEOBJECT &o) { return o->isDeleted; }
 
-	virtual const char* ToString();
+	virtual void Refresh() {};
 };

@@ -5,9 +5,7 @@
 CParagoomba::CParagoomba(float x, float y):
 	CGoomba(x, y)
 {
-	SetBoundingBox(PARAGOOMBA_BBOX_WIDTH, PARAGOOMBA_BBOX_HEIGHT);
-	ClearState();
-	SetState(PARAGOOMBA_STATE_WING);
+	Refresh();
 }
 
 void CParagoomba::DefaultUpdate(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
@@ -162,6 +160,13 @@ void CParagoomba::LoseWings()
 		delete wings;
 		wings = nullptr;
 	}
+}
+
+void CParagoomba::Refresh()
+{
+	SetBoundingBox(PARAGOOMBA_BBOX_WIDTH, PARAGOOMBA_BBOX_HEIGHT);
+	ClearState();
+	SetState(PARAGOOMBA_STATE_WING);
 }
 
 void CParagoomba::Flutter()

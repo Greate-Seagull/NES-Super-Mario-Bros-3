@@ -80,5 +80,7 @@ public:
 	virtual void OnReactionToAttack2(LPCOLLISIONEVENT e);
 	virtual void OnReactionToAttack3(LPCOLLISIONEVENT e);
 
-	virtual void LookforMario();
+	virtual void LookForMario();
+
+	virtual void Refresh();
 };

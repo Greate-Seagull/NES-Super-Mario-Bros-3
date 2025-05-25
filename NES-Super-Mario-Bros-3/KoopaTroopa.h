@@ -85,5 +85,5 @@ public:
 
 	void Patrol();
 
-	virtual void LookForMario();
+	virtual void Refresh();
 };

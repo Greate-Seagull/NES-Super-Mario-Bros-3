@@ -7,10 +7,7 @@
 CKoopaTroopa::CKoopaTroopa(float x, float y):
 	CEnemy(x, y)
 {	
-	maxVx = KOOPA_VX;
-	vy = KOOPA_VY;	
-	SetState(STATE_LIVE);
-	life = KOOPA_LIFE;
+	Refresh();
 }
 
 void CKoopaTroopa::Prepare(DWORD dt)
@@ -196,6 +193,15 @@ void CKoopaTroopa::Patrol()
 {
 	nx = -nx;
 	vx = nx * fabs(vx);
+}
+
+void CKoopaTroopa::Refresh()
+{
+	SetBoundingBox(KOOPA_BBOX_WIDTH_LIVE, KOOPA_BBOX_HEIGHT_FOOT_1);
+	maxVx = KOOPA_VX;
+	vy = KOOPA_VY;
+	SetState(STATE_LIVE);
+	life = KOOPA_LIFE;
 }
 
 void CKoopaTroopa::Render()
@@ -430,14 +436,4 @@ void CKoopaTroopa::Pop(DWORD dt)
 	{
 		vx = -vx;
 	}
-}
-
-void CKoopaTroopa::LookForMario()
-{
-	LPPLAYSCENE playScene = (LPPLAYSCENE)(CGame::GetInstance()->GetCurrentScene());
-	CMario* mario = (CMario*)playScene->GetPlayer();
-
-	float mario_x, mario_y;
-	mario->GetPosition(mario_x, mario_y);
-	nx = (mario_x < x) ? DIRECTION_LEFT: DIRECTION_RIGHT;
 }

@@ -57,4 +57,6 @@ public:
 	//swinging
 	void Flutter();
 	void LoseWings();
+
+	void Refresh();
 };

@@ -55,4 +55,6 @@ public:
 
 	virtual void Living(DWORD dt);
 	virtual void Dying(DWORD dt);
+
+	virtual void Refresh();
 };

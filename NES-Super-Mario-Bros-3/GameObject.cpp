@@ -73,8 +73,3 @@ CGameObject::~CGameObject()
 {
 
 }
-
-const char* CGameObject::ToString()  
-{  
-   return "Game Object";  
-}

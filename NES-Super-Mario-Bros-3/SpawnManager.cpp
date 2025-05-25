@@ -15,15 +15,18 @@ void CSpawnManager::Spawn()
 	for (auto it : objectPositions)
 	{
 		if (game->IsInCam(it.first))
-			continue;
+			continue;		
 
 		position = it.second;
+		if (it.first->GetX() == position.first && it.first->GetY() == position.second)
+			continue;
+
 		it.first->SetPosition(position.first, position.second);
 
 		if (game->IsInCam(it.first))
-			continue;
-		
-		it.first->SetPosition(DEFAULT_X, DEFAULT_Y);
+			it.first->SetPosition(DEFAULT_X, DEFAULT_Y); //Don't appear immediately
+		else
+			it.first->Refresh();
 	}
 }
 

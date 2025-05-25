@@ -30,7 +30,7 @@ public:
 	virtual void ToStateHide();
 
 	//Shoot methods
-	virtual void LookforMario();
+	virtual void LookForMario();
 	virtual void Aim();
 	virtual void Shoot();
 	virtual void Reload();

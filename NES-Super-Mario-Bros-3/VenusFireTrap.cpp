@@ -93,9 +93,9 @@ void CVenusFireTrap::Shoot()
 	}
 }
 
-void CVenusFireTrap::LookforMario()
+void CVenusFireTrap::LookForMario()
 {
-	CPiranhaPlant::LookforMario();
+	CPiranhaPlant::LookForMario();
 	//look towards object
 	nx = (target_dx <= 0) ? DIRECTION_LEFT : DIRECTION_RIGHT;
 	ny = (target_dy <= 0) ? DIRECTION_UP : DIRECTION_DOWN;

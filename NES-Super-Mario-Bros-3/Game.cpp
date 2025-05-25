@@ -601,6 +601,7 @@ CGame::~CGame()
 CGame* CGame::GetInstance()
 {
 	if (__instance == NULL) __instance = new CGame();
+
 	return __instance;
 }
 

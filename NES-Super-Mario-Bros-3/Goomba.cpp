@@ -8,11 +8,7 @@ CGoomba::CGoomba(float x, float y) :
 	CEnemy(x, y)
 {
 	SetBoundingBox(GOOMBA_BBOX_WIDTH, GOOMBA_BBOX_HEIGHT);
-
-	maxVx = GOOMBA_VX;
-	nx = DIRECTION_LEFT;
-	life = GOOMBA_LIFE;
-	SetState(STATE_LIVE);
+	Refresh();
 }
 
 void CGoomba::OnCollisionWith(LPCOLLISIONEVENT e)
@@ -99,10 +95,10 @@ void CGoomba::OnReactionToAttack3(LPCOLLISIONEVENT e)
 
 void CGoomba::SetState(int state)
 {
-	if (this->state == state)
+	/*if (this->state == state)
 	{
 		return;
-	}
+	}*/
 
 	this->state = state;
 
@@ -149,6 +145,14 @@ void CGoomba::Dying(DWORD dt)
 	{
 		this->Delete();
 	}
+}
+
+void CGoomba::Refresh()
+{
+	maxVx = GOOMBA_VX;
+	LookForMario();
+	life = GOOMBA_LIFE;
+	SetState(STATE_LIVE);
 }
 
 void CGoomba::Prepare(DWORD dt)

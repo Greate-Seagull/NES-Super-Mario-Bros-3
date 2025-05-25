@@ -56,7 +56,7 @@ void CMario::Prepare(DWORD dt)
 
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {		
-	DebugOutTitle(L"Momentum: %d, vx: %f, ax: %f", momentum, vx, ax);
+	//DebugOutTitle(L"Momentum: %d, vx: %f, ax: %f", momentum, vx, ax);
 	switch (state)
 	{
 	case STATE_LIVE:

@@ -1,23 +1,11 @@
+#include "PiranhaPlant.h"
 #include "Game.h"
 #include "PlayScene.h"
-
-#include "PiranhaPlant.h"
-#include "Mario.h"
-#include "debug.h"
 
 CPiranhaPlant::CPiranhaPlant(float x, float y):
 	CEnemy(x, y)
 {
-	start_y = y;
-
-	SetBoundingBox(PIRANHA_BBOX_WIDTH, PIRANHA_BBOX_HEIGHT);	
-
-	maxVx = PIRANHA_VX;
-	vx = PIRANHA_VX;
-	vy = PIRANHA_VY;
-
-	SetState(PIRANHA_STATE_EMERGE);
-	life = PIRANHA_LIFE;	
+	Refresh();
 }
 
 void CPiranhaPlant::SetPosition(float x, float y)
@@ -50,7 +38,7 @@ void CPiranhaPlant::Prepare(DWORD dt)
 
 void CPiranhaPlant::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
-	LookforMario();
+	LookForMario();
 	Move(dt);
 }
 
@@ -202,6 +190,31 @@ void CPiranhaPlant::OnReactionToAttack3(LPCOLLISIONEVENT e)
 	Die();
 }
 
+void CPiranhaPlant::LookForMario()
+{
+	//Get target
+	LPPLAYSCENE playScene = (LPPLAYSCENE)(CGame::GetInstance()->GetCurrentScene());
+	CMario* mario = (CMario*)playScene->GetPlayer();
+
+	//aim at target
+	target_dx = mario->GetX() - x;
+	target_dy = mario->GetY() - y;
+}
+
+void CPiranhaPlant::Refresh()
+{
+	start_y = y;
+
+	SetBoundingBox(PIRANHA_BBOX_WIDTH, PIRANHA_BBOX_HEIGHT);
+
+	maxVx = PIRANHA_VX;
+	vx = PIRANHA_VX;
+	vy = PIRANHA_VY;
+
+	SetState(PIRANHA_STATE_EMERGE);
+	life = PIRANHA_LIFE;
+}
+
 void CPiranhaPlant::Render()
 {
 	/*if (state == PIRANHA_STATE_RELOAD) 
@@ -234,19 +247,4 @@ void CPiranhaPlant::ChangeAnimation()
 	}
 
 	aniID = object + action;
-}
-
-void CPiranhaPlant::LookforMario()
-{
-	//Get target
-	LPPLAYSCENE playScene = (LPPLAYSCENE)(CGame::GetInstance()->GetCurrentScene());
-	CMario* mario = (CMario*)playScene->GetPlayer();
-
-	//Determine target position
-	float mario_x, mario_y;
-	mario->GetPosition(mario_x, mario_y);
-
-	//aim at target
-	target_dx = mario_x - x;
-	target_dy = mario_y - y;	
 }
