@@ -29,7 +29,7 @@ public:
 	{ 
 		run = true;
 		time_elapsed = 0;
-		type = 3;
+		type = 3;		
 	}
 	void Render();
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);

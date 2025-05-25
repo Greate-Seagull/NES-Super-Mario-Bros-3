@@ -230,11 +230,25 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		DebugOut(L"[INFO] Player object has been created!\n");
 		isStartSpawned = true;
 		break;
-	case OBJECT_TYPE_GOOMBA: obj = new CGoomba(x,y); break;
-	case OBJECT_TYPE_PARAGOOMBA: obj = new CParagoomba(x,y); break;
-	case OBJECT_TYPE_VENUS_FIRE_TRAP: obj = new CVenusFireTrap(x, y); break;
-	case OBJECT_TYPE_PIRANHA_PLANT: obj = new CPiranhaPlant(x, y); break;
-	case OBJECT_TYPE_RED_KOOPA_TROOPA: obj = new CKoopaTroopa(x, y); break;
+	case OBJECT_TYPE_GOOMBA: 
+		obj = new CGoomba(x,y); 
+		spawner.Add(obj);
+		break;
+	case OBJECT_TYPE_PARAGOOMBA: 
+		obj = new CParagoomba(x,y); 
+		spawner.Add(obj);
+		break;
+	case OBJECT_TYPE_VENUS_FIRE_TRAP: 
+		obj = new CVenusFireTrap(x, y); 
+		spawner.Add(obj);
+		break;
+	case OBJECT_TYPE_PIRANHA_PLANT: 
+		obj = new CPiranhaPlant(x, y); 
+		break;
+	case OBJECT_TYPE_RED_KOOPA_TROOPA: 
+		obj = new CKoopaTroopa(x, y); 
+		spawner.Add(obj);
+		break;
 	case OBJECT_TYPE_BRICK: obj = new CBrick(x,y); break;
 	case OBJECT_TYPE_STRIPED_BRICK: obj = new CStripedBrick(x, y); break;
 	case OBJECT_TYPE_COIN: obj = new CCoin(x, y); break;
@@ -420,7 +434,9 @@ void CPlayScene::Update(DWORD dt)
 	CCollision* collisionProcessor = CCollision::GetInstance();
 	CCollisionTracker* collisionTracker = collisionProcessor->GetTracker();
 
-	vector<LPGAMEOBJECT> nearbyObjects = FilterByPlayer();
+	spawner.Spawn();
+
+	vector<LPGAMEOBJECT> nearbyObjects = FilterByCam();
 
 	for (auto& obj : nearbyObjects)
 	{
@@ -538,19 +554,6 @@ int CPlayScene::Find(LPGAMEOBJECT obj)
 	return -1;
 }
 
-bool CPlayScene::IsInRange(LPGAMEOBJECT obj, float start_x, float end_x, float start_y, float end_y)
-{
-	float left, top, right, bottom;
-	obj->GetBoundingBox(left, top, right, bottom);
-
-	bool horizontally_inside = (left <= end_x) && (right >= start_x);
-	bool vertically_inside = (top <= end_y) && (bottom >= start_y);
-
-	return horizontally_inside && vertically_inside;
-
-	//return !(left > max_x || right < min_x || top > max_y || bottom < min_y);
-}
-
 vector<LPGAMEOBJECT> CPlayScene::FilterByPlayer(float range)
 {
 	float player_x, player_y;
@@ -565,7 +568,7 @@ vector<LPGAMEOBJECT> CPlayScene::FilterByPlayer(float range)
 	vector<LPGAMEOBJECT> process_list;
 	for (size_t i = 0; i < objects.size(); i++)
 	{
-		if (IsInRange(objects[i], start_x, end_x, start_y, end_y))
+		if (CGame::IsInRange(objects[i], start_x, end_x, start_y, end_y))
 			process_list.push_back(objects[i]);
 	}
 
@@ -575,19 +578,11 @@ vector<LPGAMEOBJECT> CPlayScene::FilterByPlayer(float range)
 vector<LPGAMEOBJECT> CPlayScene::FilterByCam()
 {
 	CGame* game = CGame::GetInstance();
-	
-	float start_x, end_x, start_y, end_y;
-	game->GetCamPos(start_x, start_y);
-	end_x = start_x + game->GetBackBufferWidth();
-	end_y = start_y + game->GetBackBufferHeight();
-
-	/*end_x = start_x + 256.0f;
-	end_y = start_y + 192.0f;*/
 
 	vector<LPGAMEOBJECT> process_list;
 	for (size_t i = 0; i < objects.size(); i++)
 	{
-		if (IsInRange(objects[i], start_x, end_x, start_y, end_y))
+		if (game->IsInCam(objects[i]))
 			process_list.push_back(objects[i]);
 	}
 
@@ -600,26 +595,18 @@ void CPlayScene::UpdateCamera()
 	CGame* game = CGame::GetInstance();
 
 	float cx, cy;
-	player->GetPosition(cx, cy);
-
-	float player_bbox_height = player->GetBBoxHeight();
-
-	cx = cx - game->GetBackBufferWidth() / 2.0f;
+	game->GetCamPos(cx, cy);
+	float px, py;
+	player->GetPosition(px, py);
+	
+	cx = px - game->GetBackBufferWidth() / 2.0f;
 	cx = fmax(0.0f, cx);
+	//cx = fmin();
 
-	if (player->IsFlying())
-	{
-		cy = cy - game->GetBackBufferHeight() / 2.0f;
-		cy = fmin(CAM_MAX_Y, cy);
-	}
-	else
-	{
-		cy = CAM_MAX_Y;
-		//cy = cy + player_bbox_height / 2.0f + 16.0f - game->GetBackBufferHeight();
-	}
-
-	/*if (GetAsyncKeyState(VK_UP) & 0x8000) cy -= 10;
-	if (GetAsyncKeyState(VK_DOWN) & 0x8000) cy += 10;*/
+	cy = fmin(py - CAM_FOLLOW_HEIGHT, cy);	
+	cy = fmax(py - game->GetBackBufferHeight() / 2.0f, cy);
+	cy = fmax(0.0f, cy);
+	cy = fmin(CAM_MAX_Y, cy);
 
 	CGame::GetInstance()->SetCamPos(cx, cy);
 }
@@ -632,6 +619,7 @@ void CPlayScene::PurgeDeletedObjects()
 		LPGAMEOBJECT o = *it;
 		if (o->IsDeleted())
 		{
+			spawner.Delete(o);
 			delete o;
 			*it = NULL;
 		}

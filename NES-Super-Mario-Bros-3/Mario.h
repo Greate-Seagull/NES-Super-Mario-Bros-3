@@ -209,5 +209,4 @@ public:
 
 	bool IsFlying() { return is_flying; }
 	void Fly();
-	void Flying();
 };

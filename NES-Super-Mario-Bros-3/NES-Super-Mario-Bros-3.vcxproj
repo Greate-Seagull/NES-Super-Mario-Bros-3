@@ -168,6 +168,7 @@
     <ClCompile Include="RacoonTail.cpp" />
     <ClCompile Include="SampleKeyEventHandler.cpp" />
     <ClCompile Include="Scence.cpp" />
+    <ClCompile Include="SpawnManager.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="Sprites.cpp" />
     <ClCompile Include="StripedBrick.cpp" />
@@ -220,6 +221,7 @@
     <ClInclude Include="RacoonTail.h" />
     <ClInclude Include="SampleKeyEventHandler.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="SpawnManager.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="Sprites.h" />
     <ClInclude Include="StripedBrick.h" />

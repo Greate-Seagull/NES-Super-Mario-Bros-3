@@ -2,6 +2,8 @@
 #include "Game.h"
 #include "Textures.h"
 #include "Scene.h"
+
+#include "SpawnManager.h"
 #include "GameObject.h"
 #include "Brick.h"
 #include "Mario.h"
@@ -19,6 +21,7 @@ protected:
 	LPGAMEOBJECT background;
 
 	vector<LPGAMEOBJECT> objects;
+	CSpawnManager spawner;
 
 	void _ParseSection_SPRITES(string line);
 	void _ParseSection_ANIMATIONS(string line);
@@ -45,7 +48,6 @@ public:
 
 	void Insert(LPGAMEOBJECT newObj, int index);
 	int Find(LPGAMEOBJECT obj);
-	bool IsInRange(LPGAMEOBJECT obj, float start_x, float end_x, float start_y, float end_y);
 	vector<LPGAMEOBJECT> FilterByPlayer(float range = COLLISION_RANGE);
 	vector<LPGAMEOBJECT> FilterByCam();
 	void UpdateCamera();

@@ -70,7 +70,6 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 
 void CMario::Living(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
-	Flying();
 	Move(dt);
 
 	DoSpecialActions(dt, coObjects);
@@ -874,6 +873,8 @@ void CMario::SetLife(float l)
 void CMario::ToSmallLevel()
 {
 	//Cancel unexisted action in previous state
+	is_flying = false;
+
 	switch (special_action)
 	{
 	case ID_ANI_ATTACK:
@@ -891,6 +892,8 @@ void CMario::ToSmallLevel()
 void CMario::ToBigLevel()
 {
 	//Cancel unexisted action in previous state
+	is_flying = false;
+
 	switch (special_action)
 	{
 	case ID_ANI_ATTACK:
@@ -1001,27 +1004,6 @@ void CMario::Fly()
 		is_flying = true;
 		total_fly_time = 0;
 	}
-}
-
-void CMario::Flying()
-{
-	/*if (is_flying == false)
-		return;
-
-	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
-	
-	if (keyState->IsHold(VK_UP))
-	{
-		vy = -0.25f;
-	}
-	else if (keyState->IsHold(VK_DOWN))
-	{
-		vy = 0.25f;
-	}
-	else
-	{
-		vy = 0.0f;
-	}*/
 }
 
 void CMario::SetState(int state)
