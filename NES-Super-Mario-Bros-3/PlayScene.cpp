@@ -60,11 +60,14 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 #define SCREEN_HEIGHT 240
 #define OFFSET 32
 
-#define MAX_CAMERA_POSITION 1792
+#define MAX_CAMERA_POSITION_1 2560
+#define MAX_CAMERA_POSITION_3 1792
+#define MAX_CAMERA_POSITION_4 256
 
 #define SCENE_SWITCH_WAIT_TIME 6000
 
 #define MARIO_LEFT_BOUNDARY 8
+
 
 float tempCamPosY = 0;
 
@@ -568,9 +571,6 @@ void CPlayScene::Update(DWORD dt)
 		}
 	}
 
-	if (isPipeSpawned) DebugOutTitle(L"YES\n");
-	else DebugOutTitle(L"NO\n");
-
 	//solve collision with blocking objects first
 	for (auto& obj : movingColliders) //For moving objects
 		collisionProcessor->SolveCollisionWithBlocking(obj, dt, &blockingColliders);
@@ -611,6 +611,13 @@ void CPlayScene::Update(DWORD dt)
 				CGame::GetInstance()->SetCamPos(0, cy);
 			}
 
+			if (cardID[0] != 0 && cardID[1] != 0 && cardID[2] != 0)
+			{
+				cardID[0] = 0;
+				cardID[1] = 0;
+				cardID[2] = 0;
+			}
+
 			timer = TIMER_VALUE;
 			timerPause = false;
 		}
@@ -631,9 +638,6 @@ void CPlayScene::Update(DWORD dt)
 
 	UpdatePMeter();
 
-	float px, py;
-	player->GetPosition(px, py);
-
 	PurgeDeletedObjects();
 }
 
@@ -645,6 +649,14 @@ void CPlayScene::PushPlayer()
 	CGame::GetInstance()->GetCamPos(cX, cY);
 	if (pX < cX + MARIO_LEFT_BOUNDARY)
 		player->SetPosition(cX + MARIO_LEFT_BOUNDARY, pY);
+	if (!toggleSceneSwitch)
+	{
+		int screen_width = CGame::GetInstance()->GetBackBufferWidth();
+		if (pX > cX + (float)screen_width - MARIO_BIG_BBOX_WIDTH / 2)
+		{
+			player->SetPosition(cX + (float)screen_width - MARIO_BIG_BBOX_WIDTH / 2, pY);
+		}
+	}
 }
 
 void CPlayScene::AddHudDetail(float x, float y)
@@ -990,75 +1002,82 @@ void CPlayScene::UpdateCamera(DWORD dt)
 
 	float cx, cy;
 	game->GetCamPos(cx, cy);
-	if (sceneID != 3)
+	if (!toggleSceneSwitch)
 	{
-		player->GetPosition(cx, cy);
-
-		float player_bbox_height = player->GetBBoxHeight();
-
-		cx = cx - game->GetBackBufferWidth() / 2.0f;
-		cx = fmax(0.0f, cx);
-
-		if (player->IsFlying())
+		if (sceneID != 3)
 		{
-			cy = cy - game->GetBackBufferHeight() / 2.0f;
-			cy = fmin(CAM_MAX_Y, cy);
+			player->GetPosition(cx, cy);
+
+			float player_bbox_height = player->GetBBoxHeight();
+
+			cx = cx - game->GetBackBufferWidth() / 2.0f;
+			cx = fmax(0.0f, cx);
+
+			if (player->IsFlying())
+			{
+				cy = cy - game->GetBackBufferHeight() / 2.0f;
+				cy = fmin(CAM_MAX_Y, cy);
+			}
+			else
+			{
+				cy = CAM_MAX_Y;
+				//cy = cy + player_bbox_height / 2.0f + 16.0f - game->GetBackBufferHeight();
+			}
+
+			if (id == 1 && cx >= MAX_CAMERA_POSITION_1) cx = MAX_CAMERA_POSITION_1;
+			else if (id == 4 && cx >= MAX_CAMERA_POSITION_4) cx = MAX_CAMERA_POSITION_4;
+
+			/*if (GetAsyncKeyState(VK_UP) & 0x8000) cy -= 10;
+			if (GetAsyncKeyState(VK_DOWN) & 0x8000) cy += 10;*/
 		}
 		else
 		{
+			if (cx >= MAX_CAMERA_POSITION_3)
+			{
+				cx = MAX_CAMERA_POSITION_3;
+			}
+			else
+			{
+				cx += dt * CAM_SPEED;
+			}
 			cy = CAM_MAX_Y;
-			//cy = cy + player_bbox_height / 2.0f + 16.0f - game->GetBackBufferHeight();
 		}
 
-		/*if (GetAsyncKeyState(VK_UP) & 0x8000) cy -= 10;
-		if (GetAsyncKeyState(VK_DOWN) & 0x8000) cy += 10;*/
-	}
-	else
-	{
-		if (cx >= MAX_CAMERA_POSITION)
+		// UPDATE HUD
+		float ox, oy; //for hud
+		hud->GetOriginalPos(ox, oy);
+		hud->SetPosition((int)(ox + cx), (int)(oy + cy));
+
+		float odx, ody; //for digits & cards
+		for (int i = 0; i < DIGIT_COUNT_SCORE; i++)
 		{
-			cx = MAX_CAMERA_POSITION;
+			scoreDigits[i]->GetOriginalPos(odx, ody);
+			scoreDigits[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
 		}
-		else
+		for (int i = 0; i < DIGIT_COUNT_TIME; i++)
 		{
-			cx += dt * CAM_SPEED;
+			timeDigits[i]->GetOriginalPos(odx, ody);
+			timeDigits[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
 		}
-		cy = CAM_MAX_Y;
-	}
-
-	// UPDATE HUD
-	float ox, oy; //for hud
-	hud->GetOriginalPos(ox, oy);
-	hud->SetPosition((int)(ox + cx), (int)(oy + cy));
-
-	float odx, ody; //for digits & cards
-	for (int i = 0; i < DIGIT_COUNT_SCORE; i++)
-	{
-		scoreDigits[i]->GetOriginalPos(odx, ody);
-		scoreDigits[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
-	}
-	for (int i = 0; i < DIGIT_COUNT_TIME; i++)
-	{
-		timeDigits[i]->GetOriginalPos(odx, ody);
-		timeDigits[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
-	}
-	for (int i = 0; i < DIGIT_COUNT_CURRENCY; i++)
-	{
-		coinDigits[i]->GetOriginalPos(odx, ody);
-		coinDigits[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
-	}
-	for (int i = 0; i < P_METER_COUNT; i++)
-	{
-		pMeter[i]->GetOriginalPos(odx, ody);
-		pMeter[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
-	}
-	for (int i = 0; i < HUD_CARD_COUNT; i++)
-	{
-		cards[i]->GetOriginalPos(odx, ody);
-		cards[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
+		for (int i = 0; i < DIGIT_COUNT_CURRENCY; i++)
+		{
+			coinDigits[i]->GetOriginalPos(odx, ody);
+			coinDigits[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
+		}
+		for (int i = 0; i < P_METER_COUNT; i++)
+		{
+			pMeter[i]->GetOriginalPos(odx, ody);
+			pMeter[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
+		}
+		for (int i = 0; i < HUD_CARD_COUNT; i++)
+		{
+			cards[i]->GetOriginalPos(odx, ody);
+			cards[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
+		}
 	}
 
 	CGame::GetInstance()->SetCamPos(cx, cy);
+	DebugOutTitle(L"%f", cx);
 }
 
 void CPlayScene::PurgeDeletedObjects()
