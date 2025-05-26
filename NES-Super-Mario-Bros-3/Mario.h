@@ -209,7 +209,7 @@ public:
 	void Dying(DWORD dt);
 
 	bool IsFlying() { return is_flying; }
-	void Fly();
+	void Fly(bool switch_fly);
 	void Flying();
 
 	void PipeEntry(int warp_direction, int scene_destination);

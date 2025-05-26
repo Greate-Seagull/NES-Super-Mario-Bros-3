@@ -68,8 +68,7 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 
 #define MARIO_LEFT_BOUNDARY 8
 
-
-float tempCamPosY = 0;
+#define MARIO_FLYING_THRESHOLD 3
 
 bool isPipeSpawned = false;
 float newMarioX, newMarioY;
@@ -79,6 +78,8 @@ float newMarioWarpDirection;
 bool toggleSceneSwitch = false;
 float wait_time = 0;
 int next_level_scene;
+
+bool isAboveFlyingArea = false;
 
 #pragma region HUD INFORMATION
 int coin = 0;
@@ -93,6 +94,7 @@ int p_progress = 7;
 float p_run_time = 0;
 
 int cardID[HUD_CARD_COUNT] = { 0, 0, 0 };
+int flyingPress = 0;
 #pragma endregion
 
 void CPlayScene::_ParseSection_SPRITES(string line)
@@ -776,16 +778,39 @@ void CPlayScene::UpdatePMeter()
 
 void CPlayScene::UpdateRunTime(DWORD dt, bool isProgress)
 {
-	if (isProgress)
+	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
+	if (flyingPress <= MARIO_FLYING_THRESHOLD)
 	{
-		if ((int)(p_run_time / P_PROGRESS_DELAY) < P_METER_COUNT) p_run_time += dt;
+		if (isProgress)
+		{
+			if ((int)(p_run_time / P_PROGRESS_DELAY) < P_METER_COUNT + 1) p_run_time += dt;
+			else p_run_time = (P_METER_COUNT + 1) * P_PROGRESS_DELAY;
+		}
+		else
+		{
+			if (p_run_time > 0)	p_run_time -= dt / 2;
+			else if (p_run_time < 0) p_run_time = 0;
+		}
+		p_progress = p_run_time / P_PROGRESS_DELAY;
+	}
+
+	if ((int)(p_run_time / P_PROGRESS_DELAY) >= P_METER_COUNT)
+	{
+		if (keyState->IsPressed(VK_S))
+		{
+			p_run_time = (P_METER_COUNT + 1) * P_PROGRESS_DELAY;
+			flyingPress++;
+		}
+		p_run_time -= dt / 2;
+
+		if (flyingPress > MARIO_FLYING_THRESHOLD && player->GetLife() == MARIO_LEVEL_RACOON)
+			player->Fly(true);
 	}
 	else
 	{
-		if (p_run_time > 0)	p_run_time -= dt / 2;
-		else if (p_run_time < 0) p_run_time = 0;
+		flyingPress = 0;
+		player->Fly(false);
 	}
-	p_progress = p_run_time / P_PROGRESS_DELAY;
 }
 
 void CPlayScene::BeginCard()
@@ -1017,10 +1042,25 @@ void CPlayScene::UpdateCamera(DWORD dt)
 			{
 				cy = cy - game->GetBackBufferHeight() / 2.0f;
 				cy = fmin(CAM_MAX_Y, cy);
+
+				if (cy < CAM_MAX_Y + game->GetBackBufferHeight() / 2.0f) isAboveFlyingArea = true;
 			}
 			else
 			{
-				cy = CAM_MAX_Y;
+				if (cy >= CAM_MAX_Y + game->GetBackBufferHeight() / 2.0f)
+				{
+					cy = CAM_MAX_Y;
+					isAboveFlyingArea = false;
+				}
+				else
+				{
+					if (isAboveFlyingArea)
+					{
+						cy = cy - game->GetBackBufferHeight() / 2.0f;
+						cy = fmin(CAM_MAX_Y, cy);
+					}
+					else cy = CAM_MAX_Y;
+				}
 				//cy = cy + player_bbox_height / 2.0f + 16.0f - game->GetBackBufferHeight();
 			}
 
@@ -1077,7 +1117,6 @@ void CPlayScene::UpdateCamera(DWORD dt)
 	}
 
 	CGame::GetInstance()->SetCamPos(cx, cy);
-	DebugOutTitle(L"%f", cx);
 }
 
 void CPlayScene::PurgeDeletedObjects()

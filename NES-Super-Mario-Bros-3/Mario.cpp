@@ -454,10 +454,12 @@ void CMario::StartSpecialActions()
 	else if (keyState->IsPressed(VK_DOWN))
 		SetLife(life - 1.0f);*/
 
+	/*
 	if (keyState->IsHold(VK_UP))
 		Fly();
 	if (keyState->IsHold(VK_UP) && keyState->IsHold(VK_DOWN))
 		is_flying = false;
+	*/
 	
 	if (keyState->IsHold(VK_A))
 		Run();
@@ -531,7 +533,7 @@ void CMario::StartNormalActions(DWORD& t)
 	}
 	
 	//jumping
-	if (isOnGround && keyState->IsPressed(VK_S))
+	if (isOnGround && keyState->IsPressed(VK_S) && !is_flying)
 	{
 		isOnPlatform = false;
 		ny = DIRECTION_UP;
@@ -988,9 +990,9 @@ void CMario::Dying(DWORD dt)
 		Move(dt);
 }
 
-void CMario::Fly()
+void CMario::Fly(bool switch_fly)
 {
-
+	is_flying = switch_fly;
 }
 
 void CMario::Flying()
@@ -999,7 +1001,11 @@ void CMario::Flying()
 		return;
 
 	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
+
+	vy = -0.1f;
+	vx = nx * 0.1f;
 	
+	/*
 	if (keyState->IsHold(VK_UP))
 	{
 		vy = -0.25f;
@@ -1012,6 +1018,7 @@ void CMario::Flying()
 	{
 		vy = 0.0f;
 	}
+	*/
 }
 
 void CMario::PipeEntry(int warp_direction, int scene_destination)
@@ -1039,6 +1046,7 @@ void CMario::PipeEntryUp(DWORD dt)
 	{
 		switchSceneTime = 0;
 		finishedExitingPipe = false;
+		Fly(false);
 		CGame::GetInstance()->InitiateSwitchScene(sceneDestination);
 	}
 
@@ -1055,6 +1063,7 @@ void CMario::PipeEntryDown(DWORD dt)
 	{
 		switchSceneTime = 0;
 		finishedExitingPipe = false;
+		Fly(false);
 		CGame::GetInstance()->InitiateSwitchScene(sceneDestination);
 	}
 
