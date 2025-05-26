@@ -43,6 +43,16 @@ struct CCollisionEvent
 	{
 		return a->t < b->t;
 	}
+
+	void Reverse()
+	{
+		LPGAMEOBJECT obj_placeholder = src_obj;
+		src_obj = obj;
+		obj = obj_placeholder;
+
+		nx *= -1;
+		ny *= -1;
+	}
 };
 
 class CCollisionTracker
@@ -62,7 +72,7 @@ class CCollisionEventPool
 public:
 	CCollisionEventPool();
 
-	void Allocate(float t, float nx, float ny, float dx, float dy, LPGAMEOBJECT objDest, LPGAMEOBJECT objSrc);
+	LPCOLLISIONEVENT Allocate(float t, float nx, float ny, float dx, float dy, LPGAMEOBJECT objDest, LPGAMEOBJECT objSrc);
 	void VirtualDelete();
 	void Refresh();
 	LPCOLLISIONEVENT Get(int i);
@@ -139,4 +149,5 @@ public:
 
 	static CCollision* GetInstance();
 	CCollisionTracker* GetTracker();
+	CCollisionEventPool* GetPool();
 };

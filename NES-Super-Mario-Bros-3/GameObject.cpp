@@ -24,7 +24,7 @@ void CGameObject::GetBoundingBox(float& left, float& top, float& right, float& b
 }
 
 void CGameObject::Render()
-{
+{	
 	CAnimations* animations = CAnimations::GetInstance();
 	animations->Get(aniID)->Render(x, y);
 	//RenderBoundingBox();
@@ -72,9 +72,4 @@ void CGameObject::RenderBoundingBox()
 CGameObject::~CGameObject()
 {
 
-}
-
-const char* CGameObject::ToString()  
-{  
-   return "Game Object";  
 }

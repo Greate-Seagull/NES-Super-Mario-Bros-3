@@ -18,22 +18,18 @@ void CCreature::UnderAttack(CHarmfulObject* by_another)
 	SetLife(life - 1.0f);
 }
 
-void CCreature::Touch(CGameObject* another)
+void CCreature::Touch(LPCOLLISIONEVENT e)
 {
-	if (another)
-	{
-		another->Reaction(this, ACTION_TOUCH);
-	}
+	e->obj->OnReactionTo(e, ACTION_TOUCH);
 }
 
-void CCreature::Carry(CHarmfulObject* another)
+void CCreature::Carry(LPCOLLISIONEVENT e)
 {
-	if (another)
+	if (CHarmfulObject* obj = dynamic_cast<CHarmfulObject*>(e->obj))
 	{
-		weapon = another;
-		another->SetControl();
-
-		another->Reaction(this, ACTION_CARRY);
+		weapon = obj;
+		obj->SetControl();
+		obj->OnReactionTo(e, ACTION_CARRY);
 	}
 }
 
