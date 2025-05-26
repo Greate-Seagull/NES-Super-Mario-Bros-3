@@ -64,13 +64,15 @@ public:
 
 		SetBoundingBox(DIGIT_WIDTH, DIGIT_HEIGHT);
 	}
-	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+	void Render()
 	{
 		switch (isEmpty)
 		{
 			case 0:	aniID = ID_ANI_DIGIT_BASE - digit; break;
 			case 1:	aniID = ID_ANI_DIGIT_EMPTY; break;
 		}
+
+		CGameObject::Render();
 	}
 
 	void GetOriginalPos(float& ox, float& oy) { ox = originalX; oy = originalY; }
@@ -96,7 +98,7 @@ public:
 		if (pType == 0) SetBoundingBox(P_ARROW_WIDTH, P_ARROW_HEIGHT);
 		else SetBoundingBox(P_SWITCH_WIDTH, P_SWITCH_HEIGHT);
 	}
-	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+	void Render()
 	{
 		switch (pType)
 		{
@@ -115,6 +117,8 @@ public:
 				}
 				break;
 		}
+
+		CGameObject::Render();
 	}
 
 	void GetOriginalPos(float& ox, float& oy) { ox = originalX; oy = originalY; }

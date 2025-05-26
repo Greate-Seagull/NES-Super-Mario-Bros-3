@@ -17,11 +17,14 @@ protected:
 	bool isToggled;
 	bool isDisappear;
 	float originalY;
+
+	bool isContained;
 public:
 	CCoin(float x, float y) : CMovableObject(x, y) 
 	{
 		isToggled = false;
-		originalY = y;		
+		originalY = y;
+		isContained = false;
 
 		aniID = ID_ANI_COIN;
 
@@ -47,7 +50,7 @@ public:
 	//int IsBlocking() { return 0; }
 	void OnCollisionWith(LPCOLLISIONEVENT e);
 
-	void Reaction(CGameObject* by_another, int action);
+	void OnReactionTo(LPCOLLISIONEVENT e, int action);
 
 	bool GetToggled() { return isToggled; }
 	void SetToggled();
@@ -55,4 +58,6 @@ public:
 	void SetDisappear(bool Disappear) { this->isDisappear = Disappear; }
 	bool GetDisappear() { return isDisappear; }
 	bool IsUnderOriginal();
+
+	void SetContained() { isContained = true; }
 };

@@ -105,7 +105,8 @@ void CGame::Init(HWND hWnd, HINSTANCE hInstance)
 	//
 
 	D3D10_SAMPLER_DESC desc; 
-	desc.Filter = D3D10_FILTER_MIN_MAG_POINT_MIP_LINEAR;
+	//desc.Filter = D3D10_FILTER_MIN_MAG_POINT_MIP_LINEAR;
+	desc.Filter = D3D10_FILTER_MIN_MAG_MIP_POINT;
 	desc.AddressU = D3D10_TEXTURE_ADDRESS_CLAMP;
 	desc.AddressV = D3D10_TEXTURE_ADDRESS_CLAMP;
 	desc.AddressW = D3D10_TEXTURE_ADDRESS_CLAMP;
@@ -261,7 +262,8 @@ LPTEXTURE CGame::LoadTexture(LPCWSTR texturePath)
 	info.Height = imageInfo.Height;
 	info.Depth = imageInfo.Depth;
 	info.FirstMipLevel = 0;
-	info.MipLevels = 1;
+	//info.MipLevels = 1;
+	info.MipLevels = D3DX10_DEFAULT;
 	info.Usage = D3D10_USAGE_DEFAULT;
 	info.BindFlags = D3DX10_DEFAULT;
 	info.CpuAccessFlags = D3DX10_DEFAULT;
@@ -571,6 +573,22 @@ void CGame::_ParseSection_TEXTURES(string line)
 }
 
 
+bool CGame::IsInRange(LPGAMEOBJECT obj, float start_x, float end_x, float start_y, float end_y)
+{
+	float left, top, right, bottom;
+	obj->GetBoundingBox(left, top, right, bottom);
+
+	bool horizontally_inside = (left <= end_x) && (right >= start_x);
+	bool vertically_inside = (top <= end_y) && (bottom >= start_y);
+
+	return horizontally_inside && vertically_inside;
+}
+
+bool CGame::IsInCam(LPGAMEOBJECT obj)
+{
+	return IsInRange(obj, cam_x, cam_x + backBufferWidth, cam_y, cam_y + backBufferHeight);
+}
+
 CGame::~CGame()
 {
 	pBlendStateAlpha->Release();
@@ -583,6 +601,7 @@ CGame::~CGame()
 CGame* CGame::GetInstance()
 {
 	if (__instance == NULL) __instance = new CGame();
+
 	return __instance;
 }
 
