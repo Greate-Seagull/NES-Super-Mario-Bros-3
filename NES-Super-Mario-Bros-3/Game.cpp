@@ -27,8 +27,8 @@ void CGame::Init(HWND hWnd, HINSTANCE hInstance)
 	/*backBufferWidth = r.right + 1;
 	backBufferHeight = r.bottom + 1;*/
 
-	backBufferHeight = 192.0f;
-	backBufferWidth = 256.0f;
+	backBufferHeight = BACKBUFFER_HEIGHT;
+	backBufferWidth = BACKBUFFER_WIDTH;
 
 	/*backBufferHeight = 400.0f;
 	backBufferWidth = 400.0f;*/
@@ -586,7 +586,7 @@ bool CGame::IsInRange(LPGAMEOBJECT obj, float start_x, float end_x, float start_
 
 bool CGame::IsInCam(LPGAMEOBJECT obj)
 {
-	return IsInRange(obj, cam_x, cam_x + backBufferWidth, cam_y, cam_y + backBufferHeight);
+	return IsInRange(obj, cam_x, cam_x + CAM_WIDTH, cam_y, cam_y + CAM_HEIGHT);
 }
 
 CGame::~CGame()

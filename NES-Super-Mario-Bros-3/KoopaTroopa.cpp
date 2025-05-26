@@ -149,11 +149,11 @@ void CKoopaTroopa::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 
 	switch (state)
 	{
-	case KOOPA_STATE_POP:
+	/*case KOOPA_STATE_POP:
 	case KOOPA_STATE_HIDE:
 		ny = e->ny;
 		Bounce();
-		break;
+		break;*/
 	case KOOPA_STATE_ROLL:
 		Attack(e);
 		break;

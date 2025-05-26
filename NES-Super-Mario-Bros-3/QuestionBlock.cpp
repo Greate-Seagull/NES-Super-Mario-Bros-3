@@ -45,11 +45,6 @@ void CQuestionBlock::OnReactionTo(LPCOLLISIONEVENT e, int action)
 		break;
 	case ACTION_TOUCH:
 		SetState(QUESTION_BLOCK_STATE_TOGGLE);
-		if (itemID == OBJECT_TYPE_COIN)
-		{
-			LPPLAYSCENE currentScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
-			currentScene->CollectCoin();
-		}
 		break;
 	}
 

@@ -1,8 +1,5 @@
 #pragma once
 
-#include "Game.h"
-#include "PlayScene.h"
-#include "GameObject.h"
 #include "Animation.h"
 #include "Animations.h"
 
@@ -30,39 +27,33 @@
 #define DIGIT_COUNT_SCORE 7
 #define DIGIT_COUNT_CURRENCY 2
 #define DIGIT_COUNT_TIME 3
-#define P_METER_COUNT 7
+#define MOMENTUM_COUNT 7
 
 #define DIGIT_NEAR_SPACING 8
 
-#define SCORE_OFFSET 68
-#define CURRENCY_OFFSET 148
-#define TIME_OFFSET 140
+#define SCORE_OFFSET -60
+#define CURRENCY_OFFSET 20
+#define TIME_OFFSET 12
+#define P_METER_OFFSET -60
 
-#define P_METER_OFFSET 68
-
-#define OFFSET_Y_LINE1 168
-#define OFFSET_Y_LINE2 176
-
-#define TIMER_VALUE 300000
+#define OFFSET_Y_LINE1 -12
+#define OFFSET_Y_LINE2 -4
 
 #define P_PROGRESS_DELAY 150
 
-class CDigit : public CGameObject {
+class CDigit
+{
 protected:
 	bool isEmpty;
 	int digit;
 
-	float originalX, originalY;
+	float x, y;
+	int aniID;
 public:
-	CDigit(float x, float y, bool isEmpty, int digit) : CGameObject(x, y)
+	CDigit(bool isEmpty, int digit)
 	{
 		this->isEmpty = isEmpty;
 		this->digit = digit;
-
-		originalX = x;
-		originalY = y;
-
-		SetBoundingBox(DIGIT_WIDTH, DIGIT_HEIGHT);
 	}
 	void Render()
 	{
@@ -72,31 +63,27 @@ public:
 			case 1:	aniID = ID_ANI_DIGIT_EMPTY; break;
 		}
 
-		CGameObject::Render();
+		CAnimations* animations = CAnimations::GetInstance();
+		animations->Get(aniID)->Render(x, y);
 	}
-
-	void GetOriginalPos(float& ox, float& oy) { ox = originalX; oy = originalY; }
+	void SetPosition(float x, float y) { this->x = x; this->y = y; }
 	void SetEmpty(bool isEmpty) { this->isEmpty = isEmpty; }
 	void SetDigit(int digit) { this->digit = digit; }
 };
 
-class CPMeter : public CGameObject {
+class CPMeter
+{
 protected:
 	int pType;
 	bool isToggled;
 
-	float originalX, originalY;
+	float x, y;
+	int aniID;
 public:
-	CPMeter(float x, float y, int pType, bool isToggled) : CGameObject(x, y)
+	CPMeter(int pType, bool isToggled)
 	{
 		this->pType = pType;
 		this->isToggled = isToggled;
-
-		originalX = x;
-		originalY = y;
-
-		if (pType == 0) SetBoundingBox(P_ARROW_WIDTH, P_ARROW_HEIGHT);
-		else SetBoundingBox(P_SWITCH_WIDTH, P_SWITCH_HEIGHT);
 	}
 	void Render()
 	{
@@ -118,10 +105,10 @@ public:
 				break;
 		}
 
-		CGameObject::Render();
+		CAnimations* animations = CAnimations::GetInstance();
+		animations->Get(aniID)->Render(x, y);
 	}
-
-	void GetOriginalPos(float& ox, float& oy) { ox = originalX; oy = originalY; }
+	void SetPosition(float x, float y) { this->x = x; this->y = y; }
 	void SetToggle(bool isToggled) 
 	{ 
 		if (this->isToggled != isToggled)
@@ -129,18 +116,24 @@ public:
 	}
 };
 
-class CHud : public CGameObject {
+class CHud
+{
 protected:
-	float originalX, originalY;
+	float x, y;
+	int aniID;
+
+	CDigit* scoreDigits[DIGIT_COUNT_SCORE];
+	CDigit* coinDigits[DIGIT_COUNT_CURRENCY];
+	CDigit* timeDigits[DIGIT_COUNT_TIME];
+	CPMeter* pMeter[MOMENTUM_COUNT];
 public:
-	CHud(float x, float y) : CGameObject(x, y) 
-	{ 
-		aniID = ID_ANI_HUD;
-		originalX = x;
-		originalY = y;
+	CHud();
+	void UpdateTime(int time);
+	void UpdateCoin(int coin);
+	void UpdateScore(int score);
+	void UpdaeMomentum(int momentum);
+	void SetPosition(float x, float y);
+	void Render();
 
-		SetBoundingBox(HUD_WIDTH, HUD_HEIGHT);
-	}
-
-	void GetOriginalPos(float& ox, float& oy) { ox = originalX; oy = originalY; }
+	~CHud();
 };

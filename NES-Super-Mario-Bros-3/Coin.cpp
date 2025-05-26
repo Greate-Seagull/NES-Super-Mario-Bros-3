@@ -29,8 +29,14 @@ void CCoin::OnCollisionWith(LPCOLLISIONEVENT e)
 
 void CCoin::OnReactionTo(LPCOLLISIONEVENT e, int action)
 {
-	if(isContained)
+	if (isContained)
+	{
 		SetToggled();
+
+		e->Reverse();
+		e->src_obj = this;
+		e->obj->OnReactionTo(e, ACTION_TOUCH);
+	}
 	else
 		Delete();
 }

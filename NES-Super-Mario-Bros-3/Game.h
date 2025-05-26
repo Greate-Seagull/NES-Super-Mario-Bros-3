@@ -19,7 +19,13 @@ using namespace std;
 #define MAX_FRAME_RATE 100
 #define KEYBOARD_BUFFER_SIZE 1024
 
+#define BACKBUFFER_HEIGHT 240.0f
+#define BACKBUFFER_WIDTH 256.0f
+
+#define CAM_HEIGHT 192.0f
+#define CAM_WIDTH BACKBUFFER_WIDTH
 #define CAM_FOLLOW_HEIGHT 16.0f * 3.0f
+
 
 /*
 	Our simple game framework

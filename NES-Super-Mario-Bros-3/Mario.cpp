@@ -27,8 +27,9 @@ CMario::CMario(float x, float y):
 
 	decrease_momentum_time = 0;
 	momentum = 0;
-	/*isOnPlatform = false;
-	coin = 0;*/
+
+	coins = 0;
+	scores = 0;
 
 	SetState(STATE_LIVE);
 	SetLife(MARIO_LEVEL_SMALL);
@@ -57,7 +58,6 @@ void CMario::Prepare(DWORD dt)
 
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {		
-	DebugOutTitle(L"Momentum: %d, vx: %f, ax: %f", momentum, vx, ax);
 	switch (state)
 	{
 	case STATE_LIVE:
@@ -114,12 +114,17 @@ void CMario::OnCollisionWith(LPCOLLISIONEVENT e)
 void CMario::OnReactionToTouching(LPCOLLISIONEVENT e)
 {
 	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
-	e->Reverse();
 
-	if (keyState->IsHold(VK_A))
-		Carry(e);
-	else
-		Kick();
+	if (dynamic_cast<CEnemy*>(e->src_obj))
+	{
+		e->Reverse();
+		if (keyState->IsHold(VK_A))
+			Carry(e);
+		else
+			Kick();
+	}
+	else if (dynamic_cast<CCoin*>(e->src_obj))
+		coins++;
 }
 
 void CMario::OnReactionToAttack1(LPCOLLISIONEVENT e)
@@ -164,8 +169,7 @@ void CMario::OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e)
 void CMario::OnCollisionWithCoin(LPCOLLISIONEVENT e)
 {
 	Touch(e);
-	LPPLAYSCENE currentScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
-	currentScene->CollectCoin();
+	coins++;
 }
 
 void CMario::OnCollisionWithPortal(LPCOLLISIONEVENT e)
@@ -1005,11 +1009,6 @@ void CMario::Fly()
 		is_flying = true;
 		total_fly_time = 0;
 	}
-}
-
-int CMario::GetMomentum()
-{
-	return momentum;
 }
 
 void CMario::SetState(int state)

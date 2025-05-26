@@ -108,6 +108,9 @@ class CMario : public CCreature
 	int momentum;
 	int decrease_momentum_time;
 
+	int coins;
+	int scores;
+
 	bool is_flying;
 	DWORD fly_cooldown;
 	DWORD total_fly_time;
@@ -115,8 +118,6 @@ class CMario : public CCreature
 	bool is_boosting;
 
 	int special_action;
-
-	//int coin; 
 
 	void OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e);
 	void OnCollisionWithCoin(LPCOLLISIONEVENT e);
@@ -210,5 +211,7 @@ public:
 	bool IsFlying() { return is_flying; }
 	void Fly();
 
-	int GetMomentum();
+	int GetMomentum() { return momentum; }
+	int GetCoins() { return coins; }
+	int GetScores() { return scores; }
 };
