@@ -211,6 +211,8 @@ public:
 	bool IsFlying() { return is_flying; }
 	void Fly();
 
+	void SetFootPlatform(bool);
+
 	int GetMomentum() { return momentum; }
 	int GetCoins() { return coins; }
 	int GetScores() { return scores; }

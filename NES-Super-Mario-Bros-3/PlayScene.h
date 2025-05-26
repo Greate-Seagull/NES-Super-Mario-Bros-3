@@ -14,6 +14,7 @@
 #define COLLISION_RANGE 300.0f
 
 #define CAM_SPEED 0.03f
+#define MAX_CAMERA_POSITION 2000.0f
 #define TIMER_VALUE 300000
 
 class CPlayScene: public CScene

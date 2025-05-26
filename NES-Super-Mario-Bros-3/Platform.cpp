@@ -67,6 +67,22 @@ int CPlatform::IsDirectionColliable(float nx, float ny)
 	else return 0;
 }
 
+void CPlatform::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+{
+	if (falling == 1)
+	{
+		switch (state)
+		{
+		case PLATFORM_STATE_FALLING:
+			y += dt * PLATFORM_FALLING_SPEED;
+			break;
+		default:
+			x -= dt * PLATFORM_SLIDING_SPEED;
+			break;
+		}
+	}
+}
+
 void CPlatform::OnCollisionWith(LPCOLLISIONEVENT e)
 {
 	e->obj->OnReactionTo(e, ACTION_ATTACK_LEVEL_3);

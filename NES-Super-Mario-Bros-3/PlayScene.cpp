@@ -191,15 +191,26 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		int sprite_begin_begin = atoi(tokens[6].c_str());
 		int sprite_middle_begin = atoi(tokens[7].c_str());
 		int sprite_end_begin = atoi(tokens[8].c_str());
-		int sprite_begin_end = atoi(tokens[9].c_str());
-		int sprite_middle_end = atoi(tokens[10].c_str());
-		int sprite_end_end = atoi(tokens[11].c_str());
 
-		obj = new CCloud
-		(x, y, cell_width, cell_height, length + 2,
-			sprite_begin_begin, sprite_middle_begin, sprite_end_begin,
-			sprite_begin_end, sprite_middle_end, sprite_end_end);
-		break;
+		if (tokens.size() > 9)
+		{
+			int sprite_begin_end = atoi(tokens[9].c_str());
+			int sprite_middle_end = atoi(tokens[10].c_str());
+			int sprite_end_end = atoi(tokens[11].c_str());
+
+			obj = new CCloud
+			(x, y, cell_width, cell_height, length + 2,
+				sprite_begin_begin, sprite_middle_begin, sprite_end_begin,
+				sprite_begin_end, sprite_middle_end, sprite_end_end);
+			break;
+		}
+		else
+		{
+			obj = new CCloud
+			(x, y, cell_width, cell_height, length, 
+				sprite_begin_begin, sprite_middle_begin, sprite_end_begin);
+			break;
+		}
 	}
 	case NON_OBJECT_TYPE_MAP_ICON:
 	{
@@ -253,11 +264,13 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		int sprite_begin = atoi(tokens[7].c_str());
 		int sprite_middle = atoi(tokens[8].c_str());
 		int sprite_end = atoi(tokens[9].c_str());
+		int falling = atoi(tokens[10].c_str());
 
 		obj = new CPlatform(
 			x, y,
 			cell_width, cell_height, length, type,
-			sprite_begin, sprite_middle, sprite_end
+			sprite_begin, sprite_middle, sprite_end,
+			falling
 		);
 
 		break;
@@ -617,22 +630,31 @@ void CPlayScene::UpdateCamera(DWORD dt)
 
 	float cx, cy;
 	game->GetCamPos(cx, cy);
-	float px, py;
-	player->GetPosition(px, py);
-	
-	cx = px - game->GetBackBufferWidth() / 2.0f;
-	cx = fmax(0.0f, cx);
-	//cx = fmin();
 
-	//if(player->IsFlying())
-	cy = fmin(py - CAM_FOLLOW_HEIGHT, cy);	//Move cam to follow flying
-	cy = fmax(py - game->GetBackBufferHeight() / 2.0f, cy); //Move cam to follow falling
-	cy = fmax(0.0f, cy);
-	cy = fmin(CAM_MAX_Y, cy);
+	if (id == 3)
+	{
+		cx = fmin(MAX_CAMERA_POSITION, cx + dt * CAM_SPEED);
+		cy = CAM_MAX_Y;
+	}
+	else
+	{
+		float px, py;
+		player->GetPosition(px, py);
+	
+		cx = px - game->GetBackBufferWidth() / 2.0f;
+		cx = fmax(0.0f, cx);
+		//cx = fmin();
+
+		//if(player->IsFlying())
+		cy = fmin(py - CAM_FOLLOW_HEIGHT, cy);	//Move cam to follow flying
+		cy = fmax(py - game->GetBackBufferHeight() / 2.0f, cy); //Move cam to follow falling
+		cy = fmax(0.0f, cy);
+		cy = fmin(CAM_MAX_Y, cy);
+	}
 
 	game->SetCamPos(cx, cy);
 }
-
+	
 void CPlayScene::UpdateHUD()
 {
 	CGame* game = CGame::GetInstance();
