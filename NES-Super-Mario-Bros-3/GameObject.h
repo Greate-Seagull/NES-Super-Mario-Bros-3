@@ -86,7 +86,7 @@ public:
 	//Active
 	virtual void OnCollisionWith(LPCOLLISIONEVENT e) {};
 	//Inactive
-	virtual void Reaction(CGameObject* by_another, int action) {};
+	virtual void OnReactionTo(LPCOLLISIONEVENT e, int action) {};
 	
 	// Is this object blocking other object? If YES, collision framework will automatically push the other object
 	virtual int IsBlocking() { return 0; }
@@ -99,5 +99,5 @@ public:
 
 	static bool IsDeleted(const LPGAMEOBJECT &o) { return o->isDeleted; }
 
-	virtual const char* ToString();
+	virtual void Refresh() {};
 };

@@ -13,8 +13,8 @@ public:
 
 	virtual void IsLiving();
 	virtual void UnderAttack(CHarmfulObject* by_another);
-	virtual void Touch(CGameObject* another);
-	virtual void Carry(CHarmfulObject* another);
+	virtual void Touch(LPCOLLISIONEVENT e);
+	virtual void Carry(LPCOLLISIONEVENT e);
 	virtual void Drop();
 	virtual void Recover();	
 	virtual void Die();

@@ -35,17 +35,9 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 	player = NULL;
 	//key_handler = new CSampleKeyHandler(this);
 	background = NULL;	
-	hud = NULL;
-	for (int i = 0; i < DIGIT_COUNT_SCORE; i++)
-		scoreDigits[i] = NULL;
-	for (int i = 0; i < DIGIT_COUNT_CURRENCY; i++)
-		coinDigits[i] = NULL;
-	for (int i = 0; i < DIGIT_COUNT_TIME; i++)
-		timeDigits[i] = NULL;
-	for (int i = 0; i < P_METER_COUNT; i++)
-		pMeter[i] = NULL;
+	hud = new CHud();
+	timer = TIMER_VALUE;
 }
-
 
 #define SCENE_SECTION_UNKNOWN -1
 #define SCENE_SECTION_ASSETS	1
@@ -59,22 +51,6 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
 #define OFFSET 32
-
-float tempCamPosY = 0;
-
-bool isStartSpawned = false;
-
-#pragma region HUD INFORMATION
-int coin = 0;
-
-float timer = TIMER_VALUE;
-bool timerPause = false;
-
-int score = 0;
-
-int p_progress = 7;
-float p_run_time = 0;
-#pragma endregion
 
 void CPlayScene::_ParseSection_SPRITES(string line)
 {
@@ -99,7 +75,7 @@ void CPlayScene::_ParseSection_SPRITES(string line)
 }
 
 void CPlayScene::_ParseSection_ASSETS(string line)
-{
+{;
 	vector<string> tokens = split(line);
 
 	if (tokens.size() < 1) return;
@@ -232,13 +208,6 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		obj = new CMapIcon(x, y, icon_type);
 		break;
 	}
-	case NON_OBJECT_TYPE_HUD:
-	{
-		obj = new CHud(x, y);
-		hud = (CHud*)obj;
-		break;
-	}
-
 	case OBJECT_TYPE_MARIO:
 		if (player!=NULL) 
 		{
@@ -246,21 +215,30 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 			return;
 		}
 
-		if (isStartSpawned)
-		{
-			CGame::GetInstance()->GetNewPlayerPos(x, y);
-		}
 		obj = new CMario(x,y); 
 		player = (CMario*)obj;  
 
 		DebugOut(L"[INFO] Player object has been created!\n");
-		isStartSpawned = true;
 		break;
-	case OBJECT_TYPE_GOOMBA: obj = new CGoomba(x,y); break;
-	case OBJECT_TYPE_PARAGOOMBA: obj = new CParagoomba(x,y); break;
-	case OBJECT_TYPE_VENUS_FIRE_TRAP: obj = new CVenusFireTrap(x, y); break;
-	case OBJECT_TYPE_PIRANHA_PLANT: obj = new CPiranhaPlant(x, y); break;
-	case OBJECT_TYPE_RED_KOOPA_TROOPA: obj = new CKoopaTroopa(x, y); break;
+	case OBJECT_TYPE_GOOMBA: 
+		obj = new CGoomba(x,y); 
+		spawner.Add(obj);
+		break;
+	case OBJECT_TYPE_PARAGOOMBA: 
+		obj = new CParagoomba(x,y); 
+		spawner.Add(obj);
+		break;
+	case OBJECT_TYPE_VENUS_FIRE_TRAP: 
+		obj = new CVenusFireTrap(x, y); 
+		spawner.Add(obj);
+		break;
+	case OBJECT_TYPE_PIRANHA_PLANT: 
+		obj = new CPiranhaPlant(x, y); 
+		break;
+	case OBJECT_TYPE_RED_KOOPA_TROOPA: 
+		obj = new CKoopaTroopa(x, y); 
+		spawner.Add(obj);
+		break;
 	case OBJECT_TYPE_BRICK: obj = new CBrick(x,y); break;
 	case OBJECT_TYPE_STRIPED_BRICK: obj = new CStripedBrick(x, y); break;
 	case OBJECT_TYPE_COIN: obj = new CCoin(x, y); break;
@@ -366,37 +344,6 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	obj->SetPosition(x, y);
 
 	objects.push_back(obj);
-
-	if (dynamic_cast<CHud*>(obj))
-	{
-		for (int i = 0; i < DIGIT_COUNT_SCORE; i++)
-		{
-			scoreDigits[i] = new CDigit(x + SCORE_OFFSET + i * DIGIT_NEAR_SPACING, y + OFFSET_Y_LINE2, false, 0);
-			objects.push_back(scoreDigits[i]);
-		}
-		for (int i = 0; i < DIGIT_COUNT_CURRENCY; i++)
-		{
-			coinDigits[i] = new CDigit(x + CURRENCY_OFFSET + i * DIGIT_NEAR_SPACING, y + OFFSET_Y_LINE1, false, 0);
-			objects.push_back(coinDigits[i]);
-		}
-		for (int i = 0; i < DIGIT_COUNT_TIME; i++)
-		{
-			timeDigits[i] = new CDigit(x + TIME_OFFSET + i * DIGIT_NEAR_SPACING, y + OFFSET_Y_LINE2, false, 0);
-			objects.push_back(timeDigits[i]);
-		}
-		for (int i = 0; i < P_METER_COUNT; i++)
-		{
-			int pType = 0;
-			int pOffset = 0;
-			if (i == P_METER_COUNT - 1)
-			{
-				pType = 1;
-				pOffset = P_SWITCH_WIDTH / 4;
-			}
-			pMeter[i] = new CPMeter(x + pOffset + P_METER_OFFSET + i * DIGIT_NEAR_SPACING, y + OFFSET_Y_LINE1, pType, false);
-			objects.push_back(pMeter[i]);
-		}
-	}
 }
 
 void CPlayScene::LoadAssets(LPCWSTR assetFile)
@@ -472,12 +419,20 @@ void CPlayScene::Load()
 void CPlayScene::Update(DWORD dt)
 {
 	// skip the rest if scene was already unloaded (Mario::Update might trigger PlayScene::Unload)
-	if (player == NULL) return;
+
+	if (isPaused)
+		return;
+	if (player == NULL) 
+		return;
+
+	timer -= dt;
 
 	CCollision* collisionProcessor = CCollision::GetInstance();
 	CCollisionTracker* collisionTracker = collisionProcessor->GetTracker();
 
-	vector<LPGAMEOBJECT> nearbyObjects = FilterByPlayer();
+	spawner.Spawn();
+
+	vector<LPGAMEOBJECT> nearbyObjects = FilterByCam();
 
 	for (auto& obj : nearbyObjects)
 	{
@@ -491,9 +446,6 @@ void CPlayScene::Update(DWORD dt)
 	vector<LPGAMEOBJECT> nonBlockingColliders;
 	for (auto& obj : nearbyObjects)
 	{	
-		if (dynamic_cast<CCoin*>(obj))
-			int t = 0;
-
 		if (obj->IsCollidable())
 		{
 			//Collide with objects
@@ -524,128 +476,31 @@ void CPlayScene::Update(DWORD dt)
 		collisionProcessor->SolveCollisionWithNonBlocking(obj, dt, &nonBlockingColliders);
 
 	for (auto& obj : nearbyObjects)
+	{
 		obj->Update(dt, &nearbyObjects);
+	}
 
 	UpdateCamera(dt);
 
-	// UPDATE HUD
-	if (!timerPause) timer -= dt;
-	UpdateTime();
-	UpdateCoin();
-	UpdateScore();
-
-	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
-	float vx, vy;
-	if (keyState->IsHold(VK_A))
-	{
-		player->GetSpeed(vx, vy);
-		if (abs(vx) >= MARIO_SMALL_RUNNING_MAX_VX / 2)
-		{
-			UpdateRunTime(dt, true);
-		}
-		else UpdateRunTime(dt, false);
-	}
-	else UpdateRunTime(dt, false);
-
-	UpdatePMeter();
-
-	float px, py;
-	player->GetPosition(px, py);
-	DebugOutTitle(L"%f, %f", px, py);
+	// UPDATE HUD	
+	UpdateHUD();
 
 	PurgeDeletedObjects();
 }
 
-void CPlayScene::UpdateTime()
-{
-	int currentTime = (int)(timer / 1000);
-	string str_currentTime = to_string(currentTime);
-
-	for (int i = 0; i < DIGIT_COUNT_TIME - str_currentTime.size(); i++)
-		str_currentTime = "0" + str_currentTime;
-
-	for (int i = 0; i < DIGIT_COUNT_TIME; i++)
-	{
-		string digit_str;
-		digit_str = digit_str + str_currentTime[i];
-		int digit = atoi(digit_str.c_str());
-		timeDigits[i]->SetDigit(digit);
-	}
-}
-
-void CPlayScene::CollectCoin() { coin++; }
-
-void CPlayScene::UpdateCoin()
-{
-	string str_coin = to_string(coin);
-	int str_length = str_coin.size();
-	
-	if (str_length == 1)
-	{
-		coinDigits[0]->SetEmpty(true);
-		coinDigits[1]->SetDigit(coin);
-	}
-	else
-	{
-		string digit_0_str, digit_1_str;
-
-		digit_0_str = digit_0_str + str_coin[str_length - 2];
-		digit_1_str = digit_1_str + str_coin[str_length - 1];
-
-		int digit_0 = atoi(digit_0_str.c_str());
-		int digit_1 = atoi(digit_1_str.c_str());
-
-		if (digit_0 == 0)
-		{
-			coinDigits[0]->SetEmpty(true);
-		}
-		else {
-			coinDigits[0]->SetEmpty(false);
-			coinDigits[0]->SetDigit(digit_0);
-		}
-		coinDigits[1]->SetDigit(digit_1);
-	}
-}
-
-void CPlayScene::UpdateScore()
-{
-	string str_score = to_string(score);
-	int str_length = str_score.size();
-	
-	for (int i = 0; i < DIGIT_COUNT_SCORE - str_length; i++)
-		str_score = "0" + str_score;
-
-	str_length = str_score.size();
-	for (int i = 0; i < DIGIT_COUNT_SCORE; i++)
-	{
-		string digit_str;
-		digit_str = digit_str + str_score[str_length - (DIGIT_COUNT_SCORE - i)];
-		int digit = atoi(digit_str.c_str());
-		scoreDigits[i]->SetDigit(digit);
-	}
-}
-
-void CPlayScene::UpdatePMeter()
-{
-	for (int i = 0; i < p_progress; i++)
-		pMeter[i]->SetToggle(true);
-	for (int i = p_progress; i < P_METER_COUNT; i++)
-		pMeter[i]->SetToggle(false);
-}
-
-void CPlayScene::UpdateRunTime(DWORD dt, bool isProgress)
-{
-	if (isProgress)
-	{
-		if ((int)(p_run_time / P_PROGRESS_DELAY) < P_METER_COUNT) p_run_time += dt;
-	}
-	else
-	{
-		if (p_run_time > 0)	p_run_time -= dt / 2;
-		else if (p_run_time < 0) p_run_time = 0;
-	}
-	p_progress = p_run_time / P_PROGRESS_DELAY;
-}
+//void CPlayScene::UpdateRunTime(DWORD dt, bool isProgress)
+//{
+//	if (isProgress)
+//	{
+//		if ((int)(p_run_time / P_PROGRESS_DELAY) < P_METER_COUNT) p_run_time += dt;
+//	}
+//	else
+//	{
+//		if (p_run_time > 0)	p_run_time -= dt / 2;
+//		else if (p_run_time < 0) p_run_time = 0;
+//	}
+//	p_progress = p_run_time / P_PROGRESS_DELAY;
+//}
 
 void CPlayScene::Render()
 {
@@ -657,6 +512,8 @@ void CPlayScene::Render()
 	{
 		process_list[i]->Render();
 	}
+
+	hud->Render();
 }
 
 /*
@@ -685,14 +542,12 @@ void CPlayScene::Unload()
 
 	objects.clear();
 	player = NULL;
+
+	delete background;
 	background = NULL;
+
+	delete hud;
 	hud = NULL;
-	for (int i = 0; i < DIGIT_COUNT_SCORE; i++)
-		scoreDigits[i] = NULL;
-	for (int i = 0; i < DIGIT_COUNT_TIME; i++)
-		timeDigits[i] = NULL;
-	for (int i = 0; i < DIGIT_COUNT_CURRENCY; i++)
-		coinDigits[i] = NULL;
 
 	DebugOut(L"[INFO] Scene %d unloaded! \n", id);
 }
@@ -720,19 +575,6 @@ int CPlayScene::Find(LPGAMEOBJECT obj)
 	return -1;
 }
 
-bool CPlayScene::IsInRange(LPGAMEOBJECT obj, float start_x, float end_x, float start_y, float end_y)
-{
-	float left, top, right, bottom;
-	obj->GetBoundingBox(left, top, right, bottom);
-
-	bool horizontally_inside = (left <= end_x) && (right >= start_x);
-	bool vertically_inside = (top <= end_y) && (bottom >= start_y);
-
-	return horizontally_inside && vertically_inside;
-
-	//return !(left > max_x || right < min_x || top > max_y || bottom < min_y);
-}
-
 vector<LPGAMEOBJECT> CPlayScene::FilterByPlayer(float range)
 {
 	float player_x, player_y;
@@ -747,8 +589,7 @@ vector<LPGAMEOBJECT> CPlayScene::FilterByPlayer(float range)
 	vector<LPGAMEOBJECT> process_list;
 	for (size_t i = 0; i < objects.size(); i++)
 	{
-		/*if (dynamic_cast<CHud*>(objects[i])) process_list.push_back(objects[i]);
-		else */if (IsInRange(objects[i], start_x, end_x, start_y, end_y))
+		if (CGame::IsInRange(objects[i], start_x, end_x, start_y, end_y))
 			process_list.push_back(objects[i]);
 	}
 
@@ -758,20 +599,11 @@ vector<LPGAMEOBJECT> CPlayScene::FilterByPlayer(float range)
 vector<LPGAMEOBJECT> CPlayScene::FilterByCam()
 {
 	CGame* game = CGame::GetInstance();
-	
-	float start_x, end_x, start_y, end_y;
-	game->GetCamPos(start_x, start_y);
-	end_x = start_x + game->GetBackBufferWidth();
-	end_y = start_y + game->GetBackBufferHeight();
-
-	/*end_x = start_x + 256.0f;
-	end_y = start_y + 192.0f;*/
 
 	vector<LPGAMEOBJECT> process_list;
 	for (size_t i = 0; i < objects.size(); i++)
 	{
-		/*if (dynamic_cast<CHud*>(objects[i])) process_list.push_back(objects[i]);
-		else */if (IsInRange(objects[i], start_x, end_x, start_y, end_y))
+		if (game->IsInCam(objects[i]))
 			process_list.push_back(objects[i]);
 	}
 
@@ -782,68 +614,38 @@ void CPlayScene::UpdateCamera(DWORD dt)
 {
 	// Update camera to follow mario
 	CGame* game = CGame::GetInstance();
-	LPPLAYSCENE curr = (LPPLAYSCENE)game->GetCurrentScene();
-	int sceneID = curr->GetCurrentSceneID();
 
 	float cx, cy;
 	game->GetCamPos(cx, cy);
-	if (sceneID == 1)
-	{
-		player->GetPosition(cx, cy);
+	float px, py;
+	player->GetPosition(px, py);
+	
+	cx = px - game->GetBackBufferWidth() / 2.0f;
+	cx = fmax(0.0f, cx);
+	//cx = fmin();
 
-		float player_bbox_height = player->GetBBoxHeight();
+	//if(player->IsFlying())
+	cy = fmin(py - CAM_FOLLOW_HEIGHT, cy);	//Move cam to follow flying
+	cy = fmax(py - game->GetBackBufferHeight() / 2.0f, cy); //Move cam to follow falling
+	cy = fmax(0.0f, cy);
+	cy = fmin(CAM_MAX_Y, cy);
 
-		cx = cx - game->GetBackBufferWidth() / 2.0f;
-		cx = fmax(0.0f, cx);
+	game->SetCamPos(cx, cy);
+}
 
-		if (player->IsFlying())
-		{
-			cy = cy - game->GetBackBufferHeight() / 2.0f;
-			cy = fmin(CAM_MAX_Y, cy);
-		}
-		else
-		{
-			cy = CAM_MAX_Y;
-			//cy = cy + player_bbox_height / 2.0f + 16.0f - game->GetBackBufferHeight();
-		}
+void CPlayScene::UpdateHUD()
+{
+	CGame* game = CGame::GetInstance();
 
-		/*if (GetAsyncKeyState(VK_UP) & 0x8000) cy -= 10;
-		if (GetAsyncKeyState(VK_DOWN) & 0x8000) cy += 10;*/
-	}
-	else if (sceneID == 3)
-	{
-		cx += dt * CAM_SPEED;
-		cy = CAM_MAX_Y;
-	}
+	float cx, cy;
+	game->GetCamPos(cx, cy);
 
-	// UPDATE HUD
-	float ox, oy; //for hud
-	hud->GetOriginalPos(ox, oy);
-	hud->SetPosition((int)(ox + cx), (int)(oy + cy));
+	hud->SetPosition(cx + HUD_WIDTH / 2.0f, cy + CAM_HEIGHT + HUD_HEIGHT / 2.0f);
 
-	float odx, ody; //for digits
-	for (int i = 0; i < DIGIT_COUNT_SCORE; i++)
-	{
-		scoreDigits[i]->GetOriginalPos(odx, ody);
-		scoreDigits[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
-	}
-	for (int i = 0; i < DIGIT_COUNT_TIME; i++)
-	{
-		timeDigits[i]->GetOriginalPos(odx, ody);
-		timeDigits[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
-	}
-	for (int i = 0; i < DIGIT_COUNT_CURRENCY; i++)
-	{
-		coinDigits[i]->GetOriginalPos(odx, ody);
-		coinDigits[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
-	}
-	for (int i = 0; i < P_METER_COUNT; i++)
-	{
-		pMeter[i]->GetOriginalPos(odx, ody);
-		pMeter[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
-	}
-
-	CGame::GetInstance()->SetCamPos(cx, cy);
+	hud->UpdateTime(timer);
+	hud->UpdateCoin(player->GetCoins());
+	hud->UpdateScore(player->GetScores());
+	hud->UpdaeMomentum(player->GetMomentum());
 }
 
 void CPlayScene::PurgeDeletedObjects()
@@ -854,6 +656,7 @@ void CPlayScene::PurgeDeletedObjects()
 		LPGAMEOBJECT o = *it;
 		if (o->IsDeleted())
 		{
+			spawner.Delete(o);
 			delete o;
 			*it = NULL;
 		}

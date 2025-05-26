@@ -19,6 +19,13 @@ using namespace std;
 #define MAX_FRAME_RATE 100
 #define KEYBOARD_BUFFER_SIZE 1024
 
+#define BACKBUFFER_HEIGHT 240.0f
+#define BACKBUFFER_WIDTH 256.0f
+
+#define CAM_HEIGHT 192.0f
+#define CAM_WIDTH BACKBUFFER_WIDTH
+#define CAM_FOLLOW_HEIGHT 16.0f * 3.0f
+
 
 /*
 	Our simple game framework
@@ -131,6 +138,9 @@ public:
 		DebugOut(L"YES\n");
 	}
 	void GetNewPlayerPos(float& x, float& y) { x = new_x; y = new_y; }
+
+	static bool IsInRange(LPGAMEOBJECT obj, float start_x, float end_x, float start_y, float end_y);
+	bool IsInCam(LPGAMEOBJECT obj);
 
 	~CGame();
 };

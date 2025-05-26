@@ -14,10 +14,9 @@ public:
 	{
 		this->icon_Type = icon_type;
 
-		aniID = ID_ANI_GENERAL_MAP_ICON - icon_Type; //Thêm dòng này để dùng CGameObject::Render()
+		bbox_width = 0.0f;
+		bbox_height = 0.0f;
+		
+		aniID = ID_ANI_GENERAL_MAP_ICON - icon_Type;
 	}
-	void Render(); //GameObject có Render rồi! "virtual void Render();"
-	void Update(DWORD dt) {} //GameObject co ham update roi! "virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects = NULL) {};"
-	void GetBoundingBox(float& l, float& t, float& r, float& b); 
-	int IsBlocking() { return 0; }
 };

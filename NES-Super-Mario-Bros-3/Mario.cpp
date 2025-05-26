@@ -23,10 +23,13 @@ CMario::CMario(float x, float y):
 	is_jumping = false;
 	is_flying = false;
 
+	fly_cooldown = INT_MAX;
+
 	decrease_momentum_time = 0;
 	momentum = 0;
-	/*isOnPlatform = false;
-	coin = 0;*/
+
+	coins = 0;
+	scores = 0;
 
 	SetState(STATE_LIVE);
 	SetLife(MARIO_LEVEL_SMALL);
@@ -55,7 +58,6 @@ void CMario::Prepare(DWORD dt)
 
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {		
-	//DebugOutTitle(L"Momentum: %d, vx: %f", momentum, fabs(vx));
 	switch (state)
 	{
 	case STATE_LIVE:
@@ -69,13 +71,17 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 
 void CMario::Living(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
-	Flying();
 	Move(dt);
 
 	DoSpecialActions(dt, coObjects);
 
 	UpdateMomentum(dt);
 	Invulnerable(dt);
+}
+
+int CMario::IsLinkedTo(CGameObject* obj)
+{
+	return obj == weapon;
 }
 
 void CMario::OnNoCollisionWithBlocking(DWORD dt)
@@ -105,43 +111,43 @@ void CMario::OnCollisionWith(LPCOLLISIONEVENT e)
 		OnCollisionWithRandomCard(e);*/
 }
 
-void CMario::ReactionToTouch(CGameObject* by_another)
+void CMario::OnReactionToTouching(LPCOLLISIONEVENT e)
 {
-	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();	
+	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
 
-	if (keyState->IsHold(VK_A))
-		Carry((CHarmfulObject*)by_another);
-	else
-		Kick();
-}
-
-void CMario::ReactionToAttack1(CGameObject* by_another)
-{
-	if (this->y + this->bbox_height / 2.0f <= by_another->GetY() - by_another->GetBBoxHeight() / 2.0f)
+	if (dynamic_cast<CEnemy*>(e->src_obj))
 	{
-		CHarmfulObject::Attack(by_another);
-		BackJump();
+		e->Reverse();
+		if (keyState->IsHold(VK_A))
+			Carry(e);
+		else
+			Kick();
 	}
-	else
-		UnderAttack((CHarmfulObject*) by_another);
+	else if (dynamic_cast<CCoin*>(e->src_obj))
+		coins++;
 }
 
-void CMario::ReactionToAttack2(CGameObject* by_another)
+void CMario::OnReactionToAttack1(LPCOLLISIONEVENT e)
 {
-	UnderAttack(by_another);
+	UnderAttack(e->src_obj);
 }
 
-void CMario::ReactionToAttack3(CGameObject* by_another)
+void CMario::OnReactionToAttack2(LPCOLLISIONEVENT e)
 {
-	UnderAttack(by_another);
+	UnderAttack(e->src_obj);
 }
 
-void CMario::ReactionToBigger(CGameObject* by_another)
+void CMario::OnReactionToAttack3(LPCOLLISIONEVENT e)
+{
+	UnderAttack(e->src_obj);
+}
+
+void CMario::OnReactionToBigger(LPCOLLISIONEVENT e)
 {
 	SetState(MARIO_STATE_GAIN_POWER);
 }
 
-void CMario::ReactionToRacoonize(CGameObject* by_another)
+void CMario::OnReactionToRacoonize(LPCOLLISIONEVENT e)
 {
 	SetState(MARIO_STATE_GAIN_POWER);
 }
@@ -153,18 +159,17 @@ void CMario::OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e)
 
 	if (e->ny < 0)
 	{
-		CHarmfulObject::Attack(enemy);
+		CHarmfulObject::Attack(e);
 		BackJump();
 	}
-	else if (keyState->IsHold(VK_A) && Grab(enemy)); //case collision on the left or right or below
-	else Touch(enemy);
+	else if (keyState->IsHold(VK_A) && Grab(e)); //case collision on the left or right or below
+	else Touch(e);
 }
 
 void CMario::OnCollisionWithCoin(LPCOLLISIONEVENT e)
 {
-	Touch(e->obj);
-	LPPLAYSCENE currentScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
-	currentScene->CollectCoin();
+	Touch(e);
+	coins++;
 }
 
 void CMario::OnCollisionWithPortal(LPCOLLISIONEVENT e)
@@ -177,9 +182,14 @@ void CMario::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 {
 	if (e->ny)
 	{
-		vy = 0.0f; 
-		isOnGround = true;
-		on_ground_y = y;
+		vy = 0.0f;
+
+		if (e->ny < 0)
+		{
+			isOnGround = true;
+			is_flying = false;
+			on_ground_y = y;
+		}
 	}	
 
 	if (e->nx)
@@ -190,7 +200,7 @@ void CMario::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 
 void CMario::OnCollisionWithHelpfulObject(LPCOLLISIONEVENT e)
 {
-	Touch(e->obj);
+	Touch(e);
 }
 
 void CMario::OnCollisionWithBlock(LPCOLLISIONEVENT e)
@@ -203,11 +213,12 @@ void CMario::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 		if (e->ny > 0)
 		{
 			is_jumping = false;
-			Touch(e->obj);
+			Touch(e);
 		}
 		else
 		{
 			isOnGround = true;
+			is_flying = false;
 			on_ground_y = y;
 		}
 	}
@@ -297,23 +308,39 @@ void CMario::ChangeAnimation()
 
 void CMario::ChangeAnimationInLivingState(int &actionID, DWORD &timePerFrame)
 {
-	//for normal actions
-	if (vy > 0 && life > MARIO_LEVEL_SMALL)
-		actionID = ID_ANI_FALL;
-	else if (vy)
-		actionID = ID_ANI_JUMP;
-	else if (vx == 0)
-		actionID = ID_ANI_IDLE;
-	else if (vx > 0 && nx == DIRECTION_LEFT && !weapon)
-		actionID = ID_ANI_BRACE;
-	else if (vx < 0 && nx == DIRECTION_RIGHT && !weapon)
-		actionID = ID_ANI_BRACE;
-	else if (fabs(vx) >= MARIO_SMALL_RUNNING_MAX_VX && !weapon)
-		actionID = ID_ANI_SUPER_RUN;
-	else
+	//for normal actions	
+	if (vy > 0 && life > MARIO_LEVEL_SMALL) //Falling
 	{
-		actionID = ID_ANI_RUN;
-		timePerFrame *= (MARIO_SMALL_RUNNING_MAX_VX - abs(vx)) / MARIO_SMALL_RUNNING_MAX_VX;
+		if (is_boosting && !weapon)
+			actionID = ID_ANI_SUPER_FALL;
+		else
+			actionID = ID_ANI_FALL;
+	}
+	else if (vy) //Jumping
+	{
+		if (is_boosting && !weapon)
+		{
+			if (is_flying && fly_cooldown < MARIO_FLY_COOLDOWN)
+				actionID = ID_ANI_FLY;
+			else
+				actionID = ID_ANI_SUPER_JUMP;
+		}
+		else
+			actionID = ID_ANI_JUMP;
+	}
+	else if (vx == 0) //Idle
+		actionID = ID_ANI_IDLE;
+	else if (vx * nx < 0 && !weapon) //Braking
+		actionID = ID_ANI_BRACE;
+	else //Running
+	{
+		if (fabs(vx) >= MARIO_SMALL_RUNNING_MAX_VX && !weapon)
+			actionID = ID_ANI_SUPER_RUN;
+		else
+		{
+			actionID = ID_ANI_RUN;
+			timePerFrame *= (MARIO_SMALL_RUNNING_MAX_VX - abs(vx)) / MARIO_SMALL_RUNNING_MAX_VX;
+		}
 	}
 
 	//for special actions
@@ -388,15 +415,10 @@ void CMario::StartSpecialActions()
 {
 	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
 
-	/*if (keyState->IsPressed(VK_UP))
+	if (keyState->IsPressed(VK_UP))
 		SetLife(life + 1.0f);
 	else if (keyState->IsPressed(VK_DOWN))
-		SetLife(life - 1.0f);*/
-
-	if (keyState->IsHold(VK_UP))
-		Fly();
-	if (keyState->IsHold(VK_UP) && keyState->IsHold(VK_DOWN))
-		is_flying = false;
+		SetLife(life - 1.0f);
 	
 	if (keyState->IsHold(VK_A))
 		Run();
@@ -439,7 +461,7 @@ void CMario::StartNormalActions(DWORD& t)
 	float calculated_ay = GAME_GRAVITY;
 	int new_nx = 0;
 
-	//go left or right
+	//Go left or right
 	if (keyState->IsHold(VK_LEFT))
 	{
 		if (vx <= 0)
@@ -469,28 +491,55 @@ void CMario::StartNormalActions(DWORD& t)
 		new_nx += DIRECTION_RIGHT;
 	}
 	
-	//jumping
-	if (isOnGround && keyState->IsPressed(VK_S))
+	if (is_flying && keyState->IsPressed(VK_S)) //Flying
 	{
+		ny = DIRECTION_UP;
+
+		vy = (vy > 0) ? vy : MARIO_FLY_V;
+		vy = min(fabs(vy), MARIO_FLY_V);
+		vy *= ny;
+
+		vx = min(fabs(vx), MARIO_FLY_V);
+		vx *= nx;
+
+		maxVx = MARIO_FLY_V;
+
+		fly_cooldown = 0;
+
+		is_jumping = false;
+	}
+	else if (isOnGround && keyState->IsPressed(VK_S)) //Jumping
+	{		
 		ny = DIRECTION_UP;
 		vy = ny * MARIO_START_JUMP_VY;
 		calculated_ay = 0.0f;
 
-		isOnGround = false;
 		is_jumping = true;
+
+		Fly();		
 	}
-	else if (is_jumping && fabs(y - on_ground_y) < MARIO_MAX_JUMP_HEIGHT && keyState->IsHold(VK_S))
+	else if (is_jumping && fabs(y - on_ground_y) < MARIO_MAX_JUMP_HEIGHT && keyState->IsHold(VK_S)) //Jumping
 	{
 		if (fabs(vy) <= MARIO_SMALL_JUMPING_MAX_VY)
 			calculated_ay = 0.0f;
 		//else calculated_ay = GAME_GRAVITY;
 	}
-	else
+	else //Falling
 	{
 		//calculated_ay = GAME_GRAVITY;
 		ny = DIRECTION_DOWN;
 
 		is_jumping = false;
+	}
+
+	if (is_flying) //Remove ay when flying
+	{
+		total_fly_time += t;
+		fly_cooldown += t;
+		if (total_fly_time >= MARIO_FLY_TIME)
+			is_flying = false;
+		if (fly_cooldown < MARIO_FLY_COOLDOWN)
+			calculated_ay = 0.0f;
 	}
 
 	//decelerate
@@ -504,6 +553,8 @@ void CMario::StartNormalActions(DWORD& t)
 	else this->nx = new_nx;
 
 	//
+	ax = calculated_ax;
+	ay = calculated_ay;
 	Accelerate(calculated_ax, calculated_ay, t);
 }
 
@@ -560,28 +611,42 @@ bool CMario::Stand()
 bool CMario::Run()
 {
 	ax = MARIO_SMALL_RUNNING_AX;
-	maxVx = MARIO_SMALL_RUNNING_MAX_VX;
+
+	if (isOnGround == false)
+	{
+		maxVx = max(fabs(vx), MARIO_SMALL_RUNNING_MAX_VX / 1.5f);
+		maxVx = min(maxVx, MARIO_SMALL_RUNNING_MAX_VX);
+	}
+	else
+		maxVx = MARIO_SMALL_RUNNING_MAX_VX;
 
 	return true;
 }
 
 void CMario::UpdateMomentum(DWORD dt)
 {
-	if (fabs(vx) <= MARIO_SMALL_WALKING_MAX_VX)
+	if (is_flying)
+		return;
+
+	int momentum_increase = max(momentum, (int)((fabs(vx) - MARIO_SMALL_WALKING_MAX_VX) / MARIO_VX_BAND));
+
+	if (ax * vx > 0 && (momentum < momentum_increase || momentum_increase == MARIO_MAX_MOMENTUM) && isOnGround)
+	{
+		momentum = momentum_increase;
+		momentum = min(momentum, MARIO_MAX_MOMENTUM);
+		decrease_momentum_time = 0;
+	}
+	else
 	{
 		decrease_momentum_time += dt;
-		if (decrease_momentum_time > MARIO_MOMENTUM_TIME)
+		if (decrease_momentum_time >= MARIO_MOMENTUM_TIME)
 		{
 			momentum = max(0, momentum - 1);
 			decrease_momentum_time %= dt;
 		}
 	}
-	else
-	{
-		momentum = max(momentum, 1 + (int)((fabs(vx) - MARIO_SMALL_WALKING_MAX_VX) / MARIO_VX_BAND));
-		momentum = min(momentum, MARIO_MAX_MOMENTUM);
-		decrease_momentum_time = 0;
-	}
+
+	is_boosting = fabs(vx) == MARIO_SMALL_RUNNING_MAX_VX;
 }
 
 bool CMario::Walk()
@@ -682,14 +747,14 @@ void CMario::Jump()
 {
 }
 
-bool CMario::Grab(CHarmfulObject* weapon)
+bool CMario::Grab(LPCOLLISIONEVENT e)
 {
 	if (this->weapon)
 		return false;
 
 	SetSpecialAction(ID_ANI_CARRY);
 
-	CCreature::Carry(weapon);
+	CCreature::Carry(e);
 
 	return true;
 }
@@ -719,7 +784,11 @@ bool CMario::Tosh()
 	if (!weapon)
 		return false;
 
-	Touch(weapon);
+	//PIECE OF SHIT, I just need an event
+	CCollisionEventPool* pool = CCollision::GetInstance()->GetPool();
+	LPCOLLISIONEVENT e = pool->Allocate(0.0f, nx, ny, nx, ny, weapon, this);
+	Touch(e);
+	pool->VirtualDelete();
 	return Kick();
 }
 
@@ -809,6 +878,8 @@ void CMario::SetLife(float l)
 void CMario::ToSmallLevel()
 {
 	//Cancel unexisted action in previous state
+	is_flying = false;
+
 	switch (special_action)
 	{
 	case ID_ANI_ATTACK:
@@ -826,6 +897,8 @@ void CMario::ToSmallLevel()
 void CMario::ToBigLevel()
 {
 	//Cancel unexisted action in previous state
+	is_flying = false;
+
 	switch (special_action)
 	{
 	case ID_ANI_ATTACK:
@@ -928,27 +1001,13 @@ void CMario::Dying(DWORD dt)
 
 void CMario::Fly()
 {
-
-}
-
-void CMario::Flying()
-{
-	if (is_flying == false)
+	if (life != MARIO_LEVEL_RACOON)
 		return;
 
-	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
-	
-	if (keyState->IsHold(VK_UP))
+	if (is_boosting)
 	{
-		vy = -0.25f;
-	}
-	else if (keyState->IsHold(VK_DOWN))
-	{
-		vy = 0.25f;
-	}
-	else
-	{
-		vy = 0.0f;
+		is_flying = true;
+		total_fly_time = 0;
 	}
 }
 

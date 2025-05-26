@@ -91,35 +91,36 @@ void CSuperLeaf::OnCollisionWith(LPCOLLISIONEVENT e)
 {
 	if (CMario* mario = dynamic_cast<CMario*>(e->obj))
 	{
-		LaunchEffect(mario);
+		LaunchEffect(e);
 		SetState(STATE_DIE);
 	}
 }
 
-void CSuperLeaf::Reaction(CGameObject* by_another, int action)
+void CSuperLeaf::OnReactionTo(LPCOLLISIONEVENT e, int action)
 {
 	switch (state)
 	{
 		case LEAF_STATE_SLEEP:
-			ReactionInSleepingState(by_another, action);
+			ReactionInSleepingState(e, action);
 			break;
 		case LEAF_STATE_BLOWN:
 		case LEAF_STATE_FALL:
-			ReactionInFallingState(by_another, action);
+			ReactionInFallingState(e, action);
 			break;
 	}
 }
 
-void CSuperLeaf::ReactionInSleepingState(CGameObject* by_another, int action)
+void CSuperLeaf::ReactionInSleepingState(LPCOLLISIONEVENT e, int action)
 {
 	SetState(LEAF_STATE_BLOWN);
 }
 
-void CSuperLeaf::ReactionInFallingState(CGameObject* by_another, int action)
+void CSuperLeaf::ReactionInFallingState(LPCOLLISIONEVENT e, int action)
 {
-	if (CMario* mario = dynamic_cast<CMario*>(by_another))
+	if (CMario* mario = dynamic_cast<CMario*>(e->src_obj))
 	{
-		LaunchEffect(mario);
+		e->Reverse();
+		LaunchEffect(e);
 		SetState(STATE_DIE);
 	}
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Creature.h"
+#include "Enemy.h"
 
 #define KOOPA_LIFE 2.0f
 
@@ -36,7 +36,7 @@
 #define ANI_ID_KOOPA_DOWN 0
 #define ANI_ID_KOOPA_UP 10
 
-class CKoopaTroopa : public CCreature
+class CKoopaTroopa : public CEnemy
 {
 	//recovering
 	int recovering_time;
@@ -63,13 +63,14 @@ public:
 	virtual void OnCollisionWith(LPCOLLISIONEVENT e);
 	virtual void OnCollisionWithPlatform(LPCOLLISIONEVENT e);
 	virtual void OnCollisionWithBlock(LPCOLLISIONEVENT e);
-	virtual void OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e);
+	virtual void OnCollisionWithMario(LPCOLLISIONEVENT e);
+	virtual void OnCollisionWithEnemy(LPCOLLISIONEVENT e);
 
-	virtual void ReactionToCarry(CGameObject* by_another);
-	virtual void ReactionToTouch(CGameObject* by_another);
-	virtual void ReactionToAttack1(CGameObject* by_another);
-	virtual void ReactionToAttack2(CGameObject* by_another);
-	virtual void ReactionToAttack3(CGameObject* by_another);
+	virtual void OnReactionToCarrying(LPCOLLISIONEVENT e);
+	virtual void OnReactionToTouching(LPCOLLISIONEVENT e);
+	virtual void OnReactionToAttack1(LPCOLLISIONEVENT e);
+	virtual void OnReactionToAttack2(LPCOLLISIONEVENT e);
+	virtual void OnReactionToAttack3(LPCOLLISIONEVENT e);
 
 	virtual void Render();
 	virtual void ChangeAnimation();
@@ -77,7 +78,6 @@ public:
 	virtual void SetState(int state);
 
 	virtual void UnderAttack(CGameObject* by_another);
-	virtual void UnderDestructrion(CGameObject* by_another);
 
 	virtual void Bounce();
 	virtual void Hide(DWORD dt);
@@ -85,5 +85,5 @@ public:
 
 	void Patrol();
 
-	virtual void LookForMario();
+	virtual void Refresh();
 };

@@ -27,18 +27,18 @@ void CCoin::OnCollisionWith(LPCOLLISIONEVENT e)
 		Delete();
 }
 
-void CCoin::Reaction(CGameObject* by_another, int action)
+void CCoin::OnReactionTo(LPCOLLISIONEVENT e, int action)
 {
-	switch (action)
+	if (isContained)
 	{
-	case ACTION_TOUCH:
-		if (dynamic_cast<CMario*>(by_another)) Delete();
-		else SetToggled();
-		break;
-	default:
-		Delete();
-		break;
+		SetToggled();
+
+		e->Reverse();
+		e->src_obj = this;
+		e->obj->OnReactionTo(e, ACTION_TOUCH);
 	}
+	else
+		Delete();
 }
 
 void CCoin::SetToggled()

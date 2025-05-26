@@ -58,14 +58,17 @@ void CFireball::ApplyDirection(int nx, int ny)
 //void CFireball::OnCollisionWith(LPCOLLISIONEVENT e)
 //{
 //	if (CMario* mario = dynamic_cast<CMario*>(e->obj))
-//		HigherAttack(mario);
+//		Attack(mario);
 //}
 
-void CFireball::Reaction(CGameObject* by_another, int action)
+void CFireball::OnReactionTo(LPCOLLISIONEVENT e, int action)
 {
 	AgainstControl();
-	if(CMario* mario = dynamic_cast<CMario*>(by_another))
-		HigherAttack(mario);
+	if (dynamic_cast<CMario*>(e->src_obj))
+	{
+		e->Reverse();
+		Attack(e);
+	}
 }
 
 int CFireball::IsCollidable()
