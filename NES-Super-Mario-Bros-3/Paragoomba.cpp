@@ -5,113 +5,72 @@
 CParagoomba::CParagoomba(float x, float y):
 	CGoomba(x, y)
 {
-	bbox_width = PARAGOOMBA_BBOX_WIDTH;
-	bbox_height = PARAGOOMBA_BBOX_HEIGHT;
-	ClearState();
-	SetState(STATE_LIVE);
+	Refresh();
 }
 
-void CParagoomba::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+void CParagoomba::DefaultUpdate(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
-	switch (state)
-	{
-		case STATE_LIVE:
-			Living(dt);
-			break;
-		case PARAGOOMBA_STATE_GOOMBA:
-			CGoomba::Living(dt);
-			break;
-		case STATE_DIE:
-			CGoomba::Dying(dt);
-			break;
-	}
-}
-
-void CParagoomba::Living(DWORD dt)
-{
-	ChaseMario(dt);
 	CGoomba::Living(dt);
 	Flutter();
 }
 
-void CParagoomba::ReactionToAttack1(CGameObject* by_another)
+void CParagoomba::OnReactionToAttack1(LPCOLLISIONEVENT e)
 {
 	switch (state)
 	{
 	case STATE_LIVE:
-		UnderAttack((CHarmfulObject*)by_another);
+		CGoomba::OnReactionToAttack1(e);
+		break;
+	case PARAGOOMBA_STATE_WING:
+		UnderAttack((CHarmfulObject*)e->src_obj);
 		LoseWings();
-		SetState(PARAGOOMBA_STATE_GOOMBA);
-		break;
-	case PARAGOOMBA_STATE_GOOMBA:
-		CGoomba::ReactionToAttack1(by_another);
+		SetState(STATE_LIVE);
 		break;
 	}
 }
 
-void CParagoomba::SetState(int state)
+void CParagoomba::OnReactionToAttack2(LPCOLLISIONEVENT e)
 {
-	if (this->state == state)
-	{
-		return;
-	}
-
-	this->state = state;
-
-	switch (state)
-	{
-		case STATE_LIVE:
-			ToStateLiving();
-			break;
-		case PARAGOOMBA_STATE_GOOMBA:
-			CGoomba::ToStateLiving();
-			break;
-		case STATE_DIE:
-			ToStateDying();
-			break;
-	}
+	LoseWings();
+	CGoomba::OnReactionToAttack2(e);
 }
 
-void CParagoomba::ToStateLiving()
+void CParagoomba::OnReactionToAttack3(LPCOLLISIONEVENT e)
+{
+	LoseWings();
+	CGoomba::OnReactionToAttack3(e);
+}
+
+void CParagoomba::ToDefaultState()
 {
 	vx = -GOOMBA_VX;
-	vy = PARAGOOMBA_VY;	
+	vy = PARAGOOMBA_VY;
 	wings = new CWing(x, y - WINGS_Y_OFFSET, 2, WINGS_DISTANCE_BETWEEN);
 	SetMomentum(0);
 }
 
-void CParagoomba::ToStateDying()
-{	
-	die_start = 0;
-	y += (bbox_height - PARAGOOMBA_BBOX_DIE_HEIGHT) / 2;
-	bbox_height = PARAGOOMBA_BBOX_DIE_HEIGHT;
-	vx = 0.0f;
-	vy = 0.0f;
-	LoseWings();
-}
-
-void CParagoomba::Prepare(DWORD dt)
+void CParagoomba::DefaultPrepare(DWORD dt)
 {
-	switch (state)
-	{
-	case STATE_LIVE:
-		ChaseMario(dt);
-		CMovableObject::Prepare(dt);
-		break;
-	case PARAGOOMBA_STATE_GOOMBA:
-		CMovableObject::Prepare(dt);
-		break;
-	}
+	ChaseMario(dt);
+	CMovableObject::Prepare(dt);
 }
 
 void CParagoomba::ChangeAnimation()
 {
 	int object = ANI_ID_PARAGOOMBA;
+	int action;
 
-	int action = ANI_ID_GOOMBA_WALK;
-	if (state == STATE_DIE)
+	switch (state)
 	{
+	case STATE_FLYINGOUT:
+		action = ANI_ID_GOOMBA_WALK + ID_ANI_DIRECTION_UP;
+		break;
+	case STATE_DIE:
 		action = ANI_ID_GOOMBA_DIE;
+		break;
+	default:
+		action = ANI_ID_GOOMBA_WALK;
+		break;
 	}
 
 	aniID = object + action;
@@ -196,12 +155,25 @@ void CParagoomba::SetMomentum(int m)
 //Swing
 void CParagoomba::LoseWings()
 {
-	delete wings;
-	wings = nullptr;
+	if (wings)
+	{
+		delete wings;
+		wings = nullptr;
+	}
+}
+
+void CParagoomba::Refresh()
+{
+	SetBoundingBox(PARAGOOMBA_BBOX_WIDTH, PARAGOOMBA_BBOX_HEIGHT);
+	ClearState();
+	SetState(PARAGOOMBA_STATE_WING);
 }
 
 void CParagoomba::Flutter()
 {
+	if (wings == nullptr)
+		return;
+
 	wings->SetPosition(x, y - WINGS_Y_OFFSET);
 
 	if (vy > 0)

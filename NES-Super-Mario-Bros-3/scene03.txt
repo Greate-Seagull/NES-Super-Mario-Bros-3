@@ -241,6 +241,3 @@ particle.txt
 
 # MARIO
 0	24	382
-
-# HUD
--20	128	180

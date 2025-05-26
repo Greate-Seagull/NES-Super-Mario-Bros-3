@@ -1,22 +1,11 @@
+#include "PiranhaPlant.h"
 #include "Game.h"
 #include "PlayScene.h"
 
-#include "PiranhaPlant.h"
-#include "Mario.h"
-#include "debug.h"
-
 CPiranhaPlant::CPiranhaPlant(float x, float y):
-	CCreature(x, y)
+	CEnemy(x, y)
 {
-	start_y = y;
-
-	SetBoundingBox(PIRANHA_BBOX_WIDTH, PIRANHA_BBOX_HEIGHT);	
-
-	vx = PIRANHA_VX;
-	vy = PIRANHA_VY;
-
-	SetState(PIRANHA_STATE_EMERGE);
-	life = PIRANHA_LIFE;	
+	Refresh();
 }
 
 void CPiranhaPlant::SetPosition(float x, float y)
@@ -41,12 +30,15 @@ void CPiranhaPlant::Prepare(DWORD dt)
 	case PIRANHA_STATE_HIDE:
 		Hiding(dt);
 		break;
+	case STATE_DIE:
+		Dying(dt);
+		break;
 	}	
 }
 
 void CPiranhaPlant::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
-	LookforMario();
+	LookForMario();
 	Move(dt);
 }
 
@@ -90,6 +82,15 @@ void CPiranhaPlant::Hiding(DWORD dt)
 	}
 }
 
+void CPiranhaPlant::Dying(DWORD dt)
+{
+	die_time += dt;
+	if (die_time >= PIRANHA_DIE_TIME)
+	{
+		Delete();
+	}
+}
+
 void CPiranhaPlant::SetState(int state) //Start state
 {
 	if (this->state == state)
@@ -114,7 +115,7 @@ void CPiranhaPlant::SetState(int state) //Start state
 			ToStateHide();
 			break;
 		case STATE_DIE:
-			Delete();
+			ToStateDie();
 			break;
 	}
 }
@@ -141,37 +142,77 @@ void CPiranhaPlant::ToStateHide()
 	vy = 0.0f;
 }
 
-void CPiranhaPlant::ReactionToCarry(CGameObject* by_another)
+void CPiranhaPlant::ToStateDie()
+{
+	die_time = 0;
+}
+
+void CPiranhaPlant::OnReactionToCarrying(LPCOLLISIONEVENT e)
 {
 	if(pot)
 	{
 		AgainstControl();
-		HigherAttack(by_another);
+
+		if (dynamic_cast<CMario*>(e->src_obj))
+		{
+			e->Reverse();
+			Attack(e);
+		}
 	}
 	else
 	{
-		pot = by_another;
+		pot = e->src_obj;
 	}
 }
 
-void CPiranhaPlant::ReactionToTouch(CGameObject* by_another)
+void CPiranhaPlant::OnReactionToTouching(LPCOLLISIONEVENT e)
 {
-	HigherAttack(by_another);
+	if (dynamic_cast<CMario*>(e->src_obj))
+	{
+		e->Reverse();
+		Attack(e);
+	}
 }
 
-void CPiranhaPlant::ReactionToAttack1(CGameObject* by_another)
+void CPiranhaPlant::OnReactionToAttack1(LPCOLLISIONEVENT e)
 {
-	HigherAttack(by_another);
+	e->Reverse();
+	Attack(e);
 }
 
-void CPiranhaPlant::ReactionToAttack2(CGameObject* by_another)
+void CPiranhaPlant::OnReactionToAttack2(LPCOLLISIONEVENT e)
 {
 	Die();
 }
 
-void CPiranhaPlant::ReactionToAttack3(CGameObject* by_another)
+void CPiranhaPlant::OnReactionToAttack3(LPCOLLISIONEVENT e)
 {
 	Die();
+}
+
+void CPiranhaPlant::LookForMario()
+{
+	//Get target
+	LPPLAYSCENE playScene = (LPPLAYSCENE)(CGame::GetInstance()->GetCurrentScene());
+	CMario* mario = (CMario*)playScene->GetPlayer();
+
+	//aim at target
+	target_dx = mario->GetX() - x;
+	target_dy = mario->GetY() - y;
+}
+
+void CPiranhaPlant::Refresh()
+{
+	start_y = y;
+
+	SetBoundingBox(PIRANHA_BBOX_WIDTH, PIRANHA_BBOX_HEIGHT);
+
+	maxVx = PIRANHA_VX;
+	vx = PIRANHA_VX;
+	vy = PIRANHA_VY;
+
+	SetState(PIRANHA_STATE_EMERGE);
+	life = PIRANHA_LIFE;
 }
 
 void CPiranhaPlant::Render()
@@ -194,22 +235,16 @@ void CPiranhaPlant::ChangeAnimation()
 {
 	int object = ANI_ID_PIRANHA;
 
-	int action = ANI_ID_PIRANHA_BITE;
+	int action;
+	switch (state)
+	{
+	case STATE_DIE:
+		action = ANI_ID_PIRANHA_DIE;
+		break;
+	default:
+		action = ANI_ID_PIRANHA_BITE;
+		break;
+	}
 
 	aniID = object + action;
-}
-
-void CPiranhaPlant::LookforMario()
-{
-	//Get target
-	LPPLAYSCENE playScene = (LPPLAYSCENE)(CGame::GetInstance()->GetCurrentScene());
-	CMario* mario = (CMario*)playScene->GetPlayer();
-
-	//Determine target position
-	float mario_x, mario_y;
-	mario->GetPosition(mario_x, mario_y);
-
-	//aim at target
-	target_dx = mario_x - x;
-	target_dy = mario_y - y;	
 }

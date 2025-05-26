@@ -1,11 +1,5 @@
 #include "QuestionBlock.h"
 
-#include "Coin.h"
-#include "SuperMushroom.h"
-#include "SuperLeaf.h"
-
-#include "PlayScene.h"
-
 void CQuestionBlock::Render()
 {
 	aniID = ID_ANI_QUESTION_BLOCK + (state != STATE_LIVE);
@@ -37,26 +31,24 @@ void CQuestionBlock::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	}
 }
 
-void CQuestionBlock::Reaction(CGameObject* by_another, int action)
+void CQuestionBlock::OnReactionTo(LPCOLLISIONEVENT e, int action)
 {
 	if (state == STATE_DIE)
 		return;
 
 	switch (action)
 	{
+	case ACTION_ATTACK_LEVEL_1:
 	case ACTION_ATTACK_LEVEL_2:		
 	case ACTION_ATTACK_LEVEL_3:
 		SetState(STATE_DIE);
 		break;
 	case ACTION_TOUCH:
 		SetState(QUESTION_BLOCK_STATE_TOGGLE);
-		if (itemID == OBJECT_TYPE_COIN)
-		{
-			LPPLAYSCENE currentScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
-			currentScene->CollectCoin();
-		}
 		break;
-	}	
+	}
+
+	TriggerItem(e, action);
 }
 
 void CQuestionBlock::SetState(int state)
@@ -69,12 +61,10 @@ void CQuestionBlock::SetState(int state)
 	switch (state)
 	{
 		case QUESTION_BLOCK_STATE_TOGGLE:
-			vy = QUESTION_BLOCK_SHAKE_VY;			
-			TriggerItem();
+			vy = QUESTION_BLOCK_SHAKE_VY;						
 			break;
 		case STATE_DIE:
 			vy = 0.0f;
-			TriggerItem();
 			break;
 	}
 }
@@ -87,8 +77,12 @@ void CQuestionBlock::TakeItem()
 	switch (itemID)
 	{
 	case OBJECT_TYPE_COIN:
-		item = new CCoin(x, y);
+	{
+		CCoin* coin = new CCoin(x, y);
+		coin->SetContained();
+		item = coin;
 		break;
+	}
 	case OBJECT_TYPE_SUPER_MUSHROOM:
 		item = new CSuperMushroom(x, y);
 		break;
@@ -100,14 +94,31 @@ void CQuestionBlock::TakeItem()
 	}
 }
 
-void CQuestionBlock::TriggerItem()
+void CQuestionBlock::DetermineItem(CMario* mario)
 {
-	if (item)
+	if (mario->GetLife() < MARIO_LEVEL_BIG)
+		itemID = OBJECT_TYPE_SUPER_MUSHROOM;
+	else
+		itemID = OBJECT_TYPE_SUPER_LEAF;
+}
+
+void CQuestionBlock::TriggerItem(LPCOLLISIONEVENT e, int action)
+{
+	if (item == nullptr)
 	{
 		LPPLAYSCENE ps = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+
+		if (itemID == OBJECT_TYPE_AMBIGUOUS_EFFECT)
+		{
+			CMario* mario = dynamic_cast<CMario*>(ps->GetPlayer());
+			DetermineItem(mario);
+		}
+
+		TakeItem();
+
 		ps->Insert(item, ps->Find(this));
 
-		item->Reaction(this, ACTION_TOUCH);
+		item->OnReactionTo(e, action);
 
 		item = nullptr;
 	}
