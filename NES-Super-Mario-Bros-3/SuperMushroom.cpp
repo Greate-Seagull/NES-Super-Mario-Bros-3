@@ -112,6 +112,10 @@ void CSuperMushroom::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 		vy = 0;
 		isOnGround = true;
 	}
+	if (e->nx)
+	{
+		vx = -vx;
+	}
 }
 
 void CSuperMushroom::OnCollisionWithBlock(LPCOLLISIONEVENT e)

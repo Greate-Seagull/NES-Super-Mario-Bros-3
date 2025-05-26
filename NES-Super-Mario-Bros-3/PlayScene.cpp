@@ -7,6 +7,7 @@
 #include "Textures.h"
 #include "Sprites.h"
 #include "Background.h"
+#include "HUD.h"
 #include "Portal.h"
 #include "DeadStateTrigger.h"
 #include "Coin.h"
@@ -34,6 +35,15 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 	player = NULL;
 	//key_handler = new CSampleKeyHandler(this);
 	background = NULL;	
+	hud = NULL;
+	for (int i = 0; i < DIGIT_COUNT_SCORE; i++)
+		scoreDigits[i] = NULL;
+	for (int i = 0; i < DIGIT_COUNT_CURRENCY; i++)
+		coinDigits[i] = NULL;
+	for (int i = 0; i < DIGIT_COUNT_TIME; i++)
+		timeDigits[i] = NULL;
+	for (int i = 0; i < P_METER_COUNT; i++)
+		pMeter[i] = NULL;
 }
 
 
@@ -54,7 +64,17 @@ float tempCamPosY = 0;
 
 bool isStartSpawned = false;
 
+#pragma region HUD INFORMATION
 int coin = 0;
+
+float timer = TIMER_VALUE;
+bool timerPause = false;
+
+int score = 0;
+
+int p_progress = 7;
+float p_run_time = 0;
+#pragma endregion
 
 void CPlayScene::_ParseSection_SPRITES(string line)
 {
@@ -212,6 +232,12 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		obj = new CMapIcon(x, y, icon_type);
 		break;
 	}
+	case NON_OBJECT_TYPE_HUD:
+	{
+		obj = new CHud(x, y);
+		hud = (CHud*)obj;
+		break;
+	}
 
 	case OBJECT_TYPE_MARIO:
 		if (player!=NULL) 
@@ -354,6 +380,37 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	obj->SetPosition(x, y);
 
 	objects.push_back(obj);
+
+	if (dynamic_cast<CHud*>(obj))
+	{
+		for (int i = 0; i < DIGIT_COUNT_SCORE; i++)
+		{
+			scoreDigits[i] = new CDigit(x + SCORE_OFFSET + i * DIGIT_NEAR_SPACING, y + OFFSET_Y_LINE2, false, 0);
+			objects.push_back(scoreDigits[i]);
+		}
+		for (int i = 0; i < DIGIT_COUNT_CURRENCY; i++)
+		{
+			coinDigits[i] = new CDigit(x + CURRENCY_OFFSET + i * DIGIT_NEAR_SPACING, y + OFFSET_Y_LINE1, false, 0);
+			objects.push_back(coinDigits[i]);
+		}
+		for (int i = 0; i < DIGIT_COUNT_TIME; i++)
+		{
+			timeDigits[i] = new CDigit(x + TIME_OFFSET + i * DIGIT_NEAR_SPACING, y + OFFSET_Y_LINE2, false, 0);
+			objects.push_back(timeDigits[i]);
+		}
+		for (int i = 0; i < P_METER_COUNT; i++)
+		{
+			int pType = 0;
+			int pOffset = 0;
+			if (i == P_METER_COUNT - 1)
+			{
+				pType = 1;
+				pOffset = P_SWITCH_WIDTH / 4;
+			}
+			pMeter[i] = new CPMeter(x + pOffset + P_METER_OFFSET + i * DIGIT_NEAR_SPACING, y + OFFSET_Y_LINE1, pType, false);
+			objects.push_back(pMeter[i]);
+		}
+	}
 }
 
 void CPlayScene::LoadAssets(LPCWSTR assetFile)
@@ -484,9 +541,107 @@ void CPlayScene::Update(DWORD dt)
 		obj->Update(dt, &nearbyObjects);
 	}
 
-	UpdateCamera();	
+	UpdateCamera();
+
+	// UPDATE HUD
+	if (!timerPause) timer -= dt;
+	UpdateTime();
+	UpdateCoin();
+	UpdateScore();
+	UpdatePMeter();
 
 	PurgeDeletedObjects();
+}
+
+void CPlayScene::UpdateTime()
+{
+	int currentTime = (int)(timer / 1000);
+	string str_currentTime = to_string(currentTime);
+
+	for (int i = 0; i < DIGIT_COUNT_TIME - str_currentTime.size(); i++)
+		str_currentTime = "0" + str_currentTime;
+
+	for (int i = 0; i < DIGIT_COUNT_TIME; i++)
+	{
+		string digit_str;
+		digit_str = digit_str + str_currentTime[i];
+		int digit = atoi(digit_str.c_str());
+		timeDigits[i]->SetDigit(digit);
+	}
+}
+
+void CPlayScene::CollectCoin() { coin++; }
+
+void CPlayScene::UpdateCoin()
+{
+	string str_coin = to_string(coin);
+	int str_length = str_coin.size();
+	
+	if (str_length == 1)
+	{
+		coinDigits[0]->SetEmpty(true);
+		coinDigits[1]->SetDigit(coin);
+	}
+	else
+	{
+		string digit_0_str, digit_1_str;
+
+		digit_0_str = digit_0_str + str_coin[str_length - 2];
+		digit_1_str = digit_1_str + str_coin[str_length - 1];
+
+		int digit_0 = atoi(digit_0_str.c_str());
+		int digit_1 = atoi(digit_1_str.c_str());
+
+		if (digit_0 == 0)
+		{
+			coinDigits[0]->SetEmpty(true);
+		}
+		else {
+			coinDigits[0]->SetEmpty(false);
+			coinDigits[0]->SetDigit(digit_0);
+		}
+		coinDigits[1]->SetDigit(digit_1);
+	}
+}
+
+void CPlayScene::UpdateScore()
+{
+	string str_score = to_string(score);
+	int str_length = str_score.size();
+	
+	for (int i = 0; i < DIGIT_COUNT_SCORE - str_length; i++)
+		str_score = "0" + str_score;
+
+	str_length = str_score.size();
+	for (int i = 0; i < DIGIT_COUNT_SCORE; i++)
+	{
+		string digit_str;
+		digit_str = digit_str + str_score[str_length - (DIGIT_COUNT_SCORE - i)];
+		int digit = atoi(digit_str.c_str());
+		scoreDigits[i]->SetDigit(digit);
+	}
+}
+
+void CPlayScene::UpdatePMeter()
+{
+	for (int i = 0; i < MARIO_MAX_MOMENTUM; i++)
+		pMeter[i]->SetToggle(false);
+	for (int i = 0; i < player->GetMomentum(); i++)
+		pMeter[i]->SetToggle(true);
+}
+
+void CPlayScene::UpdateRunTime(DWORD dt, bool isProgress)
+{
+	if (isProgress)
+	{
+		if ((int)(p_run_time / P_PROGRESS_DELAY) < P_METER_COUNT) p_run_time += dt;
+	}
+	else
+	{
+		if (p_run_time > 0)	p_run_time -= dt / 2;
+		else if (p_run_time < 0) p_run_time = 0;
+	}
+	p_progress = p_run_time / P_PROGRESS_DELAY;
 }
 
 void CPlayScene::Render()
@@ -527,6 +682,14 @@ void CPlayScene::Unload()
 
 	objects.clear();
 	player = NULL;
+	background = NULL;
+	hud = NULL;
+	for (int i = 0; i < DIGIT_COUNT_SCORE; i++)
+		scoreDigits[i] = NULL;
+	for (int i = 0; i < DIGIT_COUNT_TIME; i++)
+		timeDigits[i] = NULL;
+	for (int i = 0; i < DIGIT_COUNT_CURRENCY; i++)
+		coinDigits[i] = NULL;
 
 	DebugOut(L"[INFO] Scene %d unloaded! \n", id);
 }
@@ -608,6 +771,33 @@ void CPlayScene::UpdateCamera()
 	cy = fmax(py - game->GetBackBufferHeight() / 2.0f, cy); //Move cam to follow falling
 	cy = fmax(0.0f, cy);
 	cy = fmin(CAM_MAX_Y, cy);
+
+	// UPDATE HUD
+	float ox, oy; //for hud
+	hud->GetOriginalPos(ox, oy);
+	hud->SetPosition((int)(ox + cx), (int)(oy + cy));
+
+	float odx, ody; //for digits
+	for (int i = 0; i < DIGIT_COUNT_SCORE; i++)
+	{
+		scoreDigits[i]->GetOriginalPos(odx, ody);
+		scoreDigits[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
+	}
+	for (int i = 0; i < DIGIT_COUNT_TIME; i++)
+	{
+		timeDigits[i]->GetOriginalPos(odx, ody);
+		timeDigits[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
+	}
+	for (int i = 0; i < DIGIT_COUNT_CURRENCY; i++)
+	{
+		coinDigits[i]->GetOriginalPos(odx, ody);
+		coinDigits[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
+	}
+	for (int i = 0; i < P_METER_COUNT; i++)
+	{
+		pMeter[i]->GetOriginalPos(odx, ody);
+		pMeter[i]->SetPosition((int)(odx + cx - ox), (int)(ody + cy - oy));
+	}
 
 	CGame::GetInstance()->SetCamPos(cx, cy);
 }

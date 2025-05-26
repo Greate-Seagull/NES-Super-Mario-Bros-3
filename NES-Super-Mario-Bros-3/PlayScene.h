@@ -8,9 +8,10 @@
 #include "Brick.h"
 #include "Mario.h"
 #include "Paragoomba.h"
+#include "HUD.h"
 
 
-#define CAM_MAX_Y 247.0f
+#define CAM_MAX_Y 283.0f
 #define COLLISION_RANGE 300.0f
 
 class CPlayScene: public CScene
@@ -19,6 +20,11 @@ protected:
 	// A play scene has to have player, right? 
 	CMario* player;
 	LPGAMEOBJECT background;
+	CHud* hud;
+	CDigit* scoreDigits[DIGIT_COUNT_SCORE];
+	CDigit* coinDigits[DIGIT_COUNT_CURRENCY];
+	CDigit* timeDigits[DIGIT_COUNT_TIME];
+	CPMeter* pMeter[MARIO_MAX_MOMENTUM];
 
 	vector<LPGAMEOBJECT> objects;
 	CSpawnManager spawner;
@@ -51,6 +57,13 @@ public:
 	vector<LPGAMEOBJECT> FilterByPlayer(float range = COLLISION_RANGE);
 	vector<LPGAMEOBJECT> FilterByCam();
 	void UpdateCamera();
+
+	void UpdateTime();
+	void CollectCoin();
+	void UpdateCoin();
+	void UpdateScore();
+	void UpdatePMeter();
+	void UpdateRunTime(DWORD dt, bool isProgress);
 };
 
 typedef CPlayScene* LPPLAYSCENE;

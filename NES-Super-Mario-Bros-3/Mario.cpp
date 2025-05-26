@@ -3,6 +3,7 @@
 
 #include "Mario.h"
 #include "Game.h"
+#include "PlayScene.h"
 
 #include "Goomba.h"
 #include "Coin.h"
@@ -56,7 +57,7 @@ void CMario::Prepare(DWORD dt)
 
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {		
-	//DebugOutTitle(L"Momentum: %d, vx: %f, ax: %f", momentum, vx, ax);
+	DebugOutTitle(L"Momentum: %d, vx: %f, ax: %f", momentum, vx, ax);
 	switch (state)
 	{
 	case STATE_LIVE:
@@ -163,7 +164,8 @@ void CMario::OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e)
 void CMario::OnCollisionWithCoin(LPCOLLISIONEVENT e)
 {
 	Touch(e);
-	//coin++;
+	LPPLAYSCENE currentScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+	currentScene->CollectCoin();
 }
 
 void CMario::OnCollisionWithPortal(LPCOLLISIONEVENT e)
@@ -619,13 +621,12 @@ bool CMario::Run()
 
 void CMario::UpdateMomentum(DWORD dt)
 {
-	//if (fabs(vx) <= MARIO_SMALL_WALKING_MAX_VX)
 	if (is_flying)
 		return;
 
 	int momentum_increase = max(momentum, (int)((fabs(vx) - MARIO_SMALL_WALKING_MAX_VX) / MARIO_VX_BAND));
 
-	if (ax * vx > 0 && momentum < momentum_increase && isOnGround)
+	if (ax * vx > 0 && (momentum < momentum_increase || momentum_increase == MARIO_MAX_MOMENTUM) && isOnGround)
 	{
 		momentum = momentum_increase;
 		momentum = min(momentum, MARIO_MAX_MOMENTUM);
@@ -1004,6 +1005,11 @@ void CMario::Fly()
 		is_flying = true;
 		total_fly_time = 0;
 	}
+}
+
+int CMario::GetMomentum()
+{
+	return momentum;
 }
 
 void CMario::SetState(int state)
