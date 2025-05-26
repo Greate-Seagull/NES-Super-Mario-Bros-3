@@ -8,21 +8,23 @@
 #include "debug.h"
 
 //MOVING
-#define MARIO_SMALL_WALKING_MAX_VX 0.1f
-#define MARIO_SMALL_RUNNING_MAX_VX 0.25f
+#define MARIO_SMALL_WALKING_MAX_VX 0.0925f
+#define MARIO_SMALL_RUNNING_MAX_VX 0.2f
 #define MARIO_SMALL_JUMPING_MAX_VY 0.15f
-#define MARIO_SMALL_RUNNING_AX 0.0002f//0.0002f
+#define MARIO_SMALL_RUNNING_AX 0.00015f//0.0002f
 
 #define MARIO_DECELERATE_AX 0.00016f
-#define MARIO_BRAKE_AX 0.0004f
+#define MARIO_BRAKE_AX 0.00075f
 
 #define MARIO_START_JUMP_VY 0.25f
 #define MARIO_MAX_JUMP_HEIGHT 60.0f
 
+#define MARIO_FLY_V 0.1f
+
 #define MARIO_JUMP_DEFLECT_VY  -0.25f
 
-#define MARIO_VX_BAND 0.02f
 #define MARIO_MAX_MOMENTUM 7
+#define MARIO_VX_BAND 0.015f //(MARIO_SMALL_RUNNING_MAX_VX - MARIO_SMALL_WALKING_MAX_VX) / MARIO_MAX_MOMENTUM
 
 //TIME
 #define MARIO_BIG_TRANSFORM_TIME 600
@@ -32,7 +34,9 @@
 #define MARIO_ATTACK_PHASE_TIME 60
 #define MARIO_KICK_TIME 200
 #define MARIO_DYING_TIME 700
-#define MARIO_MOMENTUM_TIME 300
+#define MARIO_MOMENTUM_TIME 250//300
+#define MARIO_FLY_COOLDOWN 250
+#define MARIO_FLY_TIME 3500
 
 //LIFE
 #define	MARIO_LEVEL_SMALL	1.0f
@@ -53,7 +57,9 @@
 //ACTIONS
 #define ID_ANI_IDLE 0
 #define ID_ANI_JUMP 10
+#define ID_ANI_SUPER_JUMP 15
 #define ID_ANI_FALL 20
+#define ID_ANI_SUPER_FALL 25
 #define ID_ANI_SIT 30
 #define ID_ANI_RUN 40
 #define ID_ANI_SUPER_RUN 45
@@ -62,8 +68,9 @@
 #define ID_ANI_LEVEL_DOWN 70
 #define ID_ANI_ATTACK 80
 #define ID_ANI_KICK 90
-#define ID_ANI_DIE 200
 #define ID_ANI_CARRY 100
+#define ID_ANI_FLY 200
+#define ID_ANI_DIE 999
 //DIRECTIONS
 #define ID_ANI_LEFT 0
 #define ID_ANI_RIGHT 1
@@ -83,10 +90,11 @@
 #define MARIO_RACOON_TAIL_Y_OFFSET 7.0f
 #define MARIO_CARRY_OFFSET_X 12.0f
 
+//
+#define CARD_COUNT 3
+
 class CMario : public CCreature
 {
-	float maxVx;
-
 	bool is_invulnerable;
 	bool is_jumping;
 
@@ -103,13 +111,19 @@ class CMario : public CCreature
 	int momentum;
 	int decrease_momentum_time;
 
+	int coins;
+	int scores;
+	int cards[CARD_COUNT] = {0};
+	int cardIndex;	
+	bool isCompleted;
+
 	bool is_flying;
+	DWORD fly_cooldown;
+	DWORD total_fly_time;
 
 	bool is_boosting;
 
 	int special_action;
-
-	//int coin; 
 
 	void OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e);
 	void OnCollisionWithCoin(LPCOLLISIONEVENT e);
@@ -134,18 +148,20 @@ public:
 	void Render();
 
 	int IsCollidable() { return state == STATE_LIVE; }
+	int IsLinkedTo(CGameObject* obj);
 
 	void OnNoCollisionWithBlocking(DWORD dt);
 	void OnCollisionWith(LPCOLLISIONEVENT e);
 
 	//void ReactionToCarry(CGameObject* by_another);
-	void ReactionToTouch(CGameObject* by_another);
-	void ReactionToAttack1(CGameObject* by_another);
-	void ReactionToAttack2(CGameObject* by_another);
-	void ReactionToAttack3(CGameObject* by_another);
-	void ReactionToBigger(CGameObject* by_another);
-	void ReactionToRacoonize(CGameObject* by_another);
+	void OnReactionToTouching(LPCOLLISIONEVENT e);
+	void OnReactionToAttack1(LPCOLLISIONEVENT e);
+	void OnReactionToAttack2(LPCOLLISIONEVENT e);
+	void OnReactionToAttack3(LPCOLLISIONEVENT e);
+	void OnReactionToBigger(LPCOLLISIONEVENT e);
+	void OnReactionToRacoonize(LPCOLLISIONEVENT e);
 
+	float GetLife() { return life; }
 	void SetLife(float l);
 	void ToSmallLevel();
 	void ToBigLevel();
@@ -184,7 +200,7 @@ public:
 	void BackJump();
 	void Jump();
 
-	bool Grab(CHarmfulObject* weapon);
+	bool Grab(LPCOLLISIONEVENT e);
 	void Carrying();
 	bool Tosh();
 
@@ -201,7 +217,14 @@ public:
 
 	bool IsFlying() { return is_flying; }
 	void Fly();
-	void Flying();
 
 	void SetFootPlatform(bool);
+
+	int GetMomentum() { return momentum; }
+	int GetCoins() { return coins; }
+	int GetScores() { return scores; }
+	int* GetCards() { return cards; }
+	int GetLatestCard() { return cards[cardIndex - 1]; }
+
+	bool IsCompleted() { return isCompleted; }
 };

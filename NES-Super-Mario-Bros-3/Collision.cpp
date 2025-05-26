@@ -24,6 +24,11 @@ CCollisionTracker* CCollision::GetTracker()
 	return &coTracker;
 }
 
+CCollisionEventPool* CCollision::GetPool()
+{
+	return &eventPool;
+}
+
 /*
 	SweptAABB 
 */
@@ -819,7 +824,7 @@ CCollisionEventPool::CCollisionEventPool()
 	current_event = 0;
 }
 
-void CCollisionEventPool::Allocate(float t, float nx, float ny, float dx, float dy, LPGAMEOBJECT objDest, LPGAMEOBJECT objSrc)
+LPCOLLISIONEVENT CCollisionEventPool::Allocate(float t, float nx, float ny, float dx, float dy, LPGAMEOBJECT objDest, LPGAMEOBJECT objSrc)
 {
 	if (current_event >= co_events.size())
 	{
@@ -830,7 +835,7 @@ void CCollisionEventPool::Allocate(float t, float nx, float ny, float dx, float 
 		co_events[current_event] = CCollisionEvent(t, nx, ny, dx, dy, objDest, objSrc);
 	}
 
-	current_event++;
+	return &co_events[current_event++];
 }
 
 void CCollisionEventPool::VirtualDelete()

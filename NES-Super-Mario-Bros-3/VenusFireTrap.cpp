@@ -18,15 +18,28 @@ void CVenusFireTrap::ChangeAnimation()
 {
 	int object = ANI_ID_VENUS;
 
-	int action = ANI_ID_VENUS_LOOK;
-	if (state == PIRANHA_STATE_ATTACK)
+	int action;
+	switch (state)
 	{
+	case PIRANHA_STATE_ATTACK:
 		action = ANI_ID_VENUS_SHOOT;
+		break;
+	case STATE_DIE:
+		action = ANI_ID_PIRANHA_DIE;
+		break;
+	default:
+		action = ANI_ID_VENUS_LOOK;
+		break;
 	}
+	
+	int horizontal = 0;
+	int vertical = 0;
+	if (state != STATE_DIE)
+	{
+		horizontal = (nx < 0) ? ID_ANI_DIRECTION_LEFT : ID_ANI_DIRECTION_RIGHT;
 
-	int horizontal = (nx < 0) ? ID_ANI_DIRECTION_LEFT : ID_ANI_DIRECTION_RIGHT;
-
-	int vertical = (ny < 0) ? ID_ANI_DIRECTION_UP : ID_ANI_DIRECTION_DOWN;
+		vertical = (ny < 0) ? ID_ANI_DIRECTION_UP : ID_ANI_DIRECTION_DOWN;
+	}
 
 	aniID = object + action + vertical + horizontal;
 }
@@ -80,9 +93,9 @@ void CVenusFireTrap::Shoot()
 	}
 }
 
-void CVenusFireTrap::LookforMario()
+void CVenusFireTrap::LookForMario()
 {
-	CPiranhaPlant::LookforMario();
+	CPiranhaPlant::LookForMario();
 	//look towards object
 	nx = (target_dx <= 0) ? DIRECTION_LEFT : DIRECTION_RIGHT;
 	ny = (target_dy <= 0) ? DIRECTION_UP : DIRECTION_DOWN;

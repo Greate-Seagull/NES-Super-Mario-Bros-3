@@ -5,7 +5,7 @@ CHelpfulObject::CHelpfulObject(float x, float y) :
 {
 }
 
-void CHelpfulObject::LaunchEffect(CCreature* creature)
+void CHelpfulObject::LaunchEffect(LPCOLLISIONEVENT e)
 {
-	creature->Reaction(this, effect);
+	e->obj->OnReactionTo(e, effect);
 }

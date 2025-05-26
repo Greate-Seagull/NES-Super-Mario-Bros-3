@@ -133,6 +133,9 @@ void CPipe::TriggerItem()
 		LPPLAYSCENE ps = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
 		ps->Insert(item, ps->Find(this));
 
-		item->Reaction(this, ACTION_CARRY);
+		CCollisionEventPool* pool = CCollision::GetInstance()->GetPool();
+		LPCOLLISIONEVENT e = pool->Allocate(0.0f, nx, ny, 0.0f, 0.0f, item, this);
+		item->OnReactionTo(e, ACTION_CARRY);
+		pool->VirtualDelete();
 	}
 }
