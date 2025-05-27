@@ -14,10 +14,20 @@
 #include "SuperMushroom.h"
 #include "SuperLeaf.h"
 #include "Background.h"
+#include "Pipe.h"
 
 #include "Collision.h"
 
 bool isOnPlatform = false;
+
+float switchSceneTime = 0;
+#define MAX_SCENE_TIME 800
+
+float exitPipeTime = 0;
+bool finishedExitingPipe = false;
+#define MAX_EXIT_PIPE_TIME 800
+
+int sceneDestination;
 
 CMario::CMario(float x, float y):
 	CCreature(x, y)
@@ -57,11 +67,11 @@ void CMario::Prepare(DWORD dt)
 		changing_state_time += dt;
 		if (changing_state_time >= MARIO_DYING_TIME) CMovableObject::Prepare(dt);
 		break;
-	}
+	}	
 }
 
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
-{		
+{	
 	switch (state)
 	{
 	case STATE_LIVE:
@@ -70,7 +80,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	case STATE_DIE:
 		Dying(dt);
 		break;
-	}
+	}	
 }
 
 void CMario::Living(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
@@ -132,6 +142,13 @@ void CMario::OnReactionToTouching(LPCOLLISIONEVENT e)
 	}
 	else if (dynamic_cast<CCoin*>(e->src_obj))
 		coins++;
+	else if (CPipe* pipe = dynamic_cast<CPipe*>(e->src_obj))
+	{
+		destination = pipe->GetDestination();
+		des_x = pipe->GetDestinationX();
+		des_y = pipe->GetDestinationY();
+		IntoThePipe(e->ny);
+	}
 }
 
 void CMario::OnReactionToAttack1(LPCOLLISIONEVENT e)
@@ -187,6 +204,8 @@ void CMario::OnCollisionWithPortal(LPCOLLISIONEVENT e)
 
 void CMario::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 {
+	isInGround = false;
+
 	if (e->ny)
 	{
 		vy = 0.0f;
@@ -216,7 +235,9 @@ void CMario::OnCollisionWithHelpfulObject(LPCOLLISIONEVENT e)
 }
 
 void CMario::OnCollisionWithBlock(LPCOLLISIONEVENT e)
-{	
+{
+	isInGround = false;
+
 	if (e->ny)
 	{
 		vy = 0.0f;
@@ -224,7 +245,7 @@ void CMario::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 		if (e->ny > 0)
 		{
 			is_jumping = false;
-			Touch(e);
+			on_ceil_y = y;
 		}
 		else
 		{
@@ -232,6 +253,8 @@ void CMario::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 			is_flying = false;
 			on_ground_y = y;
 		}
+
+		Touch(e);
 	}
 
 	if (e->nx)
@@ -245,7 +268,7 @@ void CMario::OnCollisionWithReward(LPCOLLISIONEVENT e)
 	CReward* reward = (CReward*)(e->obj);
 	cardIndex %= CARD_COUNT;
 	cards[cardIndex++] = reward->GetType();
-	isCompleted = true;
+	isFastTravel = true;
 	Touch(e);
 }
 
@@ -301,7 +324,7 @@ void CMario::ChangeAnimation()
 			action = ID_ANI_LEVEL_UP;
 			break;
 		case MARIO_STATE_LOSE_POWER:
-			action = ID_ANI_LEVEL_DOWN;
+			action = ID_ANI_LEVEL_DOWN;						
 			break;
 		case STATE_DIE:
 			action = ID_ANI_DIE;
@@ -400,7 +423,7 @@ bool CMario::SetSpecialAction(int actionID)
 {
 	//validation
 	if (special_action == actionID)
-		return false;
+		return false;	
 	
 	switch (actionID)
 	{
@@ -424,6 +447,10 @@ bool CMario::SetSpecialAction(int actionID)
 	case ID_ANI_CARRY:
 		CCreature::Drop();
 		break;
+	case ID_ANI_INTO_THE_PIPE:
+		nx = 0; ny = 0; nz = 0;
+		vx = nx * vx; vy = ny * vy;
+		break;
 	}
 
 	//apply new action
@@ -433,6 +460,12 @@ bool CMario::SetSpecialAction(int actionID)
 
 void CMario::StartSpecialActions()
 {
+	if (special_action == ID_ANI_INTO_THE_PIPE)
+	{
+		isDigging = false;
+		return;
+	}
+
 	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
 
 	if (keyState->IsPressed(VK_UP))
@@ -470,11 +503,17 @@ void CMario::DoSpecialActions(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	case ID_ANI_SIT:
 		Sitting();
 		break;
+	case ID_ANI_INTO_THE_PIPE:
+		Digging();
+		break;
 	}
 }
 
 void CMario::StartNormalActions(DWORD& t)
 {
+	if (special_action == ID_ANI_INTO_THE_PIPE)
+		return;
+
 	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
 	
 	float calculated_ax = 0.0f;
@@ -1031,6 +1070,42 @@ void CMario::Fly()
 	}
 }
 
+bool CMario::IntoThePipe(int direction)
+{
+	SetSpecialAction(ID_ANI_INTO_THE_PIPE);
+
+	isDigging = true;
+
+	nx = 0;
+	ny = direction ? direction : ny;
+	nz = DIRECTION_FRONT;
+
+	vx = nx * vx;
+	vy = ny * MARIO_PIPE_ENTRY_SPEED;
+
+	return true;
+}
+
+void CMario::Digging()
+{
+	if (isInGround == false)
+	{
+		float pipe_gate_y = ny > 0 ? on_ground_y : on_ceil_y;
+		if (fabs(y - pipe_gate_y) >= bbox_height)
+		{
+			isOnGround = false;
+			isInGround = true;
+			isFastTravel = true;
+		}
+	}
+
+	if (isDigging == false)
+	{
+		SetSpecialAction(ID_ANI_IDLE);
+		isInGround = false;
+	}
+}
+
 void CMario::SetFootPlatform(bool onPlatform)
 {
 	isOnPlatform = onPlatform;
@@ -1057,5 +1132,6 @@ void CMario::SetState(int state)
 		case STATE_DIE:
 			ToDyingState();			
 			break;
+		default: this->state = state;
 	}
 }

@@ -770,7 +770,7 @@ void CCollision::SolveCollisionWithNonBlocking(LPGAMEOBJECT objSrc, DWORD dt, ve
 	eventPool.Refresh();
 }
 
-void CCollision::SolveOverlap(LPGAMEOBJECT objSrc, vector<LPGAMEOBJECT>* coObjects)
+void CCollision::SolveOverlap(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
 	for (UINT i = 0; i < coObjects->size(); i++)
 	{

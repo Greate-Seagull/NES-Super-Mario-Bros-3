@@ -373,6 +373,7 @@ void CKoopaTroopa::OnReactionToAttack1(LPCOLLISIONEVENT e)
 		}
 		break;
 	default:
+		ny = -1 * e->ny;
 		SetState(KOOPA_STATE_HIDE);
 		Stop();
 		break;

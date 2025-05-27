@@ -44,7 +44,8 @@ void CQuestionBlock::OnReactionTo(LPCOLLISIONEVENT e, int action)
 		SetState(STATE_DIE);
 		break;
 	case ACTION_TOUCH:
-		SetState(QUESTION_BLOCK_STATE_TOGGLE);
+		if (e->ny > 0) SetState(QUESTION_BLOCK_STATE_TOGGLE);
+		else return;
 		break;
 	}
 

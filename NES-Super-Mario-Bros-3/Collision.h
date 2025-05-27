@@ -145,7 +145,7 @@ public:
 	void SolveCollisionWithNonBlocking(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* nonBlockingObjects);
 
 	bool Overlap(LPGAMEOBJECT objSrc, LPGAMEOBJECT objDst);
-	void SolveOverlap(LPGAMEOBJECT objSrc, vector<LPGAMEOBJECT>* coObjects);
+	void SolveOverlap(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 
 	static CCollision* GetInstance();
 	CCollisionTracker* GetTracker();

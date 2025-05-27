@@ -75,6 +75,16 @@ void CPipe::RenderBoundingBox()
 	//CGame::GetInstance()->Draw(x - cx, y - cy, bbox, &rect, BBOX_ALPHA);
 }
 
+void CPipe::OnCollisionWith(LPCOLLISIONEVENT e)
+{
+	if (CMario* mario = dynamic_cast<CMario*>(e->obj))
+	{
+		mario->OnReactionTo(e, ACTION_TOUCH);
+	}
+	else
+		e->obj->OnReactionTo(e, ACTION_ATTACK_LEVEL_3);
+}
+
 void CPipe::GetBoundingBox(float& l, float& t, float& r, float& b)
 {
 	/*if (this->face_direction == 1)
@@ -96,6 +106,35 @@ void CPipe::GetBoundingBox(float& l, float& t, float& r, float& b)
 	t = y + cell_height / 2.0f - bbox_height;
 	r = l + bbox_width - 1.0f;
 	b = t + bbox_height - 1.0f;
+}
+
+void CPipe::GetBoundingBoxInside(float& l, float& t, float& r, float& b)
+{
+	l = x;
+	t = y + cell_height / 2.0f - bbox_height;
+	r = l + PIPE_BBOX_INSIDE_WIDTH;
+	b = t + bbox_height - 1.0f;
+}
+
+void CPipe::OnReactionTo(LPCOLLISIONEVENT e, int action)
+{
+	if (e->ny * warp_direction < 0)
+	{
+		if (CMario* mario = dynamic_cast<CMario*>(e->src_obj))
+		{
+			float mario_left, mario_top, mario_right, mario_bot;
+			mario->GetBoundingBox(mario_left, mario_top, mario_right, mario_bot);
+
+			float pipe_left, pipe_top, pipe_right, pipe_bot;
+			this->GetBoundingBoxInside(pipe_left, pipe_top, pipe_right, pipe_bot);
+
+			if (mario_left > pipe_left && mario_right < pipe_right)
+			{
+				e->Reverse();
+				mario->OnReactionTo(e, ACTION_TOUCH);
+			}
+		}
+	}
 }
 
 void CPipe::TakeItem()

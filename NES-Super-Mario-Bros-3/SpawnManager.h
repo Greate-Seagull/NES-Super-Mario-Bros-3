@@ -13,7 +13,8 @@ class CSpawnManager
 
 public:
 	void Add(CGameObject* obj);
-	void Spawn();
+	void Spawn();	
 	void Delete(CGameObject* obj);	
+	void Clear();
 };
 

@@ -10,7 +10,6 @@ CHarmfulObject::CHarmfulObject(float x, float y):
 
 void CHarmfulObject::OnReactionTo(LPCOLLISIONEVENT e, int action)
 {
-	DebugOut(L"%d\n", action);
 	switch (action)
 	{
 	case ACTION_CARRY:

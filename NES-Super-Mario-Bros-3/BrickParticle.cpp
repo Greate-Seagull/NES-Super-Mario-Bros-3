@@ -1,13 +1,5 @@
 #include "BrickParticle.h"
 
-void CBrickParticle::GetBoundingBox(float& l, float& t, float& r, float& b)
-{
-	l = 0;
-	t = 0;
-	r = 0;
-	b = 0;
-}
-
 void CBrickParticle::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
 	switch (this->corner)

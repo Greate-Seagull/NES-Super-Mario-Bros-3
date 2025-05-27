@@ -543,15 +543,19 @@ void CGame::SwitchScene()
 
 	DebugOut(L"[INFO] Switching to scene %d\n", next_scene);
 
-	scenes[current_scene]->Unload();
+	CPlayScene* currentPlayScene = dynamic_cast<CPlayScene*>(scenes[current_scene]);
+
+	current_scene = next_scene;
+	CPlayScene* nextPlayScene = dynamic_cast<CPlayScene*>(scenes[next_scene]);
+
+	//this->SetKeyHandler(s->GetKeyEventHandler());	
+	nextPlayScene->SetPlayer(currentPlayScene->GetPlayer());
 
 	CSprites::GetInstance()->Clear();
 	CAnimations::GetInstance()->Clear();
 
-	current_scene = next_scene;
-	LPSCENE s = scenes[next_scene];
-	//this->SetKeyHandler(s->GetKeyEventHandler());
-	s->Load();
+	currentPlayScene->Unload();
+	nextPlayScene->Load();
 }
 
 void CGame::InitiateSwitchScene(int scene_id)

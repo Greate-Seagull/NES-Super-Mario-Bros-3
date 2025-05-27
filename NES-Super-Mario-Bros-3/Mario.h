@@ -26,6 +26,8 @@
 #define MARIO_MAX_MOMENTUM 7
 #define MARIO_VX_BAND 0.015f //(MARIO_SMALL_RUNNING_MAX_VX - MARIO_SMALL_WALKING_MAX_VX) / MARIO_MAX_MOMENTUM
 
+#define MARIO_PIPE_ENTRY_SPEED 0.03f
+
 //TIME
 #define MARIO_BIG_TRANSFORM_TIME 600
 #define MARIO_RACOON_TRANSFORM_TIME 350
@@ -36,7 +38,7 @@
 #define MARIO_DYING_TIME 700
 #define MARIO_MOMENTUM_TIME 250//300
 #define MARIO_FLY_COOLDOWN 250
-#define MARIO_FLY_TIME 3500
+#define MARIO_FLY_TIME 4000
 
 //LIFE
 #define	MARIO_LEVEL_SMALL	1.0f
@@ -70,6 +72,7 @@
 #define ID_ANI_KICK 90
 #define ID_ANI_CARRY 100
 #define ID_ANI_FLY 200
+#define ID_ANI_INTO_THE_PIPE 210
 #define ID_ANI_DIE 999
 //DIRECTIONS
 #define ID_ANI_LEFT 0
@@ -97,8 +100,11 @@ class CMario : public CCreature
 {
 	bool is_invulnerable;
 	bool is_jumping;
+	bool isInGround;
+	bool isDigging;
 
 	float on_ground_y;
+	float on_ceil_y;
 
 	int changing_state_time;
 
@@ -115,15 +121,18 @@ class CMario : public CCreature
 	int scores;
 	int cards[CARD_COUNT] = {0};
 	int cardIndex;	
-	bool isCompleted;
+
+	bool is_boosting;
 
 	bool is_flying;
 	DWORD fly_cooldown;
 	DWORD total_fly_time;
 
-	bool is_boosting;
-
 	int special_action;
+
+	bool isFastTravel;
+	int destination;
+	float des_x, des_y;
 
 	void OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e);
 	void OnCollisionWithCoin(LPCOLLISIONEVENT e);
@@ -218,6 +227,10 @@ public:
 	bool IsFlying() { return is_flying; }
 	void Fly();
 
+	bool IntoThePipe(int direction);
+	void Digging();
+	bool IsInGround() { return isInGround; }
+
 	void SetFootPlatform(bool);
 
 	int GetMomentum() { return momentum; }
@@ -226,5 +239,8 @@ public:
 	int* GetCards() { return cards; }
 	int GetLatestCard() { return cards[cardIndex - 1]; }
 
-	bool IsCompleted() { return isCompleted; }
+	bool IsFastTravel() { return isFastTravel; }
+	int GetDestination() { return destination; }
+	void GetDestinationPosition(float &x, float &y) { x = des_x; y = des_y; }
+	void SetTraveled() { isFastTravel = false; }
 };

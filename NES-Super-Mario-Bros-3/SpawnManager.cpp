@@ -34,3 +34,8 @@ void CSpawnManager::Delete(CGameObject* obj)
 {
 	objectPositions.erase(obj);
 }
+
+void CSpawnManager::Clear()
+{
+	objectPositions.clear();
+}

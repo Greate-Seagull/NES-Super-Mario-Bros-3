@@ -60,6 +60,7 @@ public:
 
 	int GetCurrentSceneID() { return id; }
 
+	void SetPlayer(LPGAMEOBJECT player) { this->player = dynamic_cast<CMario*>(player); }
 	LPGAMEOBJECT GetPlayer() { return player; }
 	
 	void Clear();
@@ -76,8 +77,12 @@ public:
 
 	void RenderCongratulations();
 
+	vector<LPGAMEOBJECT> GetBrickObjects();
+
 	void Congratulations();
-	void SwitchScene();
+	void SwitchScene(int next_level);
+
+	void FastTravel(DWORD dt);
 };
 
 typedef CPlayScene* LPPLAYSCENE;

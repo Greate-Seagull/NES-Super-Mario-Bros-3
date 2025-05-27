@@ -24,6 +24,7 @@
 #include "StripedBrick.h"
 #include "Cloud.h"
 #include "MapIcon.h"
+#include "PButton.h"
 
 #include "SampleKeyEventHandler.h"
 
@@ -35,7 +36,7 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 	player = NULL;
 	//key_handler = new CSampleKeyHandler(this);
 	background = NULL;	
-	hud = new CHud();
+	hud = NULL;
 	timer = TIMER_VALUE;
 
 	youGotACard = NULL;
@@ -240,16 +241,18 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		break;
 	}
 	case OBJECT_TYPE_MARIO:
-		if (player!=NULL) 
+		if (player == NULL)
 		{
-			DebugOut(L"[ERROR] MARIO object was created before!\n");
-			return;
+			obj = new CMario(x,y);
+			player = (CMario*)obj;
 		}
-
-		obj = new CMario(x,y); 
-		player = (CMario*)obj;  
-
-		DebugOut(L"[INFO] Player object has been created!\n");
+		else
+		{
+			player->SetTraveled();
+			if(player->IsInGround()) player->GetDestinationPosition(x, y);
+			obj = player;
+			DebugOut(L"[INFO] Player object has been created!\n");
+		}
 		break;
 	case OBJECT_TYPE_GOOMBA: 
 		obj = new CGoomba(x,y); 
@@ -295,6 +298,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 
 		break;
 	}
+	case OBJECT_TYPE_PBUTTON: obj = new CPButton(x, y); break;
 	case OBJECT_TYPE_QUESTION_BLOCK: 
 	{
 		int itemID = atoi(tokens[3].c_str());
@@ -316,8 +320,21 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		int warp_direction = atoi(tokens[11].c_str());
 
 		int itemID = atoi(tokens[12].c_str());
+		if (warp_direction != 0)
+		{
+			int scene_destination = atoi(tokens[13].c_str());
+			float newX = (float)atof(tokens[14].c_str());
+			float newY = (float)atof(tokens[15].c_str());
 
-		obj = new CPipe(
+			obj = new CPipe(
+				x, y,
+				cell_width, cell_height, pipe_height,
+				face_direction, warp_direction,
+				sprite_id_begin_begin, sprite_id_end_begin,
+				sprite_id_begin_end, sprite_id_end_end,
+				itemID, scene_destination, newX, newY);
+		}
+		else obj = new CPipe(
 			x, y,
 			cell_width, cell_height, pipe_height, 
 			face_direction, warp_direction, 
@@ -448,6 +465,9 @@ void CPlayScene::Load()
 
 	f.close();
 
+	hud = new CHud();
+	UpdateCamera(0);
+
 	DebugOut(L"[INFO] Done loading scene  %s\n", sceneFilePath);
 }
 
@@ -458,25 +478,16 @@ void CPlayScene::Update(DWORD dt)
 	if (isPaused)
 		return;
 
-	if (player->IsCompleted())
+	if (player->IsFastTravel())
 	{
-		wait_time += dt;
-		if (wait_time >= SCENE_SWITCH_WAIT_TIME)
-		{
-			SwitchScene();
-		}
-		else
-		{
-			Congratulations();
-		}
-
+		FastTravel(dt);
 		return;
 	}
 
 	if (player == NULL) 
 		return;
 
-	timer -= dt;
+	timer -= dt;		
 
 	CCollision* collisionProcessor = CCollision::GetInstance();
 	CCollisionTracker* collisionTracker = collisionProcessor->GetTracker();
@@ -513,14 +524,14 @@ void CPlayScene::Update(DWORD dt)
 
 			collisionTracker->Allocate(obj);
 		}
-	}	
+	}
 
 	//solve collision with blocking objects first
 	for (auto& obj : movingColliders) //For moving objects
 		collisionProcessor->SolveCollisionWithBlocking(obj, dt, &blockingColliders);
 
 	for (auto& obj : staticColliders) //For static objects
-		collisionProcessor->SolveOverlap(obj, &movingColliders);
+		collisionProcessor->SolveOverlap(obj, dt, &movingColliders);
 
 	//solve collision with non-blocking objects
 	for (auto& obj : movingColliders)
@@ -532,25 +543,28 @@ void CPlayScene::Update(DWORD dt)
 	}
 
 	UpdateCamera(dt);
-
-	// UPDATE HUD	
-	UpdateHUD();	
+	// UPDATE HUD AFTER MARIO UPDATED
+	UpdateHUD();
 
 	PurgeDeletedObjects();
 }
 
-//void CPlayScene::UpdateRunTime(DWORD dt, bool isProgress)
+//void CPlayScene::CollectingScore()
 //{
-//	if (isProgress)
+//	timerPause = true;
+//	if (timer > 0)
 //	{
-//		if ((int)(p_run_time / P_PROGRESS_DELAY) < P_METER_COUNT) p_run_time += dt;
+//		if (timer >= 10000)
+//		{
+//			score = score + 10 * SCORE_PER_SECOND;
+//			timer -= 10000;
+//		}
+//		else if (timer >= 1000)
+//		{
+//			score = score + SCORE_PER_SECOND;
+//			timer -= 1000;
+//		}
 //	}
-//	else
-//	{
-//		if (p_run_time > 0)	p_run_time -= dt / 2;
-//		else if (p_run_time < 0) p_run_time = 0;
-//	}
-//	p_progress = p_run_time / P_PROGRESS_DELAY;
 //}
 
 void CPlayScene::Render()
@@ -579,7 +593,7 @@ void CPlayScene::Clear()
 	{
 		delete (*it);
 	}
-	objects.clear();
+	objects.clear();	
 }
 
 /*
@@ -591,10 +605,13 @@ void CPlayScene::Clear()
 void CPlayScene::Unload()
 {
 	for (int i = 0; i < objects.size(); i++)
-		delete objects[i];
+		if(objects[i] != player)
+			delete objects[i];
 
 	objects.clear();
 	player = NULL;
+
+	spawner.Clear();
 
 	delete background;
 	background = NULL;
@@ -628,6 +645,16 @@ int CPlayScene::Find(LPGAMEOBJECT obj)
 	return -1;
 }
 
+vector<LPGAMEOBJECT> CPlayScene::GetBrickObjects()
+{
+	vector<LPGAMEOBJECT> listOfBricks;
+	for (int i = 0; i < objects.size(); i++)
+	{
+		if (dynamic_cast<CBrick*>(objects[i])) listOfBricks.push_back(objects[i]);
+	}
+	return listOfBricks;
+}
+
 vector<LPGAMEOBJECT> CPlayScene::FilterByPlayer(float range)
 {
 	float player_x, player_y;
@@ -656,9 +683,12 @@ vector<LPGAMEOBJECT> CPlayScene::FilterByCam()
 	vector<LPGAMEOBJECT> process_list;
 	for (size_t i = 0; i < objects.size(); i++)
 	{
-		if (game->IsInCam(objects[i]))
+		if (objects[i] == player || game->IsInCam(objects[i]))
 			process_list.push_back(objects[i]);
 	}
+
+	if (process_list.size() == 1)
+		process_list.clear();
 
 	return process_list;
 }
@@ -681,13 +711,13 @@ void CPlayScene::UpdateCamera(DWORD dt)
 		float px, py;
 		player->GetPosition(px, py);
 	
-		cx = px - game->GetBackBufferWidth() / 2.0f;
+		cx = px - CAM_WIDTH / 2.0f;
 		cx = fmax(0.0f, cx);
 		//cx = fmin();
 
 		//if(player->IsFlying())
 		cy = fmin(py - CAM_FOLLOW_HEIGHT, cy);	//Move cam to follow flying
-		cy = fmax(py - game->GetBackBufferHeight() / 2.0f, cy); //Move cam to follow falling
+		cy = fmax(py - CAM_HEIGHT / 2.0f, cy); //Move cam to follow falling
 		cy = fmax(0.0f, cy);
 		cy = fmin(CAM_MAX_Y, cy);
 	}
@@ -754,15 +784,35 @@ void CPlayScene::Congratulations()
 	}
 }
 
-void CPlayScene::SwitchScene()
+void CPlayScene::SwitchScene(int next_level)
 {
-	if (next_level_scene != id)	CGame::GetInstance()->InitiateSwitchScene(next_level_scene);
+	if (next_level_scene != id)	CGame::GetInstance()->InitiateSwitchScene(next_level);
 
 	if (next_level_scene == 3)
 	{
 		float cx, cy;
 		CGame::GetInstance()->GetCamPos(cx, cy);
 		CGame::GetInstance()->SetCamPos(0, cy);
+	}
+}
+
+void CPlayScene::FastTravel(DWORD dt)
+{
+	if (player->IsInGround())
+	{
+		SwitchScene(player->GetDestination());
+	}
+	else
+	{
+		wait_time += dt;
+		if (wait_time >= SCENE_SWITCH_WAIT_TIME)
+		{
+			SwitchScene(next_level_scene);
+		}
+		else
+		{
+			Congratulations();
+		}
 	}
 }
 
