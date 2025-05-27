@@ -1,11 +1,6 @@
 #pragma once
 
-#include "Game.h"
-#include "PlayScene.h"
-#include "HUD.h"
 #include "GameObject.h"
-#include "Animation.h"
-#include "Animations.h"
 
 #define ID_ANI_BACKGROUND -10000
 
@@ -41,8 +36,8 @@ public:
 	}
 };
 
-#define REWARD_WIDTH 19
-#define REWARD_HEIGHT 26
+#define REWARD_WIDTH 18
+#define REWARD_HEIGHT 18
 
 #define REWARD_FLOATING_SPEED 0.05f
 
@@ -61,9 +56,13 @@ public:
 		type = 3;
 		aniID = ID_ANI_REWARD_BASE - this->type;
 		SetBoundingBox(REWARD_WIDTH, REWARD_HEIGHT);
-	}
-	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 
+		SetState(STATE_LIVE);
+	}
+
+	int IsCollidable() { return state != STATE_DIE; }
+	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+	void OnReactionTo(LPCOLLISIONEVENT e, int action);
 	void Switch(bool run) { this->run = run; }
 	bool IsRunning() { return this->run; }
 	int GetType() { return type; }
@@ -79,16 +78,7 @@ protected:
 	int cellWidth, cellHeight;
 	int spriteIdBeginBegin, spriteIdMiddleBegin, spriteIdEndBegin;
 	int spriteIdBeginMiddle, spriteIdMiddleMiddle, spriteIdEndMiddle;
-	int spriteIdBeginEnd, spriteIdMiddleEnd, spriteIdEndEnd;
-
-	CReward* reward;
-
-	CClearText* courseClear;
-	CClearText* youGotACard;
-	CHUDCard* card;
-
-	bool scene_switch_ready;
-	float wait_time;
+	int spriteIdBeginEnd, spriteIdMiddleEnd, spriteIdEndEnd;	
 public:
 	CRandomCard(float x, float y,
 		int sprite_id_begin_begin, int sprite_id_middle_begin, int sprite_id_end_begin,
@@ -107,29 +97,9 @@ public:
 		this->spriteIdBeginEnd = sprite_id_begin_end;
 		this->spriteIdMiddleEnd = sprite_id_middle_end;
 		this->spriteIdEndEnd = sprite_id_end_end;
-
-		reward = new CReward(x + cellWidth, y - cellHeight);
-		LPPLAYSCENE playScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
-		playScene->Insert(reward, -1);
-
-		scene_switch_ready = false;
-		wait_time = 0;
 	}
 	void Render();
-	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 	void GetBoundingBox(float& l, float& t, float& r, float& b);
-
-	int IsCollidable() { return 1; }
-	int IsBlocking() { return 0; }
-
-	void Switch(bool run);
-
-	~CRandomCard() 
-	{
-		delete reward;
-		if (courseClear) delete courseClear;
-		if (youGotACard) delete youGotACard;
-	}
 };
 
 class CEndLevel : public CGameObject {

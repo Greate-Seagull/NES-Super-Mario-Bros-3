@@ -6,6 +6,7 @@
 
 #define PIPE_WIDTH 30.0f
 #define PIPE_BBOX_WIDTH 30.0f
+#define PIPE_BBOX_INSIDE_WIDTH 16.0f
 
 class CPipe : public CBlock {
 protected:
@@ -56,15 +57,20 @@ public:
 		TriggerItem();
 	}
 	void Render();
-	void RenderBoundingBox();
+	void RenderBoundingBox();	
 
-	void Reaction(CGameObject* by_another, int action);
-	int GetWarpDirection() { return warp_direction; }
-	void GetNewWarpPosition(float& newX, float& newY) { newX = this->newX; newY = this->newY; }
+	void OnCollisionWith(LPCOLLISIONEVENT e);
+
+	void OnReactionTo(LPCOLLISIONEVENT e, int action);
 
 	void GetBoundingBox(float& left, float& top, float& right, float& bottom);
+	void GetBoundingBoxInside(float& left, float& top, float& right, float& bottom);
 
 	void TakeItem();
 	void UseDefaultItemPosition();
 	void TriggerItem();
+
+	int GetDestination() { return scene_destination; }
+	float GetDestinationX() { return newX; }
+	float GetDestinationY() { return newY; }
 };

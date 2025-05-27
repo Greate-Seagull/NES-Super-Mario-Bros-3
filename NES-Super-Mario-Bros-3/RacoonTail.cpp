@@ -10,7 +10,7 @@ CRacoonTail::CRacoonTail(float x, float y) :
 
 void CRacoonTail::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
-	CCollision::GetInstance()->SolveOverlap(this, coObjects);
+	CCollision::GetInstance()->SolveOverlap(this, dt, coObjects);
 }
 
 void CRacoonTail::Render()
@@ -28,10 +28,10 @@ void CRacoonTail::OnCollisionWith(LPCOLLISIONEVENT e)
 
 void CRacoonTail::OnCollisionWithCreature(LPCOLLISIONEVENT e)
 {
-	Destroy(e->obj);
+	Destroy(e);
 }
 
 void CRacoonTail::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 {
-	Destroy(e->obj);
+	Destroy(e);
 }

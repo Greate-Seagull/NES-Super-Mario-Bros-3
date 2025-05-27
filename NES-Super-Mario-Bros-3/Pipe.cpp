@@ -75,6 +75,16 @@ void CPipe::RenderBoundingBox()
 	//CGame::GetInstance()->Draw(x - cx, y - cy, bbox, &rect, BBOX_ALPHA);
 }
 
+void CPipe::OnCollisionWith(LPCOLLISIONEVENT e)
+{
+	if (CMario* mario = dynamic_cast<CMario*>(e->obj))
+	{
+		mario->OnReactionTo(e, ACTION_TOUCH);
+	}
+	else
+		e->obj->OnReactionTo(e, ACTION_ATTACK_LEVEL_3);
+}
+
 void CPipe::GetBoundingBox(float& l, float& t, float& r, float& b)
 {
 	/*if (this->face_direction == 1)
@@ -98,24 +108,30 @@ void CPipe::GetBoundingBox(float& l, float& t, float& r, float& b)
 	b = t + bbox_height - 1.0f;
 }
 
-void CPipe::Reaction(CGameObject* by_another, int action)
+void CPipe::GetBoundingBoxInside(float& l, float& t, float& r, float& b)
 {
-	switch (action)
+	l = x;
+	t = y + cell_height / 2.0f - bbox_height;
+	r = l + PIPE_BBOX_INSIDE_WIDTH;
+	b = t + bbox_height - 1.0f;
+}
+
+void CPipe::OnReactionTo(LPCOLLISIONEVENT e, int action)
+{
+	if (e->ny * warp_direction < 0)
 	{
-	case ACTION_TOUCH:
-		if (dynamic_cast<CMario*>(by_another))
+		if (CMario* mario = dynamic_cast<CMario*>(e->src_obj))
 		{
-			float mX, mY, mLife;
+			float mario_left, mario_top, mario_right, mario_bot;
+			mario->GetBoundingBox(mario_left, mario_top, mario_right, mario_bot);
 
-			CMario* m = (CMario*)by_another;
-			m->GetPosition(mX, mY);
-			mLife = m->GetLife();
+			float pipe_left, pipe_top, pipe_right, pipe_bot;
+			this->GetBoundingBoxInside(pipe_left, pipe_top, pipe_right, pipe_bot);
 
-			if (mX >= this->x && mX <= this->x + PIPE_WIDTH / 2)
+			if (mario_left > pipe_left && mario_right < pipe_right)
 			{
-				m->PipeEntry(this->warp_direction, this->scene_destination);
-				LPPLAYSCENE curr = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
-				curr->LoadWarpedMario(newX, newY, mLife, this->warp_direction);
+				e->Reverse();
+				mario->OnReactionTo(e, ACTION_TOUCH);
 			}
 		}
 	}
@@ -156,6 +172,9 @@ void CPipe::TriggerItem()
 		LPPLAYSCENE ps = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
 		ps->Insert(item, ps->Find(this));
 
-		item->Reaction(this, ACTION_CARRY);
+		CCollisionEventPool* pool = CCollision::GetInstance()->GetPool();
+		LPCOLLISIONEVENT e = pool->Allocate(0.0f, nx, ny, 0.0f, 0.0f, item, this);
+		item->OnReactionTo(e, ACTION_CARRY);
+		pool->VirtualDelete();
 	}
 }

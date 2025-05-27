@@ -26,7 +26,7 @@ public:
 
 	void Reaction_Brick_To_Coin();
 	void Reaction_Coin_To_Brick();
-	void Reaction(CGameObject* by_another, int action);
+	void OnReactionTo(CGameObject* by_another, int action);
 
 	int IsCollidable() { return 1; }
 	int IsBlocking() { return 0; }
