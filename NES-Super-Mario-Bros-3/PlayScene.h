@@ -79,6 +79,9 @@ public:
 	void BeginCard();
 	void InsertCard(int type);
 
+	void InsertScore(int score_value);
+	void InsertScore(float x, float y, int score_value);
+
 	void CollectingScore();
 	void ToggleSceneSwitch();
 };

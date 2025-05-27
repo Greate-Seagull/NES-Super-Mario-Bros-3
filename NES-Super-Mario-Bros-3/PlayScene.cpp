@@ -291,6 +291,9 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 			x = newMarioX;
 			y = newMarioY;
 		}
+
+		if (newMarioLife == MARIO_LEVEL_BIG || newMarioLife == MARIO_LEVEL_RACOON)
+			y = y - 14;
 		obj = new CMario(x,y); 
 		player = (CMario*)obj;
 		player->SetLife(newMarioLife);
@@ -1117,6 +1120,21 @@ void CPlayScene::UpdateCamera(DWORD dt)
 	}
 
 	CGame::GetInstance()->SetCamPos(cx, cy);
+}
+
+void CPlayScene::InsertScore(int score_value)
+{
+	score += score_value;
+}
+
+void CPlayScene::InsertScore(float x, float y, int score_value)
+{
+	CScore* scoreUI = new CScore(x, y, score_value);
+	int playerIndex = Find(player);
+	Insert(scoreUI, playerIndex - 1);
+
+	if (score_value == 10000) InsertScore(0);
+	else InsertScore(score_value);
 }
 
 void CPlayScene::PurgeDeletedObjects()

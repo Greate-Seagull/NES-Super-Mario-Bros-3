@@ -2,7 +2,10 @@
 #include "Mario.h"
 
 #include "Block.h"
+#include "KoopaTroopa.h"
+#include "RacoonTail.h"
 #include "Platform.h"
+#include "PlayScene.h"
 
 CGoomba::CGoomba(float x, float y):
 	CCreature(x, y)
@@ -60,6 +63,13 @@ void CGoomba::OnCollisionWithCreature(LPCOLLISIONEVENT e)
 
 void CGoomba::ReactionToAttack1(CGameObject* by_another)
 {
+	if (dynamic_cast<CMario*>(by_another))
+	{
+		CMario* m = (CMario*)by_another;
+		float mX, mY;
+		m->GetPosition(mX, mY);
+		m->InsertFlyingScore(mX, mY - 16);
+	}
 	Die();
 }
 
@@ -70,6 +80,12 @@ void CGoomba::ReactionToAttack2(CGameObject* by_another)
 
 void CGoomba::ReactionToAttack3(CGameObject* by_another)
 {
+	if (dynamic_cast<CKoopaTroopa*>(by_another)
+		|| dynamic_cast<CRacoonTail*>(by_another))
+	{
+		LPPLAYSCENE currentScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+		currentScene->InsertScore(x, y - 16, 100);
+	}
 	Die();
 }
 

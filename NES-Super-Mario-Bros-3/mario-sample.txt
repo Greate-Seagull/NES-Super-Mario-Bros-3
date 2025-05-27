@@ -19,6 +19,7 @@ height	240
 -25	textures\goal_roulette.png
 -20	textures\HUD-inventory.png
 -10	textures\background.jpg
+-5	textures\HUD-font.png
 0	textures\mario_left.png
 1	textures\mario_right.png
 10	textures\enemies_left.png

@@ -39,6 +39,13 @@ void CParagoomba::ReactionToAttack1(CGameObject* by_another)
 	switch (state)
 	{
 	case STATE_LIVE:
+		if (dynamic_cast<CMario*>(by_another))
+		{
+			CMario* m = (CMario*)by_another;
+			float mX, mY;
+			m->GetPosition(mX, mY);
+			m->InsertFlyingScore(mX, mY - 16);
+		}
 		UnderAttack((CHarmfulObject*)by_another);
 		LoseWings();
 		SetState(PARAGOOMBA_STATE_GOOMBA);

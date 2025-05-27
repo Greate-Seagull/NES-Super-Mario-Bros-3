@@ -424,6 +424,10 @@ void CKoopaTroopa::UnderAttack(CGameObject* by_another)
 {
 	if (CMario* mario = dynamic_cast<CMario*>(by_another))
 	{
+		float mX, mY;
+		mario->GetPosition(mX, mY);
+		mario->InsertFlyingScore(mX, mY - 16);
+
 		CCreature::UnderAttack(mario);
 	}
 }

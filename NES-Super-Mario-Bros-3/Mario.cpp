@@ -29,6 +29,8 @@ bool finishedExitingPipe = false;
 
 int sceneDestination;
 
+int flyingPoint = 100;
+
 CMario::CMario(float x, float y):
 	CCreature(x, y)
 {
@@ -90,6 +92,10 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		Dying(dt);
 		break;
 	}
+
+	if (this->isOnGround) flyingPoint = 100;
+
+	DebugOut(L"%d\n", flyingPoint);
 }
 
 void CMario::Living(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
@@ -193,6 +199,7 @@ void CMario::OnCollisionWithCoin(LPCOLLISIONEVENT e)
 	Touch(e->obj);
 	LPPLAYSCENE currentScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
 	currentScene->CollectCoin();
+	currentScene->InsertScore(50);
 }
 
 void CMario::OnCollisionWithPortal(LPCOLLISIONEVENT e)
@@ -1131,4 +1138,27 @@ void CMario::SetState(int state)
 			break;
 		default: this->state = state;
 	}
+}
+
+void CMario::IncreaseFlyingPoint()
+{
+	switch (flyingPoint)
+	{
+		case 100: flyingPoint = 200; break;
+		case 200: flyingPoint = 400; break;
+		case 400: flyingPoint = 800; break;
+		case 800: flyingPoint = 1000; break;
+		case 1000: flyingPoint = 2000; break;
+		case 2000: flyingPoint = 4000; break;
+		case 4000: flyingPoint = 8000; break;
+		case 8000: flyingPoint = 10000; break;
+	}
+}
+
+void CMario::InsertFlyingScore(float x, float y)
+{
+	LPPLAYSCENE curr = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+	curr->InsertScore(x, y, flyingPoint);
+
+	IncreaseFlyingPoint();
 }

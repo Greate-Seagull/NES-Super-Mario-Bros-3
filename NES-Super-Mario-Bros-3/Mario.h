@@ -219,4 +219,7 @@ public:
 	void PipeExitDown(DWORD dt);
 
 	void SetFootPlatform(bool);
+
+	void IncreaseFlyingPoint();
+	void InsertFlyingScore(float x, float y);
 };
