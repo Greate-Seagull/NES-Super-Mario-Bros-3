@@ -90,6 +90,8 @@ void CGoomba::OnReactionToAttack1(LPCOLLISIONEVENT e)
 		m->GetPosition(mX, mY);
 		m->InsertFlyingScore(mX, mY - 16);
 	}*/
+	e->Reverse();
+	Touch(e);
 	Die();
 }
 

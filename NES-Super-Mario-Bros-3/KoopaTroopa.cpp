@@ -309,14 +309,14 @@ void CKoopaTroopa::OnReactionToCarrying(LPCOLLISIONEVENT e)
 	switch (state)
 	{
 	case STATE_LIVE:
+		AgainstControl();
 		e->Reverse();
 		Attack(e);
-		AgainstControl();
 		break;
 	case KOOPA_STATE_ROLL:
+		AgainstControl();
 		e->Reverse();
 		Destroy(e);
-		AgainstControl();
 		break;
 	case KOOPA_STATE_POP:
 	case KOOPA_STATE_HIDE:
@@ -342,7 +342,7 @@ void CKoopaTroopa::OnReactionToTouching(LPCOLLISIONEVENT e)
 		else
 		{
 			nx = -nx;
-			vx = nx * abs(vx);
+			vx = nx * fabs(vx);
 		}
 		break;
 	case KOOPA_STATE_POP:
@@ -366,13 +366,13 @@ void CKoopaTroopa::OnReactionToAttack1(LPCOLLISIONEVENT e)
 	case KOOPA_STATE_HIDE:
 		if (CMario* mario = dynamic_cast<CMario*>(e->src_obj))
 		{
-			e->Reverse();
-			Touch(e);
 			SetNx(this-> x < e->src_obj->GetX() ? DIRECTION_LEFT: DIRECTION_RIGHT);
 			SetState(KOOPA_STATE_ROLL);
 		}
 		break;
 	default:
+		e->Reverse();
+		Touch(e);
 		ny = -1 * e->ny;
 		SetState(KOOPA_STATE_HIDE);
 		Stop();

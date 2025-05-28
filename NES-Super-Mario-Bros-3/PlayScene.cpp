@@ -723,8 +723,7 @@ void CPlayScene::UpdateCamera(DWORD dt)
 		cx = fmax(0.0f, cx);
 		//cx = fmin();
 
-		//if(player->IsFlying())
-		cy = fmin(py - CAM_FOLLOW_HEIGHT, cy);	//Move cam to follow flying
+		if (player->IsFlying()) cy = fmin(py - CAM_FOLLOW_HEIGHT, cy);	//Move cam to follow flying
 		cy = fmax(py - CAM_HEIGHT / 2.0f, cy); //Move cam to follow falling
 		cy = fmax(0.0f, cy);
 		cy = fmin(CAM_MAX_Y, cy);

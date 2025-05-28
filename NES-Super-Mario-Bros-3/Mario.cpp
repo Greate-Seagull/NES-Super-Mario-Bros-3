@@ -84,9 +84,8 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		break;
 	}
 
-	if (this->isOnGround) flyingPoint = 100;
-
-	DebugOut(L"%d\n", flyingPoint);
+	//if (this->isOnGround) flyingPoint = 100;
+	DebugOutTitle(L"%d, %d", weapon == nullptr, special_action);
 }
 
 void CMario::Living(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
@@ -130,8 +129,6 @@ void CMario::OnCollisionWith(LPCOLLISIONEVENT e)
 		OnCollisionWithReward(e);
 	/*else if (dynamic_cast<CDeadStateTrigger*>(e->obj))
 		OnCollisionWithDeadTrigger(e);*/
-	/*else if (dynamic_cast<CRandomCard*>(e->obj))
-		OnCollisionWithRandomCard(e);*/
 }
 
 void CMario::OnReactionToTouching(LPCOLLISIONEVENT e)
@@ -141,10 +138,10 @@ void CMario::OnReactionToTouching(LPCOLLISIONEVENT e)
 	if (dynamic_cast<CEnemy*>(e->src_obj))
 	{
 		e->Reverse();
-		if (keyState->IsHold(VK_A))
-			Carry(e);
-		else
-			Kick();
+
+		if (e->ny < 0) BackJump();
+		else if (keyState->IsHold(VK_A)) Grab(e);
+		else Kick();
 	}
 	else if (dynamic_cast<CCoin*>(e->src_obj))
 		coins++;
@@ -188,10 +185,7 @@ void CMario::OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e)
 	CHarmfulObject* enemy = dynamic_cast<CHarmfulObject*>(e->obj);
 
 	if (e->ny < 0)
-	{
-		CHarmfulObject::Attack(e);
-		BackJump();
-	}
+		CHarmfulObject::Attack(e);		
 	else if (keyState->IsHold(VK_A) && Grab(e)); //case collision on the left or right or below
 	else Touch(e);
 }
@@ -455,7 +449,7 @@ bool CMario::SetSpecialAction(int actionID)
 		UntriggerTail();
 		break;
 	case ID_ANI_CARRY:
-		CCreature::Drop();
+		Drop();
 		break;
 	case ID_ANI_INTO_THE_PIPE:
 		nx = 0; ny = 0; nz = 0;
@@ -858,6 +852,7 @@ bool CMario::Tosh()
 	LPCOLLISIONEVENT e = pool->Allocate(0.0f, nx, ny, nx, ny, weapon, this);
 	Touch(e);
 	pool->VirtualDelete();
+	//Drop();
 	return Kick();
 }
 
