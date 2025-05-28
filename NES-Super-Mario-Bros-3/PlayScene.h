@@ -83,6 +83,8 @@ public:
 	void SwitchScene(int next_level);
 
 	void FastTravel(DWORD dt);
+	/*void InsertScore(int score_value);
+	void InsertScore(float x, float y, int score_value);*/
 };
 
 typedef CPlayScene* LPPLAYSCENE;

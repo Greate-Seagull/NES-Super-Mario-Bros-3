@@ -233,6 +233,9 @@ public:
 
 	void SetFootPlatform(bool);
 
+	/*void IncreaseFlyingPoint();
+	void InsertFlyingScore(float x, float y);*/
+
 	int GetMomentum() { return momentum; }
 	int GetCoins() { return coins; }
 	int GetScores() { return scores; }

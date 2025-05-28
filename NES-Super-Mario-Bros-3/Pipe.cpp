@@ -77,9 +77,9 @@ void CPipe::RenderBoundingBox()
 
 void CPipe::OnCollisionWith(LPCOLLISIONEVENT e)
 {
-	if (CMario* mario = dynamic_cast<CMario*>(e->obj))
+	if (warp_direction)
 	{
-		mario->OnReactionTo(e, ACTION_TOUCH);
+		e->obj->OnReactionTo(e, ACTION_TOUCH);
 	}
 	else
 		e->obj->OnReactionTo(e, ACTION_ATTACK_LEVEL_3);

@@ -1,6 +1,7 @@
 #include "Coin.h"
 
 #include "Mario.h"
+#include "PlayScene.h"
 
 void CCoin::Prepare(DWORD dt)
 {
@@ -16,6 +17,8 @@ void CCoin::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 
 		if (y >= originalY)
 		{
+			/*LPPLAYSCENE currScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+			currScene->InsertScore(x, y - 16, 100);*/
 			Delete();
 		}
 	}

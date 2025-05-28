@@ -9,6 +9,14 @@ void CBackground::GetBoundingBox(float& l, float& t, float& r, float& b) {
 	b = 0;
 }
 
+void CScore::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+{
+	time_appearance += dt;
+	y -= SCORE_FLYING_SPEED * dt;
+	if (time_appearance > SCORE_APPEARANCE_TIME)
+		Delete();
+}
+
 void CEndLevel::Render()
 {
 	if (this->height <= 0 || this->width <= 0) return;

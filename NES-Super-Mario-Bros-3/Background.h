@@ -16,6 +16,28 @@ public:
 	void GetBoundingBox(float& l, float& t, float& r, float& b);
 };
 
+#define ID_ANI_SCORE_BASE -30
+#define SCORE_APPEARANCE_TIME 750
+#define SCORE_FLYING_SPEED 0.05
+
+#define SCORE_BBOX_WIDTH 16
+#define SCORE_BBOX_HEIGHT 8
+
+class CScore : public CGameObject {
+protected:
+	int score_value;
+	int time_appearance;
+public:
+	CScore(float x, float y, int score_value) : CGameObject(x, y) 
+	{
+		this->score_value = score_value;
+		aniID = ID_ANI_SCORE_BASE - this->score_value;
+		time_appearance = 0;
+		SetBoundingBox(SCORE_BBOX_WIDTH, SCORE_BBOX_HEIGHT);
+	}
+	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+};
+
 #define COURSE_CLEAR_TEXT -300
 #define YOU_GOT_A_CARD_TEXT -301
 
