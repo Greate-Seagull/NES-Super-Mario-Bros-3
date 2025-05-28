@@ -171,6 +171,9 @@
     <ClCompile Include="PButton.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RedKoopaTroopa.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h">
@@ -333,6 +336,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PButton.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RedKoopaTroopa.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

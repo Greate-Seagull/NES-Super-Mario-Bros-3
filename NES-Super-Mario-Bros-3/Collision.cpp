@@ -1,6 +1,6 @@
 #include "Collision.h"
 #include "GameObject.h"
-#include "SuperLeaf.h"
+#include "PButton.h"
 
 #include "debug.h"
 
@@ -761,6 +761,9 @@ void CCollision::SolveCollisionWithNonBlocking(LPGAMEOBJECT objSrc, DWORD dt, ve
 	{
 		LPCOLLISIONEVENT e = eventPool.Get(i);
 		if (e->isDeleted) continue;
+
+		if (dynamic_cast<CPButton*>(e->obj))
+			int t = 0;
 
 		objSrc->OnCollisionWith(e);
 

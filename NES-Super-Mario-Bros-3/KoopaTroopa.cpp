@@ -4,9 +4,11 @@
 #include "debug.h"
 #include "PlayScene.h"
 
-CKoopaTroopa::CKoopaTroopa(float x, float y):
+CKoopaTroopa::CKoopaTroopa(float x, float y, bool haveWings):
 	CEnemy(x, y)
 {	
+	this->bornWithWings = haveWings;
+
 	Refresh();
 }
 
@@ -50,6 +52,9 @@ void CKoopaTroopa::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		Poping(dt);
 		break;
 	}
+
+	if (wings)
+		Flutter();
 }
 
 void CKoopaTroopa::Living(DWORD dt)
@@ -74,19 +79,6 @@ void CKoopaTroopa::Poping(DWORD dt)
 
 void CKoopaTroopa::OnNoCollisionWithBlocking(DWORD dt)
 {	
-	switch (state)
-	{
-	case STATE_LIVE:
-		if (isOnGround)
-		{
-			Patrol();
-			x = on_ground_x;
-			y = on_ground_y;	
-			vy = 0.0f;
-		}
-		break;
-	}
-
 	isOnGround = false;
 }
 
@@ -116,6 +108,9 @@ void CKoopaTroopa::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 			isOnGround = true;
 			on_ground_x = x;
 			on_ground_y = y;
+
+			if (wings)
+				vy = WINGS_JUMP_VY;
 		}
 	}
 
@@ -139,6 +134,9 @@ void CKoopaTroopa::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 			isOnGround = true;
 			on_ground_x = x;
 			on_ground_y = y;
+
+			if (wings)
+				vy = WINGS_JUMP_VY;
 		}
 	}
 
@@ -155,7 +153,7 @@ void CKoopaTroopa::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 		Bounce();
 		break;*/
 	case KOOPA_STATE_ROLL:
-		Attack(e);
+		Destroy(e);
 		break;
 	}
 }
@@ -200,8 +198,30 @@ void CKoopaTroopa::Refresh()
 	SetBoundingBox(KOOPA_BBOX_WIDTH_LIVE, KOOPA_BBOX_HEIGHT_FOOT_1);
 	maxVx = KOOPA_VX;
 	vy = KOOPA_VY;
+	if (bornWithWings) GrowWings();
 	SetState(STATE_LIVE);
 	life = KOOPA_LIFE;
+}
+
+void CKoopaTroopa::GrowWings()
+{
+	if (wings == nullptr)
+		wings = new CWing(x, y);
+}
+
+void CKoopaTroopa::LoseWings()
+{
+	if (wings)
+	{
+		delete wings;
+		wings = nullptr;
+	}
+}
+
+void CKoopaTroopa::Flutter()
+{
+	wings->SetPosition(x - nx * WINGS_X_OFFSET, y + WINGS_Y_OFFSET);
+	wings->SetNx(this->nx * -1);
 }
 
 void CKoopaTroopa::Render()
@@ -209,6 +229,9 @@ void CKoopaTroopa::Render()
 	ChangeAnimation();
 
 	CAnimations::GetInstance()->Get(aniID)->Render(x, y);
+
+	if (wings)
+		wings->Render();
 	//RenderBoundingBox();
 }
 
@@ -260,7 +283,12 @@ void CKoopaTroopa::ChangeAnimation()
 			break;
 	}
 
-	aniID = ANI_ID_KOOPA + action + direction;
+	aniID = GetObjectAniID() + action + direction;
+}
+
+int CKoopaTroopa::GetObjectAniID()
+{
+	return ANI_ID_KOOPA;
 }
 
 void CKoopaTroopa::SetState(int state)
@@ -373,9 +401,15 @@ void CKoopaTroopa::OnReactionToAttack1(LPCOLLISIONEVENT e)
 	default:
 		e->Reverse();
 		Touch(e);
-		ny = -1 * e->ny;
-		SetState(KOOPA_STATE_HIDE);
-		Stop();
+
+		if (wings)
+			LoseWings();
+		else
+		{
+			ny = -1 * e->ny;
+			SetState(KOOPA_STATE_HIDE);
+			Stop();
+		}
 		break;
 	}
 
@@ -383,13 +417,18 @@ void CKoopaTroopa::OnReactionToAttack1(LPCOLLISIONEVENT e)
 
 void CKoopaTroopa::OnReactionToAttack2(LPCOLLISIONEVENT e)
 {
-	SetState(KOOPA_STATE_HIDE);
+	if (wings)
+		LoseWings();
+	else
+		SetState(KOOPA_STATE_HIDE);
 }
 
 void CKoopaTroopa::OnReactionToAttack3(LPCOLLISIONEVENT e)
 {
+	if (wings)
+		LoseWings();
 	SetState(KOOPA_STATE_HIDE);
-	CHarmfulObject::OnReactionToAttack3(e);
+	CHarmfulObject::OnReactionToAttack3(e);	
 }
 
 void CKoopaTroopa::UnderAttack(CGameObject* by_another)

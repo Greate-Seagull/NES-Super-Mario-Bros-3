@@ -25,10 +25,8 @@ protected:
 	float origin_y;
 
 public:
-	CQuestionBlock(float x, float y, int itemID = OBJECT_TYPE_COIN) : CBlock(x, y)
+	CQuestionBlock(float x, float y, int itemID = OBJECT_TYPE_COIN) : CBlock(x, y, itemID)
 	{
-		this->itemID = itemID;
-
 		this->origin_y = y;
 
 		SetState(STATE_LIVE);

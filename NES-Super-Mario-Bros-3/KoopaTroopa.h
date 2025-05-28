@@ -1,14 +1,15 @@
 #pragma once
 
 #include "Enemy.h"
+#include "Wings.h"
 
 #define KOOPA_LIFE 2.0f
 
 #define KOOPA_BBOX_HEIGHT_FOOT_1	26.0f
 #define KOOPA_BBOX_HEIGHT_FOOT_2	27.0f
-#define KOOPA_BBOX_HEIGHT_HIDE		16.0f
+#define KOOPA_BBOX_HEIGHT_HIDE		12.0f
 #define KOOPA_BBOX_WIDTH_LIVE			8.0f//15.0f
-#define KOOPA_BBOX_WIDTH_HIDE			16.0f//15.0f
+#define KOOPA_BBOX_WIDTH_HIDE			14.0f//15.0f
 
 #define KOOPA_VX 0.03125f
 #define KOOPA_VY 0.0f
@@ -25,27 +26,35 @@
 #define KOOPA_STATE_ROLL 2
 #define KOOPA_STATE_POP 3
 
-#define ANI_ID_KOOPA 24000
+//WINGS COMPONENT ----------------------------
+#define WINGS_X_OFFSET 4.0f
+#define WINGS_Y_OFFSET -8.0f
+
+#define WINGS_JUMP_VY -0.3f
+//--------------------------------------------
+
+#define ANI_ID_KOOPA 22000
 #define ANI_ID_KOOPA_WALK 0
 #define ANI_ID_KOOPA_HIDE 10
 #define ANI_ID_KOOPA_ROLL 30
 #define ANI_ID_KOOPA_POP 50
 
-#define ANI_ID_KOOPA_LEFT 0
-#define ANI_ID_KOOPA_RIGHT 1
-#define ANI_ID_KOOPA_DOWN 0
-#define ANI_ID_KOOPA_UP 10
-
 class CKoopaTroopa : public CEnemy
 {
+protected:
 	//recovering
 	int recovering_time;
 
 	//
 	float on_ground_y;
 	float on_ground_x;
+
+	//WINGS COMPONENT ----------------------------
+	bool bornWithWings;
+	CWing* wings;
+	//--------------------------------------------
 public:
-	CKoopaTroopa(float x, float y);
+	CKoopaTroopa(float x, float y, bool haveWings = false);
 
 	virtual void Prepare(DWORD dt);
 
@@ -74,6 +83,7 @@ public:
 
 	virtual void Render();
 	virtual void ChangeAnimation();
+	virtual int GetObjectAniID();
 
 	virtual void SetState(int state);
 
@@ -86,4 +96,10 @@ public:
 	void Patrol();
 
 	virtual void Refresh();
+
+	//WINGS COMPONENT ----------------------------
+	virtual void GrowWings();
+	virtual void LoseWings();
+	virtual void Flutter();
+	//--------------------------------------------
 };

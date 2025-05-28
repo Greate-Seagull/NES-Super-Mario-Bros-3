@@ -168,6 +168,7 @@
     <ClCompile Include="Portal.cpp" />
     <ClCompile Include="QuestionBlock.cpp" />
     <ClCompile Include="RacoonTail.cpp" />
+    <ClCompile Include="RedKoopaTroopa.cpp" />
     <ClCompile Include="SampleKeyEventHandler.cpp" />
     <ClCompile Include="Scence.cpp" />
     <ClCompile Include="SpawnManager.cpp" />
@@ -223,6 +224,7 @@
     <ClInclude Include="Portal.h" />
     <ClInclude Include="QuestionBlock.h" />
     <ClInclude Include="RacoonTail.h" />
+    <ClInclude Include="RedKoopaTroopa.h" />
     <ClInclude Include="SampleKeyEventHandler.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SpawnManager.h" />

@@ -19,6 +19,7 @@ protected:
 	float originalY;
 
 	bool isContained;
+	bool isTransformed;
 public:
 	CCoin(float x, float y) : CMovableObject(x, y) 
 	{
@@ -60,4 +61,6 @@ public:
 	bool IsUnderOriginal();
 
 	void SetContained() { isContained = true; }
+	void SetTransformed() { isTransformed = true; }
+	bool IsTransformed() { return isTransformed; }
 };

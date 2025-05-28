@@ -85,7 +85,6 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	}
 
 	//if (this->isOnGround) flyingPoint = 100;
-	DebugOutTitle(L"%d, %d", weapon == nullptr, special_action);
 }
 
 void CMario::Living(DWORD dt, vector<LPGAMEOBJECT>* coObjects)

@@ -77,7 +77,7 @@ public:
 
 	void RenderCongratulations();
 
-	vector<LPGAMEOBJECT> GetBrickObjects();
+	vector<LPGAMEOBJECT> GetObjects() { return objects; }
 
 	void Congratulations();
 	void SwitchScene(int next_level);

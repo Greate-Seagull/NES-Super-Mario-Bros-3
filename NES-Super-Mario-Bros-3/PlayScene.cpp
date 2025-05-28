@@ -12,7 +12,7 @@
 #include "Platform.h"
 #include "Paragoomba.h"
 #include "VenusFireTrap.h"
-#include "KoopaTroopa.h"
+#include "RedKoopaTroopa.h"
 #include "SuperMushroom.h"
 #include "SuperLeaf.h"
 #include "Brick.h"
@@ -263,13 +263,19 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		}
 		break;
 	case OBJECT_TYPE_GOOMBA: 
-		obj = new CGoomba(x,y); 
+	{
+		int haveWings = atoi(tokens[3].c_str());
+		obj = new CGoomba(x,y,haveWings);
 		spawner.Add(obj);
 		break;
+	}
 	case OBJECT_TYPE_PARAGOOMBA: 
-		obj = new CParagoomba(x,y); 
+	{
+		int haveWings = atoi(tokens[3].c_str());
+		obj = new CParagoomba(x,y,haveWings); 
 		spawner.Add(obj);
 		break;
+	}
 	case OBJECT_TYPE_VENUS_FIRE_TRAP: 
 		obj = new CVenusFireTrap(x, y); 
 		spawner.Add(obj);
@@ -277,11 +283,27 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	case OBJECT_TYPE_PIRANHA_PLANT: 
 		obj = new CPiranhaPlant(x, y); 
 		break;
-	case OBJECT_TYPE_RED_KOOPA_TROOPA: 
-		obj = new CKoopaTroopa(x, y); 
+	case OBJECT_TYPE_KOOPA:
+	{
+		int haveWings = atoi(tokens[3].c_str());
+		obj = new CKoopaTroopa(x, y, haveWings);
 		spawner.Add(obj);
 		break;
-	case OBJECT_TYPE_BRICK: obj = new CBrick(x,y); break;
+	}
+	case OBJECT_TYPE_RED_KOOPA_TROOPA: 
+	{
+		int haveWings = atoi(tokens[3].c_str());
+		obj = new CRedKoopaTroopa(x, y, haveWings);
+		spawner.Add(obj);
+		break;
+	}
+	case OBJECT_TYPE_BRICK: 
+	{
+		int itemID = atoi(tokens[3].c_str());
+		int transform = atoi(tokens[4].c_str());
+		obj = new CBrick(x, y, itemID, transform);
+		break;
+	}
 	case OBJECT_TYPE_STRIPED_BRICK: obj = new CStripedBrick(x, y); break;
 	case OBJECT_TYPE_COIN: obj = new CCoin(x, y); break;
 	case OBJECT_TYPE_SUPER_MUSHROOM: obj = new CSuperMushroom(x, y); break;
@@ -651,16 +673,6 @@ int CPlayScene::Find(LPGAMEOBJECT obj)
 				return i;
 	}
 	return -1;
-}
-
-vector<LPGAMEOBJECT> CPlayScene::GetBrickObjects()
-{
-	vector<LPGAMEOBJECT> listOfBricks;
-	for (int i = 0; i < objects.size(); i++)
-	{
-		if (dynamic_cast<CBrick*>(objects[i])) listOfBricks.push_back(objects[i]);
-	}
-	return listOfBricks;
 }
 
 vector<LPGAMEOBJECT> CPlayScene::FilterByPlayer(float range)

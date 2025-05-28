@@ -11,9 +11,7 @@
 //Actions
 #define ANI_ID_WINGS_OPEN 0
 #define ANI_ID_WINGS_CLOSE 10
-//Direction
-#define ANI_ID_WINGS_LEFT 0
-#define ANI_ID_WINGS_RIGHT 1
+#define ANI_ID_WINGS_FREE 20
 
 class CWing : public CHelpfulObject
 {
