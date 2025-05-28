@@ -49,9 +49,9 @@ public:
 
 	void OnCollisionWith(LPCOLLISIONEVENT e);
 
-	void Reaction(CGameObject* by_another, int action);
-	void ReactionInSleepingState(CGameObject* by_another, int action);
-	void ReactionInFallingState(CGameObject* by_another, int action);
+	void OnReactionTo(LPCOLLISIONEVENT e, int action);
+	void ReactionInSleepingState(LPCOLLISIONEVENT e, int action);
+	void ReactionInFallingState(LPCOLLISIONEVENT e, int action);
 
 	void ChangeAnimation();
 	void Render();

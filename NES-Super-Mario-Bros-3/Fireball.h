@@ -31,7 +31,7 @@ public:
 
 	//void OnCollisionWith(LPCOLLISIONEVENT e);
 	//virtual void OnCollisionWithMario(LPCOLLISIONEVENT e);
-	void Reaction(CGameObject* by_another, int action);
+	void OnReactionTo(LPCOLLISIONEVENT e, int action);
 
 	int IsCollidable();
 };

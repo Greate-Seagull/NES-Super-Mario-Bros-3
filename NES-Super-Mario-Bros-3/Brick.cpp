@@ -26,7 +26,7 @@ void CBrick::InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	}
 }
 
-void CBrick::Reaction(CGameObject* by_another, int action)
+void CBrick::OnReactionTo(CGameObject* by_another, int action)
 {
 	if (state == STATE_DIE || by_another == NULL)
 		return;
@@ -89,7 +89,7 @@ void CBrick::SetState(int state)
 
 void CBrick::TriggerItem()
 {
-	switch (itemID)
+	/*switch (itemID)
 	{
 		case OBJECT_TYPE_PBUTTON: item = new CPButton(x, y - BRICK_WIDTH); break;
 		case OBJECT_TYPE_SUPER_MUSHROOM: item = new CSuperMushroom(x, y); break;
@@ -98,11 +98,11 @@ void CBrick::TriggerItem()
 	default: return;
 	}
 
-	item->Reaction(this, ACTION_TOUCH);
+	item->OnReactionTo(this, ACTION_TOUCH);
 	LPPLAYSCENE ps = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
 	int index = ps->Find(this);
 	if (itemID != OBJECT_TYPE_PBUTTON) ps->Insert(item, index - 1);
-	else ps->Insert(item, -1);
+	else ps->Insert(item, -1);*/
 }
 
 void CBrick::Shaking(DWORD dt)

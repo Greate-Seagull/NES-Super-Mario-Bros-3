@@ -1,8 +1,5 @@
 #pragma once
 
-#include "Game.h"
-#include "PlayScene.h"
-#include "GameObject.h"
 #include "Animation.h"
 #include "Animations.h"
 
@@ -30,76 +27,70 @@
 #define DIGIT_COUNT_SCORE 7
 #define DIGIT_COUNT_CURRENCY 2
 #define DIGIT_COUNT_TIME 3
-#define P_METER_COUNT 7
+#define MOMENTUM_COUNT 7
 
 #define DIGIT_NEAR_SPACING 8
 
-#define SCORE_OFFSET 68
-#define CURRENCY_OFFSET 148
-#define TIME_OFFSET 140
-#define P_METER_OFFSET 68
-#define CARD_OFFSET 177
+#define SCORE_OFFSET -60
+#define CURRENCY_OFFSET 20
+#define TIME_OFFSET 12
+#define MOMENTUM_OFFSET -60
+#define CARD_OFFSET 56
 
-#define OFFSET_Y_LINE1 168
-#define OFFSET_Y_LINE2 176
-
-#define TIMER_VALUE 300000
+#define OFFSET_Y_LINE1 -12
+#define OFFSET_Y_LINE2 -4
+#define OFFSET_Y_LINE3 -8
 
 #define P_PROGRESS_DELAY 150
 
 #define HUD_CARD_COUNT 3
 #define CARD_NEAR_SPACING 24
 
-class CDigit : public CGameObject {
+class CDigit
+{
 protected:
 	bool isEmpty;
 	int digit;
 
-	float originalX, originalY;
+	float x, y;
+	int aniID;
 public:
-	CDigit(float x, float y, bool isEmpty, int digit) : CGameObject(x, y)
+	CDigit(bool isEmpty, int digit)
 	{
 		this->isEmpty = isEmpty;
 		this->digit = digit;
-
-		originalX = x;
-		originalY = y;
-
-		SetBoundingBox(DIGIT_WIDTH, DIGIT_HEIGHT);
 	}
-	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+	void Render()
 	{
 		switch (isEmpty)
 		{
 			case 0:	aniID = ID_ANI_DIGIT_BASE - digit; break;
 			case 1:	aniID = ID_ANI_DIGIT_EMPTY; break;
 		}
-	}
 
-	void GetOriginalPos(float& ox, float& oy) { ox = originalX; oy = originalY; }
+		CAnimations* animations = CAnimations::GetInstance();
+		animations->Get(aniID)->Render(x, y);
+	}
+	void SetPosition(float x, float y) { this->x = x; this->y = y; }
 	void SetEmpty(bool isEmpty) { this->isEmpty = isEmpty; }
 	void SetDigit(int digit) { this->digit = digit; }
 };
 
-class CPMeter : public CGameObject {
+class CPMeter
+{
 protected:
 	int pType;
 	bool isToggled;
 
-	float originalX, originalY;
+	float x, y;
+	int aniID;
 public:
-	CPMeter(float x, float y, int pType, bool isToggled) : CGameObject(x, y)
+	CPMeter(int pType, bool isToggled)
 	{
 		this->pType = pType;
 		this->isToggled = isToggled;
-
-		originalX = x;
-		originalY = y;
-
-		if (pType == 0) SetBoundingBox(P_ARROW_WIDTH, P_ARROW_HEIGHT);
-		else SetBoundingBox(P_SWITCH_WIDTH, P_SWITCH_HEIGHT);
 	}
-	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+	void Render()
 	{
 		switch (pType)
 		{
@@ -118,9 +109,11 @@ public:
 				}
 				break;
 		}
-	}
 
-	void GetOriginalPos(float& ox, float& oy) { ox = originalX; oy = originalY; }
+		CAnimations* animations = CAnimations::GetInstance();
+		animations->Get(aniID)->Render(x, y);
+	}
+	void SetPosition(float x, float y) { this->x = x; this->y = y; }
 	void SetToggle(bool isToggled) 
 	{ 
 		if (this->isToggled != isToggled)
@@ -133,46 +126,56 @@ public:
 
 #define ID_HUD_CARD_BASE -310
 
-class CHUDCard : public CGameObject {
+#define CARD_EMPTY 0
+
+class CHUDCard
+{
 protected:
 	int type;
 
-	float originalX, originalY;
+	float x, y;
+	int aniID;
 public:
-	CHUDCard(float x, float y, int type) : CGameObject(x, y)
+	CHUDCard(int type)
 	{
 		this->type = type;
-
-		originalX = x;
-		originalY = y;
-
-		aniID = ID_HUD_CARD_BASE - this->type;
-
-		SetBoundingBox(HUD_CARD_WIDTH, HUD_CARD_HEIGHT);
 	}
-	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+	void Render()
 	{
 		aniID = ID_HUD_CARD_BASE - this->type;
-		RenderBoundingBox();
+
+		CAnimations* animations = CAnimations::GetInstance();
+		animations->Get(aniID)->Render(x, y);
 	}
 
-	void GetOriginalPos(float& ox, float& oy) { ox = originalX; oy = originalY; }
+	void SetPosition(float x, float y) { this->x = x; this->y = y; }
 	void SetType(int type) { this->type = type; }
 	int GetType() { return this->type; }
 };
 
-class CHud : public CGameObject {
+class CHud
+{
 protected:
-	float originalX, originalY;
+	float x, y;
+	int aniID;
+
+	CDigit* scoreDigits[DIGIT_COUNT_SCORE];
+	CDigit* coinDigits[DIGIT_COUNT_CURRENCY];
+	CDigit* timeDigits[DIGIT_COUNT_TIME];
+	CPMeter* momentumBar[MOMENTUM_COUNT];
+	CHUDCard* cards[HUD_CARD_COUNT];
+
 public:
-	CHud(float x, float y) : CGameObject(x, y) 
-	{ 
-		aniID = ID_ANI_HUD;
-		originalX = x;
-		originalY = y;
+	CHud();
+	void UpdateTime(int time);
+	void UpdateCoin(int coin);
+	void UpdateScore(int score);
+	void UpdateMomentum(int momentum);
+	void UpdateCards(int cardType[]);
 
-		SetBoundingBox(HUD_WIDTH, HUD_HEIGHT);
-	}
+	void SetPosition(float x, float y);
 
-	void GetOriginalPos(float& ox, float& oy) { ox = originalX; oy = originalY; }
+	void Render();
+
+	~CHud();
 };

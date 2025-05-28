@@ -8,86 +8,93 @@ CHarmfulObject::CHarmfulObject(float x, float y):
 	highPower = false;
 }
 
-void CHarmfulObject::Reaction(CGameObject* by_another, int action)
+void CHarmfulObject::OnReactionTo(LPCOLLISIONEVENT e, int action)
 {
-	DebugOut(L"%d\n", action);
 	switch (action)
 	{
 	case ACTION_CARRY:
-		ReactionToCarry(by_another);
+		OnReactionToCarrying(e);
 		break;
 	case ACTION_TOUCH:
-		ReactionToTouch(by_another);
+		OnReactionToTouching(e);
 		break;
 	case ACTION_ATTACK_LEVEL_1:
-		ReactionToAttack1(by_another);
+		OnReactionToAttack1(e);
 		break;
 	case ACTION_ATTACK_LEVEL_2:
-		ReactionToAttack2(by_another);
+		OnReactionToAttack2(e);
 		break;
 	case ACTION_ATTACK_LEVEL_3:
-		ReactionToAttack3(by_another);
+		OnReactionToAttack3(e);
 		break;
 	case EFFECT_BIGGER:
-		ReactionToBigger(by_another);
+		OnReactionToBigger(e);
 		break;
 	case EFFECT_RACOONIZE:
-		ReactionToRacoonize(by_another);
+		OnReactionToRacoonize(e);
 		break;
 	}
 }
 
-void CHarmfulObject::ReactionToCarry(CGameObject* by_another)
+void CHarmfulObject::OnReactionToCarrying(LPCOLLISIONEVENT e)
 {
 	AgainstControl();
-	Attack(by_another);
+
+	e->Reverse();
+	Attack(e);
 }
 
-void CHarmfulObject::ReactionToTouch(CGameObject* by_another)
+void CHarmfulObject::OnReactionToTouching(LPCOLLISIONEVENT e)
 {
-	Attack(by_another);
+	e->Reverse();
+	Attack(e);
 }
 
-void CHarmfulObject::ReactionToAttack1(CGameObject* by_another)
-{
-}
-
-void CHarmfulObject::ReactionToAttack2(CGameObject* by_another)
-{
-}
-
-void CHarmfulObject::ReactionToAttack3(CGameObject* by_another)
+void CHarmfulObject::OnReactionToAttack1(LPCOLLISIONEVENT e)
 {
 }
 
-void CHarmfulObject::ReactionToBigger(CGameObject* by_another)
+void CHarmfulObject::OnReactionToAttack2(LPCOLLISIONEVENT e)
 {
 }
 
-void CHarmfulObject::ReactionToRacoonize(CGameObject* by_another)
+void CHarmfulObject::OnReactionToAttack3(LPCOLLISIONEVENT e)
+{
+	FlyOut(this->x <= e->src_obj->GetX() ? DIRECTION_LEFT : DIRECTION_RIGHT);
+}
+
+void CHarmfulObject::OnReactionToBigger(LPCOLLISIONEVENT e)
 {
 }
 
-void CHarmfulObject::Attack(CGameObject* another)
+void CHarmfulObject::OnReactionToRacoonize(LPCOLLISIONEVENT e)
 {
-	another->Reaction(this, ACTION_ATTACK_LEVEL_1);
 }
 
-void CHarmfulObject::HigherAttack(CGameObject* another)
+void CHarmfulObject::Attack(LPCOLLISIONEVENT e)
 {
-	another->Reaction(this, ACTION_ATTACK_LEVEL_2);
+	e->obj->OnReactionTo(e, ACTION_ATTACK_LEVEL_1);
 }
 
-void CHarmfulObject::Destroy(CGameObject* another)
+void CHarmfulObject::HigherAttack(LPCOLLISIONEVENT e)
 {
-	//Effect boom
-	another->Reaction(this, ACTION_ATTACK_LEVEL_3);
+	e->obj->OnReactionTo(e, ACTION_ATTACK_LEVEL_2);
+}
+
+void CHarmfulObject::Destroy(LPCOLLISIONEVENT e)
+{
+	float effect_x = x - e->nx * bbox_width / 2.0f;
+	float effect_y = y - e->ny * bbox_height / 2.0f;
+	CEffectsManager::GetInstance()->CreateAttackEffect(effect_x, effect_y);
+	e->obj->OnReactionTo(e, ACTION_ATTACK_LEVEL_3);
 }
 
 void CHarmfulObject::FlyOut(int attack_direction)
 {
+	SetState(STATE_FLYINGOUT);
+
 	nx = attack_direction;
-	vx = nx * ATTACK_BOOM_VX;
+	vx = nx * fabs(maxVx);
 
 	ny = DIRECTION_UP;
 	vy = ny * ATTACK_BOOM_VY;

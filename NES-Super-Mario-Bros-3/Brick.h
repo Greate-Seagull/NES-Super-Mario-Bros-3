@@ -39,7 +39,7 @@ public:
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 	void InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 
-	void Reaction(CGameObject* by_another, int action);
+	void OnReactionTo(CGameObject* by_another, int action);
 	void SetState(int state);
 	int GetItemID() { return itemID; }
 

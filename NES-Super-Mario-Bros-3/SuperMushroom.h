@@ -43,12 +43,11 @@ public:
 	void OnCollisionWithBlock(LPCOLLISIONEVENT e);
 	void OnCollisionWithMario(LPCOLLISIONEVENT e);
 
-	void Reaction(CGameObject* by_another, int action);
-	void ReactionInSleepingState(CGameObject* by_another, int action);
-	void ReactionInRunningState(CGameObject* by_another, int action);
+	void OnReactionTo(LPCOLLISIONEVENT e, int action);
+	void ReactionInSleepingState(LPCOLLISIONEVENT e, int action);
+	void ReactionInRunningState(LPCOLLISIONEVENT e, int action);
 
 	virtual void Render();
 
-	void LookAwayFromMario();
 	void WakeUp(DWORD dt);
 };

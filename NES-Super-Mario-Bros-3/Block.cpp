@@ -13,13 +13,13 @@ void CBlock::OnCollisionWith(LPCOLLISIONEVENT e)
 {
 	if (CCreature* creature = dynamic_cast<CCreature*>(e->obj))
 	{
-		if (!dynamic_cast<CMario*>(creature)) creature->Reaction(this, ACTION_ATTACK_LEVEL_3);
+		if (!dynamic_cast<CMario*>(creature)) 
+			creature->OnReactionTo(e, ACTION_ATTACK_LEVEL_3);
 		else
 		{
 			CMario* player = (CMario*)creature;
 			player->SetFootPlatform(false);
 		}
-		//creature->Reaction(this, ACTION_ATTACK_LEVEL_3);
 	}
 }
 

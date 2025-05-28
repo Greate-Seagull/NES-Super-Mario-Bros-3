@@ -30,7 +30,7 @@ void CPButton::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	aniID = ANI_PBUTTON_BASE + state;
 }
 
-void CPButton::Reaction(CGameObject* by_another, int action)
+void CPButton::OnReactionTo(CGameObject* by_another, int action)
 {
 	switch (action)
 	{

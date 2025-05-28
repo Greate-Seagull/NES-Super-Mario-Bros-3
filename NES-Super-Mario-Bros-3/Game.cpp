@@ -27,8 +27,8 @@ void CGame::Init(HWND hWnd, HINSTANCE hInstance)
 	/*backBufferWidth = r.right + 1;
 	backBufferHeight = r.bottom + 1;*/
 
-	backBufferHeight = 192.0f;
-	backBufferWidth = 256.0f;
+	backBufferHeight = BACKBUFFER_HEIGHT;
+	backBufferWidth = BACKBUFFER_WIDTH;
 
 	/*backBufferHeight = 400.0f;
 	backBufferWidth = 400.0f;*/
@@ -105,7 +105,8 @@ void CGame::Init(HWND hWnd, HINSTANCE hInstance)
 	//
 
 	D3D10_SAMPLER_DESC desc; 
-	desc.Filter = D3D10_FILTER_MIN_MAG_POINT_MIP_LINEAR;
+	//desc.Filter = D3D10_FILTER_MIN_MAG_POINT_MIP_LINEAR;
+	desc.Filter = D3D10_FILTER_MIN_MAG_MIP_POINT;
 	desc.AddressU = D3D10_TEXTURE_ADDRESS_CLAMP;
 	desc.AddressV = D3D10_TEXTURE_ADDRESS_CLAMP;
 	desc.AddressW = D3D10_TEXTURE_ADDRESS_CLAMP;
@@ -261,7 +262,8 @@ LPTEXTURE CGame::LoadTexture(LPCWSTR texturePath)
 	info.Height = imageInfo.Height;
 	info.Depth = imageInfo.Depth;
 	info.FirstMipLevel = 0;
-	info.MipLevels = 1;
+	//info.MipLevels = 1;
+	info.MipLevels = D3DX10_DEFAULT;
 	info.Usage = D3D10_USAGE_DEFAULT;
 	info.BindFlags = D3DX10_DEFAULT;
 	info.CpuAccessFlags = D3DX10_DEFAULT;
@@ -541,15 +543,19 @@ void CGame::SwitchScene()
 
 	DebugOut(L"[INFO] Switching to scene %d\n", next_scene);
 
-	scenes[current_scene]->Unload();
+	CPlayScene* currentPlayScene = dynamic_cast<CPlayScene*>(scenes[current_scene]);
+
+	current_scene = next_scene;
+	CPlayScene* nextPlayScene = dynamic_cast<CPlayScene*>(scenes[next_scene]);
+
+	//this->SetKeyHandler(s->GetKeyEventHandler());	
+	nextPlayScene->SetPlayer(currentPlayScene->GetPlayer());
 
 	CSprites::GetInstance()->Clear();
 	CAnimations::GetInstance()->Clear();
 
-	current_scene = next_scene;
-	LPSCENE s = scenes[next_scene];
-	//this->SetKeyHandler(s->GetKeyEventHandler());
-	s->Load();
+	currentPlayScene->Unload();
+	nextPlayScene->Load();
 }
 
 void CGame::InitiateSwitchScene(int scene_id)
@@ -571,6 +577,22 @@ void CGame::_ParseSection_TEXTURES(string line)
 }
 
 
+bool CGame::IsInRange(LPGAMEOBJECT obj, float start_x, float end_x, float start_y, float end_y)
+{
+	float left, top, right, bottom;
+	obj->GetBoundingBox(left, top, right, bottom);
+
+	bool horizontally_inside = (left <= end_x) && (right >= start_x);
+	bool vertically_inside = (top <= end_y) && (bottom >= start_y);
+
+	return horizontally_inside && vertically_inside;
+}
+
+bool CGame::IsInCam(LPGAMEOBJECT obj)
+{
+	return IsInRange(obj, cam_x, cam_x + CAM_WIDTH, cam_y, cam_y + CAM_HEIGHT);
+}
+
 CGame::~CGame()
 {
 	pBlendStateAlpha->Release();
@@ -583,6 +605,7 @@ CGame::~CGame()
 CGame* CGame::GetInstance()
 {
 	if (__instance == NULL) __instance = new CGame();
+
 	return __instance;
 }
 

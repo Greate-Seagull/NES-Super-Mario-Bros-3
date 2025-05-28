@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Creature.h"
+#include "Enemy.h"
 #include "Fireball.h"
 
 #define PIRANHA_VX 0.0f
@@ -24,12 +24,14 @@
 
 #define PIRANHA_ATTACK_TIME 1500
 #define PIRANHA_HIDE_TIME 1500
+#define PIRANHA_DIE_TIME 350
 
 #define ANI_ID_PIRANHA 24000
 //Actions
 #define ANI_ID_PIRANHA_BITE 0
+#define ANI_ID_PIRANHA_DIE 999
 
-class CPiranhaPlant : public CCreature
+class CPiranhaPlant : public CEnemy
 {
 protected:
 	//pot
@@ -41,6 +43,9 @@ protected:
 
 	//attack
 	float target_dx, target_dy;
+
+	//die
+	DWORD die_time;
 public:
 	CPiranhaPlant(float x, float y);
 
@@ -60,18 +65,22 @@ public:
 	virtual void Attacking(DWORD dt);
 	virtual void Digging(DWORD dt);
 	virtual void Hiding(DWORD dt);
+	virtual void Dying(DWORD dt);
 
 	virtual void SetState(int state);
 	virtual void ToStateEmerge();
 	virtual void ToStateAttack();
 	virtual void ToStateDig();
 	virtual void ToStateHide();
+	virtual void ToStateDie();
 
-	virtual void ReactionToCarry(CGameObject* by_another);
-	virtual void ReactionToTouch(CGameObject* by_another);
-	virtual void ReactionToAttack1(CGameObject* by_another);
-	virtual void ReactionToAttack2(CGameObject* by_another);
-	virtual void ReactionToAttack3(CGameObject* by_another);
+	virtual void OnReactionToCarrying(LPCOLLISIONEVENT e);
+	virtual void OnReactionToTouching(LPCOLLISIONEVENT e);
+	virtual void OnReactionToAttack1(LPCOLLISIONEVENT e);
+	virtual void OnReactionToAttack2(LPCOLLISIONEVENT e);
+	virtual void OnReactionToAttack3(LPCOLLISIONEVENT e);
 
-	virtual void LookforMario();
+	virtual void LookForMario();
+
+	virtual void Refresh();
 };
