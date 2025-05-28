@@ -1058,7 +1058,7 @@ void CMario::Dying(DWORD dt)
 		Move(dt);
 }
 
-void CMario::Fly(bool switch_fly)
+void CMario::Fly()
 {
 	if (life != MARIO_LEVEL_RACOON)
 		return;
