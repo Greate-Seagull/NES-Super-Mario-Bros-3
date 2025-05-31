@@ -15,7 +15,7 @@
 
 //WINGS COMPONENT ----------------------------
 #define WINGS_DISTANCE_BETWEEN 14.0f
-#define WINGS_Y_OFFSET 6.0f
+#define WINGS_Y_OFFSET -6.0f
 
 #define CHASING_VY -0.1f
 #define WINGS_JUMP_VY -0.3f

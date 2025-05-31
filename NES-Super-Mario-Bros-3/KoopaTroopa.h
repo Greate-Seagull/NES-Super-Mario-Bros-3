@@ -5,9 +5,8 @@
 
 #define KOOPA_LIFE 2.0f
 
-#define KOOPA_BBOX_HEIGHT_FOOT_1	26.0f
-#define KOOPA_BBOX_HEIGHT_FOOT_2	27.0f
-#define KOOPA_BBOX_HEIGHT_HIDE		12.0f
+#define KOOPA_BBOX_HEIGHT_LIVE			26.0f
+#define KOOPA_BBOX_HEIGHT_HIDE			12.0f
 #define KOOPA_BBOX_WIDTH_LIVE			8.0f//15.0f
 #define KOOPA_BBOX_WIDTH_HIDE			14.0f//15.0f
 
@@ -30,6 +29,7 @@
 #define WINGS_X_OFFSET 4.0f
 #define WINGS_Y_OFFSET -8.0f
 
+#define WINGS_VX 0.04f
 #define WINGS_JUMP_VY -0.3f
 //--------------------------------------------
 
@@ -57,6 +57,7 @@ public:
 	CKoopaTroopa(float x, float y, bool haveWings = false);
 
 	virtual void Prepare(DWORD dt);
+	virtual void LivingPrepare(DWORD dt);
 
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 	virtual void Living(DWORD dt);
@@ -66,6 +67,7 @@ public:
 
 	//virtual int IsBlocking() { return state == KOOPA_STATE_HIDE || state == KOOPA_STATE_POP; }
 	virtual int IsCollidable() { return state != STATE_DIE; };	
+	virtual int IsLinkedTo(CGameObject* obj) { return obj == carrier; }
 
 	virtual void OnNoCollisionWithBlocking(DWORD dt);
 

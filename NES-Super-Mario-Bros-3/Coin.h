@@ -47,6 +47,7 @@ public:
 
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 
+	int IsLinkedTo(CGameObject* obj);
 	int IsCollidable() { return isToggled == false; }
 	//int IsBlocking() { return 0; }
 	void OnCollisionWith(LPCOLLISIONEVENT e);

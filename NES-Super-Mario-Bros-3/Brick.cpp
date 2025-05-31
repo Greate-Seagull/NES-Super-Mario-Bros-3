@@ -52,9 +52,13 @@ void CBrick::OnReactionTo(LPCOLLISIONEVENT e, int action)
 		{
 			case BLOCK_WITHOUT_ITEM_BREAKER:
 			{
-				BlastingBrickParticles();
-				this->Delete();
-				break;
+				if (e->ny > 0) 
+				{
+					BlastingBrickParticles();
+					this->Delete();
+					break;
+				}
+				else return;
 			}
 			default: 
 			{
@@ -145,7 +149,8 @@ void CBrick::TriggerItem(LPCOLLISIONEVENT e, int action)
 		if(itemID != OBJECT_TYPE_PBUTTON)
 			item->OnReactionTo(e, action);
 
-		item = nullptr;
+		if (itemID == OBJECT_TYPE_COIN)
+			item = nullptr; //Clear to create more coins
 	}
 }
 
@@ -164,9 +169,9 @@ void CBrick::Shaking(DWORD dt)
 		opposite = false;
 		if (itemID != BLOCK_WITHOUT_ITEM)
 		{
-			/*bounceCount--;
-			if (bounceCount > 0) SetState(STATE_LIVE);
-			else */SetState(STATE_DIE);
+			toggle_number--;
+			if (toggle_number > 0) SetState(STATE_LIVE);
+			else SetState(STATE_DIE);
 		}
 		else SetState(STATE_LIVE);
 	}

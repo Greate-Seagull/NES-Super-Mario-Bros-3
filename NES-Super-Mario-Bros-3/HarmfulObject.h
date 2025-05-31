@@ -19,9 +19,8 @@
 
 class CHarmfulObject : public CMovableObject
 {
-protected:
-	bool isControl;
-	bool highPower;
+protected:	
+	bool isFliedOut;
 public:
 	CHarmfulObject(float x, float y);
 	virtual int IsCollidable() { return 1; }
@@ -39,10 +38,4 @@ public:
 	virtual void HigherAttack(LPCOLLISIONEVENT e);
 	virtual void Destroy(LPCOLLISIONEVENT e);
 	virtual void FlyOut(int attack_direction);
-	virtual void SetHighPower();
-	virtual void LoseHighPower();
-	virtual bool IsControlled();
-	virtual void SetControl();
-	virtual void Drop();
-	virtual void AgainstControl();
 };

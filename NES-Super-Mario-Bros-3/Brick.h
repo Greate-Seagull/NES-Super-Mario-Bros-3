@@ -22,9 +22,11 @@ class CBrick : public CBlock {
 protected:
 	float origin_y;
 	bool opposite = false;
+	int toggle_number;
 	bool transform;
 public:
-	CBrick(float x, float y, int itemID = BLOCK_WITHOUT_ITEM, bool tranform = false) :CBlock(x, y, itemID)
+	CBrick(float x, float y, int itemID = BLOCK_WITHOUT_ITEM, int toggle_number = 1, bool tranform = false) 
+		:CBlock(x, y, itemID)
 	{
 		bbox_width = BRICK_BBOX_WIDTH;
 		bbox_height = BRICK_BBOX_HEIGHT;
@@ -32,6 +34,7 @@ public:
 		aniID = ID_ANI_BRICK;
 
 		this->origin_y = y;
+		this->toggle_number = toggle_number;
 		this->transform = tranform;
 
 		SetState(STATE_LIVE);

@@ -7,7 +7,7 @@
 21012	111	1714	126	1729	12
 
 #DIE
-21100	145	8	160	16	10
+21100	145	7	160	16	10
 
 # ani_id	sprite1_id	time1	sprite2_id	time2	...
 [ANIMATIONS]

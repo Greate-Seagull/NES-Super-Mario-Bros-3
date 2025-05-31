@@ -134,6 +134,7 @@
     <ClCompile Include="Background.cpp" />
     <ClCompile Include="Block.cpp" />
     <ClCompile Include="BoomEffect.cpp" />
+    <ClCompile Include="BoomerangBrother.cpp" />
     <ClCompile Include="Brick.cpp" />
     <ClCompile Include="BrickParticle.cpp" />
     <ClCompile Include="Bush.cpp" />
@@ -147,6 +148,7 @@
     <ClCompile Include="EffectsManager.cpp" />
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="Fireball.cpp" />
+    <ClCompile Include="FloatingPlatform.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Goomba.cpp" />
@@ -190,6 +192,7 @@
     <ClInclude Include="Background.h" />
     <ClInclude Include="Block.h" />
     <ClInclude Include="BoomEffect.h" />
+    <ClInclude Include="BoomerangBrother.h" />
     <ClInclude Include="Brick.h" />
     <ClInclude Include="BrickParticle.h" />
     <ClInclude Include="Bush.h" />
@@ -203,6 +206,7 @@
     <ClInclude Include="EffectsManager.h" />
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="Fireball.h" />
+    <ClInclude Include="FloatingPlatform.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Goomba.h" />

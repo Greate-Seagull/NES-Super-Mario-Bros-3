@@ -5,14 +5,6 @@ CCreature::CCreature(float x, float y):
 {
 }
 
-void CCreature::IsLiving()
-{
-	if (this->life == 0.0f)
-	{
-		this->SetState(STATE_DIE);
-	}
-}
-
 void CCreature::UnderAttack(CHarmfulObject* by_another)
 {
 	SetLife(life - 1.0f);
@@ -25,17 +17,29 @@ void CCreature::Touch(LPCOLLISIONEVENT e)
 
 void CCreature::Carry(LPCOLLISIONEVENT e)
 {
-	if (CHarmfulObject* obj = dynamic_cast<CHarmfulObject*>(e->obj))
-	{
-		weapon = obj;
-		obj->SetControl();
-		obj->OnReactionTo(e, ACTION_CARRY);
-	}
+	e->obj->OnReactionTo(e, ACTION_CARRY);
+}
+
+void CCreature::Pickup(CCreature* weapon)
+{
+	this->weapon = weapon;
 }
 
 void CCreature::Drop()
 {
 	weapon = nullptr;
+}
+
+void CCreature::AgainstControl()
+{	
+	carrier->Drop();
+	carrier = nullptr;
+}
+
+void CCreature::AcceptControl(CCreature* carrier)
+{
+	this->carrier = carrier;
+	carrier->Pickup(this);
 }
 
 void CCreature::Recover()

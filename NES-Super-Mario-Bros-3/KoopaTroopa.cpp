@@ -1,7 +1,6 @@
 #include "KoopaTroopa.h"
 #include "Platform.h"
 
-#include "debug.h"
 #include "PlayScene.h"
 
 CKoopaTroopa::CKoopaTroopa(float x, float y, bool haveWings):
@@ -17,22 +16,28 @@ void CKoopaTroopa::Prepare(DWORD dt)
 	switch (state)
 	{
 	case STATE_LIVE:
-		CMovableObject::Prepare(dt);
+		LivingPrepare(dt);
 		break;
 	case KOOPA_STATE_HIDE:
 		Hide(dt);
-		if (!IsControlled()) CMovableObject::Prepare(dt);
+		if (carrier == nullptr) CMovableObject::Prepare(dt);
 		break;
 	case KOOPA_STATE_ROLL:
 		CMovableObject::Prepare(dt);
 		break;
 	case KOOPA_STATE_POP:
 		Pop(dt);
-		if (!IsControlled()) CMovableObject::Prepare(dt);
+		if (carrier == nullptr) CMovableObject::Prepare(dt);
 		break;
 	}
 
 	//DebugOutTitle(L"%f, %f", x, y);
+}
+
+void CKoopaTroopa::LivingPrepare(DWORD dt)
+{
+	vx = nx * (wings ? WINGS_VX : KOOPA_VX);
+	CMovableObject::Prepare(dt);
 }
 
 void CKoopaTroopa::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
@@ -143,18 +148,13 @@ void CKoopaTroopa::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 	if (e->nx)
 	{
 		Patrol();
-	}
 
-	switch (state)
-	{
-	/*case KOOPA_STATE_POP:
-	case KOOPA_STATE_HIDE:
-		ny = e->ny;
-		Bounce();
-		break;*/
-	case KOOPA_STATE_ROLL:
-		Destroy(e);
-		break;
+		switch (state)
+		{		
+		case KOOPA_STATE_ROLL:
+			Destroy(e);
+			break;
+		}
 	}
 }
 
@@ -195,7 +195,7 @@ void CKoopaTroopa::Patrol()
 
 void CKoopaTroopa::Refresh()
 {
-	SetBoundingBox(KOOPA_BBOX_WIDTH_LIVE, KOOPA_BBOX_HEIGHT_FOOT_1);
+	SetBoundingBox(KOOPA_BBOX_WIDTH_LIVE, KOOPA_BBOX_HEIGHT_LIVE);
 	maxVx = KOOPA_VX;
 	vy = KOOPA_VY;
 	if (bornWithWings) GrowWings();
@@ -306,18 +306,16 @@ void CKoopaTroopa::SetState(int state)
 	switch (state)
 	{
 		case STATE_LIVE:
-			y += (bbox_height - KOOPA_BBOX_HEIGHT_FOOT_1) / 2.0f - 0.01f;
-			SetBoundingBox(KOOPA_BBOX_WIDTH_LIVE, KOOPA_BBOX_HEIGHT_FOOT_1);
+			y += (bbox_height - KOOPA_BBOX_HEIGHT_LIVE) / 2.0f - 0.01f;
+			SetBoundingBox(KOOPA_BBOX_WIDTH_LIVE, KOOPA_BBOX_HEIGHT_LIVE);
 			LookForMario();
 			vx = nx * KOOPA_VX;
-			AgainstControl();
-			LoseHighPower();
+			if (carrier) AgainstControl();
 			break;
 		case KOOPA_STATE_HIDE:
 			y += (bbox_height - KOOPA_BBOX_HEIGHT_HIDE) / 2.0f - 0.01f;
 			SetBoundingBox(KOOPA_BBOX_WIDTH_HIDE, KOOPA_BBOX_HEIGHT_HIDE);
 			recovering_time = 0;
-			SetHighPower();
 			break;
 		case KOOPA_STATE_POP:
 			vx = KOOPA_POP_VX;
@@ -326,7 +324,7 @@ void CKoopaTroopa::SetState(int state)
 			vx = nx * KOOPA_ROLL_VX;
 			break;
 		case STATE_DIE:
-			AgainstControl();
+			if (carrier) AgainstControl();
 			Delete();
 			break;
 	}
@@ -337,17 +335,16 @@ void CKoopaTroopa::OnReactionToCarrying(LPCOLLISIONEVENT e)
 	switch (state)
 	{
 	case STATE_LIVE:
-		AgainstControl();
 		e->Reverse();
 		Attack(e);
 		break;
 	case KOOPA_STATE_ROLL:
-		AgainstControl();
 		e->Reverse();
 		Destroy(e);
 		break;
 	case KOOPA_STATE_POP:
 	case KOOPA_STATE_HIDE:
+		AcceptControl((CCreature*)e->src_obj);
 		Stop();
 		break;
 	}

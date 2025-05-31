@@ -35,6 +35,8 @@ public:
 
 	virtual void SetSpeed(float vx, float vy) { this->vx = vx; this->vy = vy; }
 	virtual void GetSpeed(float& vx, float& vy);
+	virtual void SetVx(float vx) { this->vx = vx; }
+	virtual void SetVy(float vy) { this->vy = vy; }
 
 	virtual void SetNx(float nx) { this->nx = nx; }
 	virtual void SetNy(float ny) { this->ny = ny; }

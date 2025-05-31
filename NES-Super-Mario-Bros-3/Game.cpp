@@ -593,6 +593,12 @@ bool CGame::IsInCam(LPGAMEOBJECT obj)
 	return IsInRange(obj, cam_x, cam_x + CAM_WIDTH, cam_y, cam_y + CAM_HEIGHT);
 }
 
+D3DXCOLOR CGame::GetBackGroundColor()
+{
+	CPlayScene* ps = (CPlayScene*)GetCurrentScene();
+	return ps->GetBackGroundColor();
+}
+
 CGame::~CGame()
 {
 	pBlendStateAlpha->Release();

@@ -56,7 +56,7 @@ public:
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 
 	virtual int IsCollidable() { return state != PIRANHA_STATE_HIDE && state != STATE_DIE; };
-	virtual int IsLinkedTo(CGameObject* obj) { return pot == obj; }
+	virtual int IsLinkedTo(CGameObject* obj) { return pot == obj || dynamic_cast<CFireball*>(obj); }
 
 	virtual void Render();
 	virtual void ChangeAnimation();

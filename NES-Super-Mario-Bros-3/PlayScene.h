@@ -8,11 +8,12 @@
 #include "Mario.h"
 #include "HUD.h"
 
-#define CAM_MAX_Y 231.0f
+#define NORMAL_BACKGROUND_COLOR D3DXCOLOR(156.0f/255, 252.0f/255, 240.0f/255, 0.0f)
+#define DEFAULT_BACKGROUND_COLOR D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f)
+
 #define COLLISION_RANGE 300.0f
 
 #define CAM_SPEED 0.03f
-#define MAX_CAMERA_POSITION 2000.0f
 #define TIMER_VALUE 300000
 
 #define CONGRATULATIONS_ROW_CAMOFFSET CAM_WIDTH / 2.0f
@@ -24,7 +25,7 @@ class CPlayScene: public CScene
 protected: 
 	// A play scene has to have player, right? 
 	CMario* player;
-	LPGAMEOBJECT background;
+	D3DXCOLOR background;
 
 	float timer; //scene time
 	bool isPaused;
@@ -41,10 +42,21 @@ protected:
 	CClearText* youGotACard;
 	CHUDCard* card;
 
+	//Cam position
+	float min_cam_x;
+	float min_cam_y;
+	float max_cam_x;
+	float max_cam_y;
+	//Cam moving
+	float cam_vx;
+	float cam_vy;
+
 	void _ParseSection_SPRITES(string line);
 	void _ParseSection_ANIMATIONS(string line);
 
 	void _ParseSection_LEVEL(string line);
+	void _ParseSection_CAMERA(string line);
+	void _ParseSection_BACKGROUND(string line);
 	void _ParseSection_ASSETS(string line);
 	void _ParseSection_OBJECTS(string line);
 
@@ -67,6 +79,8 @@ public:
 	void PurgeDeletedObjects();
 
 	static bool IsGameObjectDeleted(const LPGAMEOBJECT& o);
+
+	D3DXCOLOR GetBackGroundColor() { return background; }
 
 	void Insert(LPGAMEOBJECT newObj, int index);
 	int Find(LPGAMEOBJECT obj);

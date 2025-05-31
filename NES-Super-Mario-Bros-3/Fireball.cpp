@@ -63,7 +63,6 @@ void CFireball::ApplyDirection(int nx, int ny)
 
 void CFireball::OnReactionTo(LPCOLLISIONEVENT e, int action)
 {
-	AgainstControl();
 	if (dynamic_cast<CMario*>(e->src_obj))
 	{
 		e->Reverse();

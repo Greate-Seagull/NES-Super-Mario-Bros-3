@@ -24,6 +24,11 @@ void CCoin::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	}
 }
 
+int CCoin::IsLinkedTo(CGameObject* obj)
+{
+	return dynamic_cast<CMario*>(obj) == nullptr; 
+}
+
 void CCoin::OnCollisionWith(LPCOLLISIONEVENT e)
 {
 	if (dynamic_cast<CMario*>(e->obj))
@@ -34,10 +39,13 @@ void CCoin::OnReactionTo(LPCOLLISIONEVENT e, int action)
 {
 	if (isContained)
 	{
+		CPlayScene* ps = (CPlayScene*)CGame::GetInstance()->GetCurrentScene();
+
 		SetToggled();
 
 		e->Reverse();
 		e->src_obj = this;
+		e->obj = ps->GetPlayer();
 		e->obj->OnReactionTo(e, ACTION_TOUCH);
 	}
 	else

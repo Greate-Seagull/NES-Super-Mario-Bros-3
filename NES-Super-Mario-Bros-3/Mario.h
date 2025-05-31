@@ -231,8 +231,6 @@ public:
 	void Digging();
 	bool IsInGround() { return isInGround; }
 
-	void SetFootPlatform(bool);
-
 	/*void IncreaseFlyingPoint();
 	void InsertFlyingScore(float x, float y);*/
 

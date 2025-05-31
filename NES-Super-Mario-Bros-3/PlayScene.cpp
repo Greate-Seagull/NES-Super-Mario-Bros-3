@@ -9,10 +9,11 @@
 #include "Portal.h"
 #include "DeadStateTrigger.h"
 #include "Coin.h"
-#include "Platform.h"
+#include "FloatingPlatform.h"
 #include "Paragoomba.h"
 #include "VenusFireTrap.h"
 #include "RedKoopaTroopa.h"
+#include "BoomerangBrother.h"
 #include "SuperMushroom.h"
 #include "SuperLeaf.h"
 #include "Brick.h"
@@ -35,7 +36,7 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 {
 	player = NULL;
 	//key_handler = new CSampleKeyHandler(this);
-	background = NULL;	
+	background = DEFAULT_BACKGROUND_COLOR;
 	hud = NULL;
 	timer = TIMER_VALUE;
 
@@ -47,6 +48,8 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 #define SCENE_SECTION_ASSETS	1
 #define SCENE_SECTION_OBJECTS	2
 #define SCENE_SECTION_LEVEL		3
+#define SCENE_SECTION_CAMERA	4
+#define SCENE_SECTION_BACKGROUND	5
 
 #define ASSETS_SECTION_UNKNOWN -1
 #define ASSETS_SECTION_SPRITES 1
@@ -100,6 +103,32 @@ void CPlayScene::_ParseSection_LEVEL(string line)
 	next_level_scene = atoi(tokens[0].c_str());
 }
 
+void CPlayScene::_ParseSection_CAMERA(string line)
+{
+	vector<string> tokens = split(line);
+
+	if (tokens.size() < 1) return;
+
+	min_cam_x = atof(tokens[0].c_str());
+	min_cam_y = atof(tokens[1].c_str());
+	max_cam_x = atof(tokens[2].c_str());
+	max_cam_y = atof(tokens[3].c_str());
+	cam_vx = atof(tokens[4].c_str());
+	cam_vy = atof(tokens[5].c_str());
+}
+
+void CPlayScene::_ParseSection_BACKGROUND(string line)
+{
+	vector<string> tokens = split(line);
+
+	if (tokens.size() < 1) return;
+
+	int haveBackGround = atoi(tokens[0].c_str());
+
+	if (haveBackGround)
+		background = NORMAL_BACKGROUND_COLOR;
+}
+
 void CPlayScene::_ParseSection_ASSETS(string line)
 {;
 	vector<string> tokens = split(line);
@@ -150,12 +179,6 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 
 	switch (object_type)
 	{
-	case NON_OBJECT_TYPE_BACKGROUND:
-	{
-		obj = new CBackground(x, y);
-		background = (CBackground*)obj;
-		return;
-	}
 	case NON_OBJECT_TYPE_ENDING:
 	{
 		float width = (float)atof(tokens[3].c_str());
@@ -216,7 +239,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	{
 		float cell_width = (float)atof(tokens[3].c_str());
 		float cell_height = (float)atof(tokens[4].c_str());
-		int length = atoi(tokens[5].c_str());
+		int width = atoi(tokens[5].c_str());
 		int sprite_begin_begin = atoi(tokens[6].c_str());
 		int sprite_middle_begin = atoi(tokens[7].c_str());
 		int sprite_end_begin = atoi(tokens[8].c_str());
@@ -228,7 +251,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 			int sprite_end_end = atoi(tokens[11].c_str());
 
 			obj = new CCloud
-			(x, y, cell_width, cell_height, length + 2,
+			(x, y, cell_width, cell_height, width + 2,
 				sprite_begin_begin, sprite_middle_begin, sprite_end_begin,
 				sprite_begin_end, sprite_middle_end, sprite_end_end);
 			break;
@@ -236,7 +259,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		else
 		{
 			obj = new CCloud
-			(x, y, cell_width, cell_height, length, 
+			(x, y, cell_width, cell_height, width, 
 				sprite_begin_begin, sprite_middle_begin, sprite_end_begin);
 			break;
 		}
@@ -278,7 +301,6 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	}
 	case OBJECT_TYPE_VENUS_FIRE_TRAP: 
 		obj = new CVenusFireTrap(x, y); 
-		spawner.Add(obj);
 		break;
 	case OBJECT_TYPE_PIRANHA_PLANT: 
 		obj = new CPiranhaPlant(x, y); 
@@ -297,11 +319,18 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		spawner.Add(obj);
 		break;
 	}
+	case OBJECT_TYPE_BOOMERANG_BROTHER:
+	{
+		obj = new CBoomerangBrother(x, y);
+		spawner.Add(obj);
+		break;
+	}
 	case OBJECT_TYPE_BRICK: 
 	{
 		int itemID = atoi(tokens[3].c_str());
-		int transform = atoi(tokens[4].c_str());
-		obj = new CBrick(x, y, itemID, transform);
+		int toggleCount = atoi(tokens[4].c_str());
+		int transform = atoi(tokens[5].c_str());
+		obj = new CBrick(x, y, itemID, toggleCount, transform);
 		break;
 	}
 	case OBJECT_TYPE_STRIPED_BRICK: obj = new CStripedBrick(x, y); break;
@@ -312,18 +341,60 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	{
 		float cell_width = (float)atof(tokens[3].c_str());
 		float cell_height = (float)atof(tokens[4].c_str());
-		int length = atoi(tokens[5].c_str());
-		int type = atoi(tokens[6].c_str());
-		int sprite_begin = atoi(tokens[7].c_str());
-		int sprite_middle = atoi(tokens[8].c_str());
-		int sprite_end = atoi(tokens[9].c_str());
-		int falling = atoi(tokens[10].c_str());
+		int width = atoi(tokens[5].c_str());
+		int height = atoi(tokens[6].c_str());
+		int type = atoi(tokens[7].c_str());
+
+		int sprite_begin_begin = atoi(tokens[8].c_str());
+		int sprite_middle_begin = atoi(tokens[9].c_str());
+		int sprite_end_begin = atoi(tokens[10].c_str());
+		int sprite_begin_middle = atoi(tokens[11].c_str());
+		int sprite_middle_middle = atoi(tokens[12].c_str());
+		int sprite_end_middle = atoi(tokens[13].c_str());
+		int sprite_begin_end = atoi(tokens[14].c_str());
+		int sprite_middle_end = atoi(tokens[15].c_str());
+		int sprite_end_end = atoi(tokens[16].c_str());
 
 		obj = new CPlatform(
 			x, y,
-			cell_width, cell_height, length, type,
-			sprite_begin, sprite_middle, sprite_end,
-			falling
+			cell_width, cell_height,
+			width, height,
+			type,
+			sprite_begin_begin, sprite_middle_begin, sprite_end_begin,
+			sprite_begin_middle, sprite_middle_middle, sprite_end_middle,
+			sprite_begin_end, sprite_middle_end, sprite_end_end			
+		);
+
+		break;
+	}
+	case OBJECT_TYPE_FLOATING_PLATFORM:
+	{
+		float vx = (float)atof(tokens[3].c_str());
+		float vy = (float)atof(tokens[4].c_str());
+		float cell_width = (float)atof(tokens[5].c_str());
+		float cell_height = (float)atof(tokens[6].c_str());
+		int width = atoi(tokens[7].c_str());
+		int height = atoi(tokens[8].c_str());
+		int type = atoi(tokens[9].c_str());
+
+		int sprite_begin_begin = atoi(tokens[10].c_str());
+		int sprite_middle_begin = atoi(tokens[11].c_str());
+		int sprite_end_begin = atoi(tokens[12].c_str());
+		int sprite_begin_middle = atoi(tokens[13].c_str());
+		int sprite_middle_middle = atoi(tokens[14].c_str());
+		int sprite_end_middle = atoi(tokens[15].c_str());
+		int sprite_begin_end = atoi(tokens[16].c_str());
+		int sprite_middle_end = atoi(tokens[17].c_str());
+		int sprite_end_end = atoi(tokens[18].c_str());
+
+		obj = new CFloatingPlatform(
+			x, y, vx, vy,
+			cell_width, cell_height,
+			width, height,
+			type,
+			sprite_begin_begin, sprite_middle_begin, sprite_end_begin,
+			sprite_begin_middle, sprite_middle_middle, sprite_end_middle,
+			sprite_begin_end, sprite_middle_end, sprite_end_end
 		);
 
 		break;
@@ -390,7 +461,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	{
 		float cell_width = (float)atof(tokens[3].c_str());
 		float cell_height = (float)atof(tokens[4].c_str());
-		int length = atoi(tokens[5].c_str());
+		int width = atoi(tokens[5].c_str());
 		int height = atoi(tokens[6].c_str());
 
 		int sprite_begin_begin = atoi(tokens[7].c_str());
@@ -406,7 +477,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		obj = new CContainer(
 			x, y,
 			cell_width, cell_height,
-			length, height,
+			width, height,
 			sprite_begin_begin, sprite_middle_begin, sprite_end_begin,
 			sprite_begin_middle, sprite_middle_middle, sprite_end_middle,
 			sprite_begin_end, sprite_middle_end, sprite_end_end
@@ -478,6 +549,8 @@ void CPlayScene::Load()
 
 		if (line[0] == '#') continue;	// skip comment lines	
 		if (line == "[LEVEL]") { section = SCENE_SECTION_LEVEL; continue; }
+		if (line == "[CAMERA]") { section = SCENE_SECTION_CAMERA; continue; }
+		if (line == "[BACKGROUND]") { section = SCENE_SECTION_BACKGROUND; continue; }
 		if (line == "[ASSETS]") { section = SCENE_SECTION_ASSETS; continue; };
 		if (line == "[OBJECTS]") { section = SCENE_SECTION_OBJECTS; continue; };
 		if (line[0] == '[') { section = SCENE_SECTION_UNKNOWN; continue; }	
@@ -488,6 +561,8 @@ void CPlayScene::Load()
 		switch (section)
 		{ 
 			case SCENE_SECTION_LEVEL: _ParseSection_LEVEL(line); break;
+			case SCENE_SECTION_CAMERA: _ParseSection_CAMERA(line); break;
+			case SCENE_SECTION_BACKGROUND: _ParseSection_BACKGROUND(line); break;
 			case SCENE_SECTION_ASSETS: _ParseSection_ASSETS(line); break;
 			case SCENE_SECTION_OBJECTS: _ParseSection_OBJECTS(line); break;
 		}
@@ -495,7 +570,10 @@ void CPlayScene::Load()
 
 	f.close();
 
+	//HUD
 	hud = new CHud();
+
+	//CAMERA
 	UpdateCamera(0);
 
 	DebugOut(L"[INFO] Done loading scene  %s\n", sceneFilePath);
@@ -568,9 +646,7 @@ void CPlayScene::Update(DWORD dt)
 		collisionProcessor->SolveCollisionWithNonBlocking(obj, dt, &nonBlockingColliders);
 
 	for (auto& obj : nearbyObjects)
-	{
 		obj->Update(dt, &nearbyObjects);
-	}
 
 	UpdateCamera(dt);
 	// UPDATE HUD AFTER MARIO UPDATED
@@ -642,9 +718,6 @@ void CPlayScene::Unload()
 	player = NULL;
 
 	spawner.Clear();
-
-	delete background;
-	background = NULL;
 
 	delete hud;
 	hud = NULL;
@@ -721,27 +794,44 @@ void CPlayScene::UpdateCamera(DWORD dt)
 	float cx, cy;
 	game->GetCamPos(cx, cy);
 
-	if (id == 3)
-	{
-		cx = fmin(MAX_CAMERA_POSITION, cx + dt * CAM_SPEED);
-		cy = CAM_MAX_Y;
-	}
+	float px, py;
+	player->GetPosition(px, py);
+
+	//Move cam
+	if (cam_vx)
+		cx += dt * cam_vx;		
+	else 
+		cx = px - CAM_WIDTH / 2.0f;
+
+	if (cam_vy)
+		cy += dt * cam_vy;
 	else
 	{
-		float px, py;
-		player->GetPosition(px, py);
-	
-		cx = px - CAM_WIDTH / 2.0f;
-		cx = fmax(0.0f, cx);
-		//cx = fmin();
-
 		if (player->IsFlying()) cy = fmin(py - CAM_FOLLOW_HEIGHT, cy);	//Move cam to follow flying
 		cy = fmax(py - CAM_HEIGHT / 2.0f, cy); //Move cam to follow falling
-		cy = fmax(0.0f, cy);
-		cy = fmin(CAM_MAX_Y, cy);
 	}
 
+	//Restrict cam
+	cx = fmax(min_cam_x, cx);
+	cx = fmin(max_cam_x, cx);
+
+	cy = fmax(min_cam_y, cy);
+	cy = fmin(max_cam_y, cy);
+
 	game->SetCamPos(cx, cy);
+
+	if(cam_vx)
+	{
+		px = max(px, cx + 16.0f);
+		px = min(px, cx + CAM_WIDTH - 16.0f);
+	}
+	if (cam_vy)
+	{
+		py = max(py, cy + 16.0f);
+		py = min(py, cy + CAM_HEIGHT - 16.0f);
+	}
+
+	player->SetPosition(px, py);
 }
 	
 void CPlayScene::UpdateHUD()
@@ -858,7 +948,7 @@ void CPlayScene::PurgeDeletedObjects()
 		LPGAMEOBJECT o = *it;
 		if (o->IsDeleted())
 		{
-			spawner.Delete(o);
+			spawner.Delete(o);			
 			delete o;
 			*it = NULL;
 		}

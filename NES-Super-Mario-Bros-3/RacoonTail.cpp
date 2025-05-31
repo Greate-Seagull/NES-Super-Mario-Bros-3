@@ -4,8 +4,6 @@ CRacoonTail::CRacoonTail(float x, float y) :
 	CHarmfulObject(x, y)
 {
 	SetBoundingBox(RACOON_TAIL_BBOX_WIDTH, RACOON_TAIL_BBOX_HEIGHT);
-
-	highPower = true;
 }
 
 void CRacoonTail::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)

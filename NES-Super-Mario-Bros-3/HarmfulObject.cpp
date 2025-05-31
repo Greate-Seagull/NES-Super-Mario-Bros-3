@@ -4,8 +4,6 @@
 CHarmfulObject::CHarmfulObject(float x, float y):
 	CMovableObject(x, y)
 {
-	isControl = false;
-	highPower = false;
 }
 
 void CHarmfulObject::OnReactionTo(LPCOLLISIONEVENT e, int action)
@@ -38,8 +36,6 @@ void CHarmfulObject::OnReactionTo(LPCOLLISIONEVENT e, int action)
 
 void CHarmfulObject::OnReactionToCarrying(LPCOLLISIONEVENT e)
 {
-	AgainstControl();
-
 	e->Reverse();
 	Attack(e);
 }
@@ -98,34 +94,4 @@ void CHarmfulObject::FlyOut(int attack_direction)
 
 	ny = DIRECTION_UP;
 	vy = ny * ATTACK_BOOM_VY;
-}
-
-void CHarmfulObject::SetHighPower()
-{
-	highPower = true;
-}
-
-void CHarmfulObject::LoseHighPower()
-{
-	highPower = false;
-}
-
-bool CHarmfulObject::IsControlled()
-{
-	return isControl;
-}
-
-void CHarmfulObject::SetControl()
-{
-	isControl = true;
-}
-
-void CHarmfulObject::Drop()
-{
-	isControl = false;
-}
-
-void CHarmfulObject::AgainstControl()
-{
-	isControl = false;
 }

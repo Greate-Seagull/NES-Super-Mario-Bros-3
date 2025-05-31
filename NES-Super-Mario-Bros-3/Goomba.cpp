@@ -1,17 +1,13 @@
 #include "Goomba.h"
-#include "Mario.h"
 
+#include "Mario.h"
 #include "Block.h"
-#include "KoopaTroopa.h"
-#include "RacoonTail.h"
 #include "Platform.h"
-#include "PlayScene.h"
 
 CGoomba::CGoomba(float x, float y, bool haveWings) :
 	CEnemy(x, y)
 {
-	bornWithWings = haveWings;
-	SetBoundingBox(GOOMBA_BBOX_WIDTH, GOOMBA_BBOX_HEIGHT);
+	bornWithWings = haveWings;	
 
 	Refresh();
 }
@@ -151,6 +147,7 @@ void CGoomba::SetState(int state)
 
 void CGoomba::ToStateLiving()
 {
+	SetBoundingBox(GOOMBA_BBOX_WIDTH, GOOMBA_BBOX_HEIGHT);
 	vx = nx * GOOMBA_VX;
 	vy = GOOMBA_VY;
 }
@@ -185,7 +182,7 @@ void CGoomba::Refresh()
 {
 	maxVx = GOOMBA_VX;
 	LookForMario();
-	life = GOOMBA_LIFE;
+	life = GOOMBA_LIFE;	
 	if (bornWithWings)
 	{	
 		GrowWings();
@@ -211,7 +208,7 @@ void CGoomba::LoseWings()
 
 void CGoomba::Flutter()
 {
-	wings->SetPosition(x, y - WINGS_Y_OFFSET);
+	wings->SetPosition(x, y + WINGS_Y_OFFSET);
 
 	if (vy > 0)
 	{
