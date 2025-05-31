@@ -1,6 +1,8 @@
 #include "Collision.h"
 #include "GameObject.h"
-#include "SuperLeaf.h"
+
+#include "Mario.h"
+#include "BoomerangBrother.h"
 
 #include "debug.h"
 
@@ -436,6 +438,9 @@ void CCollision::SweptAABB(LPGAMEOBJECT objSrc, DWORD dt, LPGAMEOBJECT objDest)
 */
 void CCollision::Scan(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* objDests)
 {
+	if (dynamic_cast<CBoomerangBrother*>(objSrc))
+		int t = 0;
+
 	for (UINT i = 0; i < objDests->size(); i++)
 	{
 		if (objSrc == objDests->at(i))
@@ -783,11 +788,29 @@ void CCollision::SolveOverlap(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT
 
 		if (Overlap(objSrc, coObjects->at(i)))
 		{
-			eventPool.Allocate(-1, 0, 0, 0, 0, coObjects->at(i), objSrc);
 			CCollisionEvent* e = eventPool.GetLast();
+
+			if (objSrc->IsGoingThrough(e->obj) == false)
+			{
+				float obj_x, obj_y;
+				e->obj->GetPosition(obj_x, obj_y);
+
+				if (dynamic_cast<CMario*>(e->obj))
+					int t = 0;
+
+				//Pushing out
+				if (e->dx <= e->dy)
+					obj_x += -1 * e->nx * ( e->dx + BLOCK_PUSH_FACTOR);
+				if (e->dy <= e->dx)
+					obj_y += -1 * e->ny * ( e->dy + BLOCK_PUSH_FACTOR);
+
+				e->obj->SetPosition(obj_x, obj_y);
+			}
+
 			objSrc->OnCollisionWith(e);
 
-			coTracker.MarkAsResolved(objSrc, coObjects->at(i));
+			coTracker.MarkAsResolved(e->src_obj, e->obj);
+			eventPool.VirtualDelete();
 		}
 	}
 
@@ -796,27 +819,53 @@ void CCollision::SolveOverlap(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT
 
 bool CCollision::Overlap(LPGAMEOBJECT objSrc, LPGAMEOBJECT objDst)
 {
-	/*float min_width = (objSrc->GetBBoxWidth() + objDst->GetBBoxWidth()) / 2.0f;
-	float min_height = (objSrc->GetBBoxHeight() + objDst->GetBBoxHeight()) / 2.0f;
-
-	float objSrc_x, objSrc_y;
-	float objDst_x, objDst_y;
-
-	objSrc->GetPosition(objSrc_x, objSrc_y);
-	objDst->GetPosition(objDst_x, objDst_y);*/
-
 	float objSrc_l, objSrc_t, objSrc_r, objSrc_b;
 	float objDst_l, objDst_t, objDst_r, objDst_b;
 
 	objSrc->GetBoundingBox(objSrc_l, objSrc_t, objSrc_r, objSrc_b);
 	objDst->GetBoundingBox(objDst_l, objDst_t, objDst_r, objDst_b);
 
-	bool horizontally_inside = (objSrc_l <= objDst_r) && (objDst_l <= objSrc_r);
-	bool vertically_inside = (objSrc_t <= objDst_b) && (objDst_t <= objSrc_b);
+	/*bool horizontally_inside = (objSrc_l <= objDst_r) && (objDst_l <= objSrc_r);
+	bool vertically_inside = (objSrc_t <= objDst_b) && (objDst_t <= objSrc_b);*/
 
-	return horizontally_inside && vertically_inside;
+	//return horizontally_inside && vertically_inside;
+	
+	float dx_entry = objSrc_r - objDst_l;
+	float dx_exit = objDst_r - objSrc_l;
 
-	//return fabs(objSrc_x - objDst_x) < min_width && fabs(objSrc_y - objDst_y) < min_height;
+	float dy_entry = objSrc_b - objDst_t;
+	float dy_exit = objDst_b - objSrc_t;
+
+	float nx = 0.0f, ny = 0.0f;
+	float dx = 0.0f, dy = 0.0f;
+
+	if (dx_entry < dx_exit)
+	{
+		dx = dx_entry;
+		nx = -1.0f;
+	}
+	else if (dx_entry > dx_exit)
+	{
+		dx = dx_exit;
+		nx = 1.0f;
+	}
+
+	if (dy_entry < dy_exit)
+	{
+		dy = dy_entry;
+		ny = -1.0f;
+	}
+	else if (dy_entry > dy_exit)
+	{
+		dy = dy_exit;
+		ny = 1.0f;
+	}
+
+	bool isOverlap = dx >= 0 && dy >= 0;
+
+	if(isOverlap) eventPool.Allocate(0, nx, ny, dx, dy, objDst, objSrc);
+
+	return isOverlap;
 }
 
 CCollisionEventPool::CCollisionEventPool()

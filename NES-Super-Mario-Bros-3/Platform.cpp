@@ -7,6 +7,7 @@
 #include "Game.h"
 
 #include "HarmfulObject.h";
+#include "Block.h"
 
 void CPlatform::RenderBoundingBox()
 {
@@ -31,31 +32,76 @@ void CPlatform::RenderBoundingBox()
 	CGame::GetInstance()->Draw(xx - cx, y - cy, bbox, nullptr, BBOX_ALPHA, rect.right - 1, rect.bottom - 1);
 }
 
+int CPlatform::IsLinkedTo(CGameObject* obj)
+{
+	return dynamic_cast<CPiranhaPlant*>(obj) || 
+		dynamic_cast<CPlatform*>(obj) ||
+		dynamic_cast<CBlock*>(obj);
+}
+
 void CPlatform::Render()
 {
-	if (this->length <= 0) return;
+	if (this->width <= 0) return;
+
+	float yy = y;
 	float xx = x;
 	CSprites* s = CSprites::GetInstance();
 
-	s->Get(this->spriteIdBegin)->Draw(xx, y);
+	s->Get(this->spriteIdBeginEnd)->Draw(xx, yy);
 	xx += this->cellWidth;
-	for (int i = 1; i < this->length - 1; i++)
+	for (int j = 1; j < this->width - 1; j++)
 	{
-		s->Get(this->spriteIdMiddle)->Draw(xx, y);
+		s->Get(this->spriteIdMiddleEnd)->Draw(xx, yy);
 		xx += this->cellWidth;
 	}
-	if (length > 1)
-		s->Get(this->spriteIdEnd)->Draw(xx, y);
+	if (width > 1)
+		s->Get(this->spriteIdEndEnd)->Draw(xx, yy);
+
+	yy -= cellHeight;
+
+	for (int i = 2; i < this->height; i++)
+	{
+		float xx = x;
+
+		s->Get(this->spriteIdBeginMiddle)->Draw(xx, yy);
+		xx += this->cellWidth;
+		for (int j = 1; j < this->width - 1; j++)
+		{
+			s->Get(this->spriteIdMiddleMiddle)->Draw(xx, yy);
+			xx += this->cellWidth;
+		}
+		if (width > 1)
+			s->Get(this->spriteIdEndMiddle)->Draw(xx, yy);
+
+		yy -= cellHeight;
+	}
+
+	if (this->height > 1)
+	{
+		float xx = x;
+
+		s->Get(this->spriteIdBegin)->Draw(xx, yy);
+		xx += this->cellWidth;
+		for (int j = 1; j < this->width - 1; j++)
+		{
+			s->Get(this->spriteIdMiddle)->Draw(xx, yy);
+			xx += this->cellWidth;
+		}
+		if (width > 1)
+			s->Get(this->spriteIdEnd)->Draw(xx, yy);
+
+		yy -= cellHeight;
+	}
 
 	//RenderBoundingBox();
 }
 
 void CPlatform::GetBoundingBox(float& l, float& t, float& r, float& b)
 {
-	l = x - this->cellWidth / 2.0f;
-	t = y - this->cellHeight / 2.0f;
-	r = l + this->cellWidth * this->length - 1.0f;
-	b = t + this->cellHeight - 1.0f;
+	l = x - cellWidth / 2.0f;
+	b = y + cellHeight / 2.0f;
+	r = l + bbox_width;
+	t = b - bbox_height;
 }
 
 int CPlatform::IsDirectionColliable(float nx, float ny)
@@ -67,23 +113,8 @@ int CPlatform::IsDirectionColliable(float nx, float ny)
 	else return 0;
 }
 
-void CPlatform::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
-{
-	if (falling == 1)
-	{
-		switch (state)
-		{
-		case PLATFORM_STATE_FALLING:
-			y += dt * PLATFORM_FALLING_SPEED;
-			break;
-		default:
-			x -= dt * PLATFORM_SLIDING_SPEED;
-			break;
-		}
-	}
-}
-
 void CPlatform::OnCollisionWith(LPCOLLISIONEVENT e)
 {
-	e->obj->OnReactionTo(e, ACTION_ATTACK_LEVEL_3);
+	/*if(type == PLATFORM_TYPE_BLOCK_ANYWAY)
+		e->obj->OnReactionTo(e, ACTION_ATTACK_LEVEL_3);*/
 }

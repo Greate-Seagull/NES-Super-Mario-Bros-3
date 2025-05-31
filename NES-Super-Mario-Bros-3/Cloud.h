@@ -8,7 +8,7 @@
 class CCloud : public CGameObject
 {
 protected:
-	int length;	// Unit: cell 
+	int width;	// Unit: cell 
 	float cellWidth;
 	float cellHeight;
 	int spriteIdBeginBegin, spriteIdMiddleBegin, spriteIdEndBegin;
@@ -19,11 +19,11 @@ protected:
 public:
 	CCloud(float x, float y,
 		float cell_width, float cell_height,
-		int length,
+		int width,
 		int sprite_id_begin_begin, int sprite_id_middle_begin, int sprite_id_end_begin,
 		int sprite_id_begin_end, int sprite_id_middle_end, int sprite_id_end_end, int type = 0) : CGameObject(x, y)
 	{
-		this->length = length;
+		this->width = width;
 		this->cellWidth = cell_width;
 		this->cellHeight = cell_height;
 		this->spriteIdBeginBegin = sprite_id_begin_begin;
@@ -36,10 +36,10 @@ public:
 		this->type = type;
 	}
 	CCloud(float x, float y,
-		float cell_width, float cell_height, int length,
+		float cell_width, float cell_height, int width,
 		int sprite_id_begin_begin, int sprite_id_middle_begin, int sprite_id_end_begin, int type = 1) : CGameObject(x, y)
 	{
-		this->length = length;
+		this->width = width;
 		this->cellWidth = cell_width;
 		this->cellHeight = cell_height;
 		this->spriteIdBeginBegin = sprite_id_begin_begin;

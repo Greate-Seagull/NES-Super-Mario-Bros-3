@@ -19,6 +19,7 @@ protected:
 	float originalY;
 
 	bool isContained;
+	bool isTransformed;
 public:
 	CCoin(float x, float y) : CMovableObject(x, y) 
 	{
@@ -46,6 +47,7 @@ public:
 
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 
+	int IsLinkedTo(CGameObject* obj);
 	int IsCollidable() { return isToggled == false; }
 	//int IsBlocking() { return 0; }
 	void OnCollisionWith(LPCOLLISIONEVENT e);
@@ -60,4 +62,6 @@ public:
 	bool IsUnderOriginal();
 
 	void SetContained() { isContained = true; }
+	void SetTransformed() { isTransformed = true; }
+	bool IsTransformed() { return isTransformed; }
 };

@@ -10,7 +10,7 @@
 #include "Brick.h"
 #include "BrickParticle.h"
 #include "Portal.h"
-#include "Platform.h"
+#include "FloatingPlatform.h"
 #include "SuperMushroom.h"
 #include "SuperLeaf.h"
 #include "Background.h"
@@ -28,6 +28,8 @@ bool finishedExitingPipe = false;
 #define MAX_EXIT_PIPE_TIME 800
 
 int sceneDestination;
+
+int flyingPoint = 100;
 
 CMario::CMario(float x, float y):
 	CCreature(x, y)
@@ -67,7 +69,7 @@ void CMario::Prepare(DWORD dt)
 		changing_state_time += dt;
 		if (changing_state_time >= MARIO_DYING_TIME) CMovableObject::Prepare(dt);
 		break;
-	}	
+	}
 }
 
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
@@ -80,12 +82,13 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	case STATE_DIE:
 		Dying(dt);
 		break;
-	}	
+	}
+
+	//if (this->isOnGround) flyingPoint = 100;
 }
 
 void CMario::Living(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
-	if (isOnPlatform) y = y + dt * PLATFORM_FALLING_SPEED;
 	Move(dt);
 
 	DoSpecialActions(dt, coObjects);
@@ -124,8 +127,6 @@ void CMario::OnCollisionWith(LPCOLLISIONEVENT e)
 		OnCollisionWithReward(e);
 	/*else if (dynamic_cast<CDeadStateTrigger*>(e->obj))
 		OnCollisionWithDeadTrigger(e);*/
-	/*else if (dynamic_cast<CRandomCard*>(e->obj))
-		OnCollisionWithRandomCard(e);*/
 }
 
 void CMario::OnReactionToTouching(LPCOLLISIONEVENT e)
@@ -135,10 +136,10 @@ void CMario::OnReactionToTouching(LPCOLLISIONEVENT e)
 	if (dynamic_cast<CEnemy*>(e->src_obj))
 	{
 		e->Reverse();
-		if (keyState->IsHold(VK_A))
-			Carry(e);
-		else
-			Kick();
+
+		if (e->ny < 0) BackJump();
+		else if (keyState->IsHold(VK_A)) Grab(e);
+		else Kick();
 	}
 	else if (dynamic_cast<CCoin*>(e->src_obj))
 		coins++;
@@ -181,17 +182,17 @@ void CMario::OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e)
 	KeyStateManager* keyState = CGame::GetInstance()->GetKeyboard();
 	CHarmfulObject* enemy = dynamic_cast<CHarmfulObject*>(e->obj);
 
-	if (e->ny < 0)
-	{
-		CHarmfulObject::Attack(e);
-		BackJump();
-	}
+	if (e->ny < 0) CHarmfulObject::Attack(e);		
 	else if (keyState->IsHold(VK_A) && Grab(e)); //case collision on the left or right or below
 	else Touch(e);
 }
 
 void CMario::OnCollisionWithCoin(LPCOLLISIONEVENT e)
 {
+	/*Touch(e->obj);
+	LPPLAYSCENE currentScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+	currentScene->CollectCoin();
+	currentScene->InsertScore(50);*/
 	Touch(e);
 	coins++;
 }
@@ -208,7 +209,7 @@ void CMario::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 
 	if (e->ny)
 	{
-		vy = 0.0f;
+		//vy = 0.0f;
 
 		if (e->ny < 0)
 		{
@@ -216,17 +217,22 @@ void CMario::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 			is_flying = false;
 			on_ground_y = y;
 		}
-	}	
+
+		float vx;
+		e->obj->GetSpeed(vx, this->vy);
+		this->vy *= 1.0f - e->t;
+
+		Touch(e);
+	}
 
 	if (e->nx)
 	{
-		vx = 0.0f;
-	}
+		//vx = 0.0f;
 
-	CPlatform* p = (CPlatform*)(e->obj);
-	p->SetState(PLATFORM_STATE_FALLING);
-	if (p->IsFallingType() == 1) isOnPlatform = true;
-	else isOnPlatform = false;
+		float vy;
+		e->obj->GetSpeed(this->vx, vy);
+		this->vx *= 1.0f - e->t;
+	}	
 }
 
 void CMario::OnCollisionWithHelpfulObject(LPCOLLISIONEVENT e)
@@ -240,10 +246,10 @@ void CMario::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 
 	if (e->ny)
 	{
-		vy = 0.0f;
+		//vy = 0.0f;
 
 		if (e->ny > 0)
-		{
+		{			
 			is_jumping = false;
 			on_ceil_y = y;
 		}
@@ -254,12 +260,20 @@ void CMario::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 			on_ground_y = y;
 		}
 
+		float vx;
+		e->obj->GetSpeed(vx, this->vy);
+		this->vy *= 1.0f - e->t;
+
 		Touch(e);
 	}
 
 	if (e->nx)
 	{
-		vx = 0.0f;
+		//vx = 0.0f;
+
+		float vy;
+		e->obj->GetSpeed(this->vx, vy);
+		this->vx *= 1.0f - e->t;
 	}
 }
 
@@ -359,7 +373,7 @@ void CMario::ChangeAnimationInLivingState(int &actionID, DWORD &timePerFrame)
 		else
 			actionID = ID_ANI_FALL;
 	}
-	else if (vy) //Jumping
+	else if (vy && isOnGround == false) //Jumping
 	{
 		if (is_boosting && !weapon)
 		{
@@ -445,7 +459,7 @@ bool CMario::SetSpecialAction(int actionID)
 		UntriggerTail();
 		break;
 	case ID_ANI_CARRY:
-		CCreature::Drop();
+		Drop();
 		break;
 	case ID_ANI_INTO_THE_PIPE:
 		nx = 0; ny = 0; nz = 0;
@@ -586,6 +600,7 @@ void CMario::StartNormalActions(DWORD& t)
 	else //Falling
 	{
 		//calculated_ay = GAME_GRAVITY;
+
 		ny = DIRECTION_DOWN;
 
 		is_jumping = false;
@@ -602,14 +617,15 @@ void CMario::StartNormalActions(DWORD& t)
 	}
 
 	//decelerate
-	if (new_nx == 0)
+	if(new_nx)
+		this->nx = new_nx;
+	else if (new_nx == 0 && isOnGround)
 	{
 		calculated_ax = min(MARIO_DECELERATE_AX, fabs(vx) / t);
 
 		if (vx > 0)
 			calculated_ax = -calculated_ax;
 	}
-	else this->nx = new_nx;
 
 	//
 	ax = calculated_ax;
@@ -811,19 +827,17 @@ bool CMario::Grab(LPCOLLISIONEVENT e)
 	if (this->weapon)
 		return false;
 
-	SetSpecialAction(ID_ANI_CARRY);
-
 	CCreature::Carry(e);
+
+	if (this->weapon)
+		SetSpecialAction(ID_ANI_CARRY);
 
 	return true;
 }
 
 void CMario::Carrying()
 {
-	if (!weapon)
-		return;
-
-	if (weapon->IsControlled())
+	if (weapon)
 	{
 		float weapon_x, weapon_y;
 
@@ -833,9 +847,7 @@ void CMario::Carrying()
 		weapon->SetPosition(weapon_x, weapon_y);
 	}
 	else
-	{
 		SetSpecialAction(ID_ANI_IDLE);
-	}
 }
 
 bool CMario::Tosh()
@@ -848,6 +860,7 @@ bool CMario::Tosh()
 	LPCOLLISIONEVENT e = pool->Allocate(0.0f, nx, ny, nx, ny, weapon, this);
 	Touch(e);
 	pool->VirtualDelete();
+
 	return Kick();
 }
 
@@ -1072,9 +1085,9 @@ void CMario::Fly()
 
 bool CMario::IntoThePipe(int direction)
 {
-	SetSpecialAction(ID_ANI_INTO_THE_PIPE);
-
 	isDigging = true;
+
+	SetSpecialAction(ID_ANI_INTO_THE_PIPE);
 
 	nx = 0;
 	ny = direction ? direction : ny;
@@ -1106,11 +1119,6 @@ void CMario::Digging()
 	}
 }
 
-void CMario::SetFootPlatform(bool onPlatform)
-{
-	isOnPlatform = onPlatform;
-}
-
 void CMario::SetState(int state)
 {
 	if (this->state == state)
@@ -1135,3 +1143,26 @@ void CMario::SetState(int state)
 		default: this->state = state;
 	}
 }
+
+//void CMario::IncreaseFlyingPoint()
+//{
+//	switch (flyingPoint)
+//	{
+//		case 100: flyingPoint = 200; break;
+//		case 200: flyingPoint = 400; break;
+//		case 400: flyingPoint = 800; break;
+//		case 800: flyingPoint = 1000; break;
+//		case 1000: flyingPoint = 2000; break;
+//		case 2000: flyingPoint = 4000; break;
+//		case 4000: flyingPoint = 8000; break;
+//		case 8000: flyingPoint = 10000; break;
+//	}
+//}
+
+//void CMario::InsertFlyingScore(float x, float y)
+//{
+//	LPPLAYSCENE curr = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+//	curr->InsertScore(x, y, flyingPoint);
+//
+//	IncreaseFlyingPoint();
+//}

@@ -1,15 +1,18 @@
 #pragma once
 
+#include "MovableObject.h"
 #include "Platform.h"
 
-class CContainer : public CPlatform
-{
-protected:
+#define FALLING_GRAVITY 0.0002f;
 
+class CFloatingPlatform: public CPlatform
+{
+	float vx, vy;
+	bool isFloating;
+	
 public:
-	CContainer(float x, float y,
-		float cell_width, float cell_height,
-		int width, int height,
+	CFloatingPlatform(float x, float y, float vx, float vy,
+		float cell_width, float cell_height, int width, int height, int type,
 		int sprite_id_begin_begin, int sprite_id_middle_begin, int sprite_id_end_begin,
 		int sprite_id_begin_middle, int sprite_id_middle_middle, int sprite_id_end_middle,
 		int sprite_id_begin_end, int sprite_id_middle_end, int sprite_id_end_end)
@@ -17,9 +20,16 @@ public:
 			sprite_id_begin_begin, sprite_id_middle_begin, sprite_id_end_begin,
 			sprite_id_begin_middle, sprite_id_middle_middle, sprite_id_end_middle,
 			sprite_id_begin_end, sprite_id_middle_end, sprite_id_end_end)
-	{	
+	{
+		this->vx = vx;
+		this->vy = vy;
+
+		this->isFloating = true;
 	}
 
-	void Render();
-	void GetBoundingBox(float& l, float& t, float& r, float& b);
+	void GetSpeed(float& vx, float& vy);
+
+	void Prepare(DWORD dt);
+	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+	void OnReactionTo(LPCOLLISIONEVENT e, int action);
 };

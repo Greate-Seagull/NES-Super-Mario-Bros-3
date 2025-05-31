@@ -47,10 +47,10 @@ HOW TO INSTALL Microsoft.DXSDK.D3DX
 #define MAIN_WINDOW_TITLE L"SUPER MARIO BROS 3"
 #define WINDOW_ICON_PATH L"mario.ico"
 
-#define BACKGROUND_COLOR D3DXCOLOR(200.0f/255, 200.0f/255, 255.0f/255, 0.0f)
+#define BACKGROUND_COLOR D3DXCOLOR(156.0f/255, 252.0f/255, 240.0f/255, 0.0f)
 
-#define SCREEN_WIDTH 640
-#define SCREEN_HEIGHT 600
+#define SCREEN_HEIGHT 538
+#define SCREEN_WIDTH 566
 
 LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -86,7 +86,7 @@ void Render()
 	ID3D10RenderTargetView* pRenderTargetView = g->GetRenderTargetView();
 	ID3DX10Sprite* spriteHandler = g->GetSpriteHandler();
 
-	pD3DDevice->ClearRenderTargetView(pRenderTargetView, BACKGROUND_COLOR);
+	pD3DDevice->ClearRenderTargetView(pRenderTargetView, g->GetBackGroundColor());
 
 	spriteHandler->Begin(D3DX10_SPRITE_SORT_TEXTURE);
 
@@ -191,6 +191,8 @@ int WINAPI WinMain(
 	_In_ LPSTR lpCmdLine,
 	_In_ int nCmdShow
 ) {
+	srand(time(0));
+
 	HWND hWnd = CreateGameWindow(hInstance, nCmdShow, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	SetDebugWindow(hWnd);

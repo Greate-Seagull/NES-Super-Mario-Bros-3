@@ -1,13 +1,14 @@
 #include "Goomba.h"
-#include "Mario.h"
 
+#include "Mario.h"
 #include "Block.h"
 #include "Platform.h"
 
-CGoomba::CGoomba(float x, float y) :
+CGoomba::CGoomba(float x, float y, bool haveWings) :
 	CEnemy(x, y)
 {
-	SetBoundingBox(GOOMBA_BBOX_WIDTH, GOOMBA_BBOX_HEIGHT);
+	bornWithWings = haveWings;	
+
 	Refresh();
 }
 
@@ -80,16 +81,45 @@ void CGoomba::OnReactionToTouching(LPCOLLISIONEVENT e)
 
 void CGoomba::OnReactionToAttack1(LPCOLLISIONEVENT e)
 {
-	Die();
+	/*if (dynamic_cast<CMario*>(by_another))
+	{
+		CMario* m = (CMario*)by_another;
+		float mX, mY;
+		m->GetPosition(mX, mY);
+		m->InsertFlyingScore(mX, mY - 16);
+	}*/
+	e->Reverse();
+	Touch(e);
+	
+	if (wings)
+		LoseWings();		
+	else
+		Die();
 }
 
 void CGoomba::OnReactionToAttack2(LPCOLLISIONEVENT e)
 {
-	Die();
+	if (wings)
+		LoseWings();
+	else
+		Die();
 }
+
+//void CGoomba::ReactionToAttack3(CGameObject* by_another)
+//{
+//	if (dynamic_cast<CKoopaTroopa*>(by_another)
+//		|| dynamic_cast<CRacoonTail*>(by_another))
+//	{
+//		LPPLAYSCENE currentScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+//		currentScene->InsertScore(x, y - 16, 100);
+//	}
+//	Die();
+//}
 
 void CGoomba::OnReactionToAttack3(LPCOLLISIONEVENT e)
 {	
+	if (wings)
+		LoseWings();
 	CHarmfulObject::OnReactionToAttack3(e);	
 }
 
@@ -112,14 +142,12 @@ void CGoomba::SetState(int state)
 		break;
 	case STATE_FLYINGOUT:
 		break;
-	default:
-		ToDefaultState();
-		break;
 	}
 }
 
 void CGoomba::ToStateLiving()
 {
+	SetBoundingBox(GOOMBA_BBOX_WIDTH, GOOMBA_BBOX_HEIGHT);
 	vx = nx * GOOMBA_VX;
 	vy = GOOMBA_VY;
 }
@@ -136,6 +164,9 @@ void CGoomba::ToStateDying()
 void CGoomba::Living(DWORD dt)
 {
 	Move(dt);
+
+	if(wings)
+		Flutter();
 }
 
 void CGoomba::Dying(DWORD dt)
@@ -151,8 +182,99 @@ void CGoomba::Refresh()
 {
 	maxVx = GOOMBA_VX;
 	LookForMario();
-	life = GOOMBA_LIFE;
+	life = GOOMBA_LIFE;	
+	if (bornWithWings)
+	{	
+		GrowWings();
+		SetMomentum(0);
+	}
 	SetState(STATE_LIVE);
+}
+
+void CGoomba::GrowWings()
+{
+	if(wings == nullptr)
+		wings = new CWing(x, y - WINGS_Y_OFFSET, 2, WINGS_DISTANCE_BETWEEN);
+}
+
+void CGoomba::LoseWings()
+{
+	if (wings)
+	{
+		delete wings;
+		wings = nullptr;
+	}
+}
+
+void CGoomba::Flutter()
+{
+	wings->SetPosition(x, y + WINGS_Y_OFFSET);
+
+	if (vy > 0)
+	{
+		isOnGround = false;
+		if (wings)
+			wings->SetState(WINGS_STATE_OPEN);
+	}
+	else
+	{
+		isOnGround = (vy == 0);
+		if (wings)
+			wings->SetState(WINGS_STATE_CLOSE);
+	}
+}
+
+void CGoomba::ChaseMario(DWORD dt)
+{
+	if (momentum < 1)
+	{
+		start_momentum += dt;
+		if (isOnGround && start_momentum >= CHASING_DURATION)
+		{
+			SetMomentum(momentum + 1);
+		}
+	}
+	else if (momentum < CHASING_MAX_MOMENTUM)
+	{
+		if (isOnGround)
+		{
+			SetMomentum(momentum + 1);
+		}
+	}
+	else
+	{
+		if (isOnGround)
+		{
+			SetMomentum(momentum + 1);
+		}
+	}
+}
+
+void CGoomba::SetMomentum(int m)
+{
+	if (momentum == m)
+	{
+		return;
+	}
+
+	momentum = m % (CHASING_MAX_MOMENTUM + 1);
+
+	if (momentum < 1)
+	{
+		LookForMario();
+		vx = nx * GOOMBA_VX;
+		vy = 0.0f;
+		start_momentum = 0;
+	}
+	else if (momentum < CHASING_MAX_MOMENTUM)
+	{
+		start_y = y;
+		vy = CHASING_VY;
+	}
+	else
+	{
+		vy = WINGS_JUMP_VY;
+	}
 }
 
 void CGoomba::Prepare(DWORD dt)
@@ -161,13 +283,11 @@ void CGoomba::Prepare(DWORD dt)
 	{
 	case STATE_FLYINGOUT:
 	case STATE_LIVE:
+		if(wings) ChaseMario(dt);
 		CMovableObject::Prepare(dt);
 		break;
 	case STATE_DIE:
 		Dying(dt);
-		break;
-	default:
-		DefaultPrepare(dt);
 		break;
 	}
 }
@@ -190,7 +310,7 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 
 void CGoomba::ChangeAnimation()
 {
-	int object = ANI_ID_GOOMBA;
+	int object = GetObjectAniID();
 	int action;
 
 	switch (state)
@@ -211,6 +331,9 @@ void CGoomba::ChangeAnimation()
 
 void CGoomba::Render()
 {
+	if (wings)
+		wings->Render();
+
 	ChangeAnimation();
 	CAnimations::GetInstance()->Get(aniID)->Render(x, y);
 	//RenderBoundingBox();

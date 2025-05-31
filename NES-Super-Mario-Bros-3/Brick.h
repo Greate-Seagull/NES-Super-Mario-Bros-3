@@ -2,6 +2,8 @@
 
 #include "Block.h"
 #include "BrickParticle.h"
+
+#include "PlayScene.h"
 #include "Animation.h"
 #include "Animations.h"
 
@@ -20,10 +22,11 @@ class CBrick : public CBlock {
 protected:
 	float origin_y;
 	bool opposite = false;
-
-	int bounceCount;
+	int toggle_number;
+	bool transform;
 public:
-	CBrick(float x, float y, int itemID = BLOCK_WITHOUT_ITEM, int bounceCount = 0) :CBlock(x, y, itemID)
+	CBrick(float x, float y, int itemID = BLOCK_WITHOUT_ITEM, int toggle_number = 1, bool tranform = false) 
+		:CBlock(x, y, itemID)
 	{
 		bbox_width = BRICK_BBOX_WIDTH;
 		bbox_height = BRICK_BBOX_HEIGHT;
@@ -31,7 +34,8 @@ public:
 		aniID = ID_ANI_BRICK;
 
 		this->origin_y = y;
-		this->bounceCount = bounceCount;
+		this->toggle_number = toggle_number;
+		this->transform = tranform;
 
 		SetState(STATE_LIVE);
 		SetBoundingBox(bbox_width, bbox_height);
@@ -39,12 +43,16 @@ public:
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 	void InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 
-	void OnReactionTo(CGameObject* by_another, int action);
+	void OnReactionTo(LPCOLLISIONEVENT e, int action);
 	void SetState(int state);
 	int GetItemID() { return itemID; }
 
-	void TriggerItem();
+	void TakeItem();
+	void DetermineItem(CMario* mario);
+	void TriggerItem(LPCOLLISIONEVENT e, int action);
 
 	void Shaking(DWORD dt);
 	void BlastingBrickParticles();
+
+	bool IsTransformingBrick() { return transform; }
 };

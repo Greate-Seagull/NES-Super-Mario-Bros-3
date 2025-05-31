@@ -9,25 +9,28 @@
 
 #define ANI_PBUTTON_BASE 7500
 
-#define BUTTON_BBOX_WIDTH 16
-#define BUTTON_BBOX_HEIGHT 16
+#define BUTTON_BBOX_WIDTH 16.0f
+#define BUTTON_BBOX_HEIGHT 16.0f
 
 #define ACTION_PRESS_BUTTON 10
 
 class CPButton : public CHelpfulObject
 {
+	float timeElapsed = 0;
+	bool isSwitched = false;
 public:
 	CPButton(float x, float y) : CHelpfulObject(x, y)
 	{
 		state = PBUTTON_CONSTRUCTED;
 		SetBoundingBox(BUTTON_BBOX_WIDTH, BUTTON_BBOX_HEIGHT);
 	}
+	void Prepare(DWORD dt) {};
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 
-	void Reaction_Brick_To_Coin();
-	void Reaction_Coin_To_Brick();
-	void OnReactionTo(CGameObject* by_another, int action);
+	void ReplaceBricksWithCoins();
+	void ReplaceCoinsWithBricks();
+	void OnReactionTo(LPCOLLISIONEVENT e, int action);
 
-	int IsCollidable() { return 1; }
-	int IsBlocking() { return 0; }
+	int IsCollidable() { return isSwitched == false; }
+	//int IsBlocking() { return 1; }
 };

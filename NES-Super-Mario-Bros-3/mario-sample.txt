@@ -1,5 +1,5 @@
 [SETTINGS]
-start	1
+start	3
 width	320
 height	240
 
@@ -19,11 +19,13 @@ height	240
 -25	textures\goal_roulette.png
 -20	textures\HUD-inventory.png
 -10	textures\background.jpg
+-5	textures\HUD-font.png
 0	textures\mario_left.png
 1	textures\mario_right.png
 10	textures\enemies_left.png
 11	textures\enemies_right.png
-12	textures\enemies_up.png
+12	textures\enemies_up_left.png
+13	textures\enemies_up_right.png
 20	textures\misc.png
 21	textures\stage-tiles.png
 22	textures\misc-2.png

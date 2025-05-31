@@ -19,13 +19,12 @@ using namespace std;
 #define MAX_FRAME_RATE 100
 #define KEYBOARD_BUFFER_SIZE 1024
 
-#define BACKBUFFER_HEIGHT 256.0f
+#define BACKBUFFER_HEIGHT 234.0f
 #define BACKBUFFER_WIDTH 256.0f
 
-#define CAM_HEIGHT 208.0f
+#define CAM_HEIGHT 186.0f
 #define CAM_WIDTH BACKBUFFER_WIDTH
 #define CAM_FOLLOW_HEIGHT 16.0f * 3.0f
-
 
 /*
 	Our simple game framework
@@ -141,6 +140,8 @@ public:
 
 	static bool IsInRange(LPGAMEOBJECT obj, float start_x, float end_x, float start_y, float end_y);
 	bool IsInCam(LPGAMEOBJECT obj);
+
+	D3DXCOLOR GetBackGroundColor();
 
 	~CGame();
 };

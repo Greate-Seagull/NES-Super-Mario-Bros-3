@@ -75,14 +75,34 @@ void CPipe::RenderBoundingBox()
 	//CGame::GetInstance()->Draw(x - cx, y - cy, bbox, &rect, BBOX_ALPHA);
 }
 
+int CPipe::IsGoingThrough(CGameObject* obj)
+{
+	if (warp_direction)
+	{
+		if (CMario* mario = dynamic_cast<CMario*>(obj))
+		{
+			float mario_left, mario_top, mario_right, mario_bot;
+			mario->GetBoundingBox(mario_left, mario_top, mario_right, mario_bot);
+
+			float pipe_left, pipe_top, pipe_right, pipe_bot;
+			this->GetBoundingBoxInside(pipe_left, pipe_top, pipe_right, pipe_bot);
+
+			return mario_left > pipe_left && mario_right < pipe_right;
+		}
+	}
+
+	return false;
+}
+
 void CPipe::OnCollisionWith(LPCOLLISIONEVENT e)
 {
-	if (CMario* mario = dynamic_cast<CMario*>(e->obj))
+	if (warp_direction)
 	{
-		mario->OnReactionTo(e, ACTION_TOUCH);
+		e->ny = warp_direction;
+		e->obj->OnReactionTo(e, ACTION_TOUCH);
 	}
 	else
-		e->obj->OnReactionTo(e, ACTION_ATTACK_LEVEL_3);
+		CBlock::OnCollisionWith(e);
 }
 
 void CPipe::GetBoundingBox(float& l, float& t, float& r, float& b)
@@ -131,6 +151,7 @@ void CPipe::OnReactionTo(LPCOLLISIONEVENT e, int action)
 			if (mario_left > pipe_left && mario_right < pipe_right)
 			{
 				e->Reverse();
+				e->ny = warp_direction;
 				mario->OnReactionTo(e, ACTION_TOUCH);
 			}
 		}
@@ -146,6 +167,10 @@ void CPipe::TakeItem()
 	{
 	case OBJECT_TYPE_VENUS_FIRE_TRAP:
 		item = new CVenusFireTrap(x, y);
+		UseDefaultItemPosition();
+		break;
+	case OBJECT_TYPE_PIRANHA_PLANT:
+		item = new CPiranhaPlant(x, y);
 		UseDefaultItemPosition();
 		break;
 	default:

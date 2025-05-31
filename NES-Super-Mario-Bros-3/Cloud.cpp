@@ -15,16 +15,16 @@ void CCloud::Render()
 
 	if (this->type == 0)
 	{
-		if (this->length <= 0) return;
+		if (this->width <= 0) return;
 	
 		s->Get(this->spriteIdBeginEnd)->Draw(xx, yy);
 		xx += this->cellWidth;
-		for (int i = 1; i < this->length - 1; i++)
+		for (int i = 1; i < this->width - 1; i++)
 		{
 			s->Get(this->spriteIdMiddleEnd)->Draw(xx, yy);
 			xx += this->cellWidth;
 		}
-		if (length > 1)
+		if (width > 1)
 			s->Get(this->spriteIdEndEnd)->Draw(xx, yy);
 
 		yy -= cellHeight;
@@ -34,12 +34,12 @@ void CCloud::Render()
 
 	s->Get(this->spriteIdBeginBegin)->Draw(xx, yy);
 	xx += this->cellWidth;
-	for (int i = 1; i < this->length - 1; i++)
+	for (int i = 1; i < this->width - 1; i++)
 	{
 		s->Get(this->spriteIdMiddleBegin)->Draw(xx, yy);
 		xx += this->cellWidth;
 	}
-	if (length > 1)
+	if (width > 1)
 		s->Get(this->spriteIdEndBegin)->Draw(xx, yy);
 }
 
@@ -47,6 +47,6 @@ void CCloud::GetBoundingBox(float& l, float& t, float& r, float& b)
 {
 	l = x - this->cellWidth / 2.0f;
 	t = y - this->cellHeight / 2.0f;
-	r = l + this->cellWidth * this->length;
+	r = l + this->cellWidth * this->width;
 	b = t + this->cellHeight;
 }

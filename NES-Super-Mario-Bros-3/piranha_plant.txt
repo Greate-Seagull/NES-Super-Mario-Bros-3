@@ -1,7 +1,7 @@
 # id	left	top	right	bottom	texture_id
 [SPRITES]
 #BITE 0
-24001	1	200	16	230	10
+24001	1	199	16	230	10
 #BITE 1
 24002	18	199	33	230	10
 

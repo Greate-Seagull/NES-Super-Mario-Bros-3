@@ -1,6 +1,7 @@
 #include "Coin.h"
 
 #include "Mario.h"
+#include "PlayScene.h"
 
 void CCoin::Prepare(DWORD dt)
 {
@@ -16,9 +17,16 @@ void CCoin::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 
 		if (y >= originalY)
 		{
+			/*LPPLAYSCENE currScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+			currScene->InsertScore(x, y - 16, 100);*/
 			Delete();
 		}
 	}
+}
+
+int CCoin::IsLinkedTo(CGameObject* obj)
+{
+	return dynamic_cast<CMario*>(obj) == nullptr; 
 }
 
 void CCoin::OnCollisionWith(LPCOLLISIONEVENT e)
@@ -31,10 +39,13 @@ void CCoin::OnReactionTo(LPCOLLISIONEVENT e, int action)
 {
 	if (isContained)
 	{
+		CPlayScene* ps = (CPlayScene*)CGame::GetInstance()->GetCurrentScene();
+
 		SetToggled();
 
 		e->Reverse();
 		e->src_obj = this;
+		e->obj = ps->GetPlayer();
 		e->obj->OnReactionTo(e, ACTION_TOUCH);
 	}
 	else

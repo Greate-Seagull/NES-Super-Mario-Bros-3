@@ -59,6 +59,8 @@ public:
 	void Render();
 	void RenderBoundingBox();	
 
+	int IsGoingThrough(CGameObject* obj);
+
 	void OnCollisionWith(LPCOLLISIONEVENT e);
 
 	void OnReactionTo(LPCOLLISIONEVENT e, int action);

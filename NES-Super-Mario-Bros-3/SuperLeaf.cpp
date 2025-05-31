@@ -1,6 +1,7 @@
 #include "SuperLeaf.h"
 
 #include "Mario.h"
+#include "PlayScene.h"
 
 CSuperLeaf::CSuperLeaf(float x, float y):
 	CHelpfulObject(x, y)
@@ -91,6 +92,10 @@ void CSuperLeaf::OnCollisionWith(LPCOLLISIONEVENT e)
 {
 	if (CMario* mario = dynamic_cast<CMario*>(e->obj))
 	{
+		/*LPPLAYSCENE currentScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+		currentScene->InsertScore(x, y - 16, 1000);
+
+		if (mario->GetLife() != MARIO_LEVEL_RACOON) LaunchEffect(mario);*/
 		LaunchEffect(e);
 		SetState(STATE_DIE);
 	}

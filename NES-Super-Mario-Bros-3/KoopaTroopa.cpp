@@ -1,12 +1,13 @@
 #include "KoopaTroopa.h"
 #include "Platform.h"
 
-#include "debug.h"
 #include "PlayScene.h"
 
-CKoopaTroopa::CKoopaTroopa(float x, float y):
+CKoopaTroopa::CKoopaTroopa(float x, float y, bool haveWings):
 	CEnemy(x, y)
 {	
+	this->bornWithWings = haveWings;
+
 	Refresh();
 }
 
@@ -15,22 +16,28 @@ void CKoopaTroopa::Prepare(DWORD dt)
 	switch (state)
 	{
 	case STATE_LIVE:
-		CMovableObject::Prepare(dt);
+		LivingPrepare(dt);
 		break;
 	case KOOPA_STATE_HIDE:
 		Hide(dt);
-		if (!IsControlled()) CMovableObject::Prepare(dt);
+		if (carrier == nullptr) CMovableObject::Prepare(dt);
 		break;
 	case KOOPA_STATE_ROLL:
 		CMovableObject::Prepare(dt);
 		break;
 	case KOOPA_STATE_POP:
 		Pop(dt);
-		if (!IsControlled()) CMovableObject::Prepare(dt);
+		if (carrier == nullptr) CMovableObject::Prepare(dt);
 		break;
 	}
 
 	//DebugOutTitle(L"%f, %f", x, y);
+}
+
+void CKoopaTroopa::LivingPrepare(DWORD dt)
+{
+	vx = nx * (wings ? WINGS_VX : KOOPA_VX);
+	CMovableObject::Prepare(dt);
 }
 
 void CKoopaTroopa::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
@@ -50,6 +57,9 @@ void CKoopaTroopa::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		Poping(dt);
 		break;
 	}
+
+	if (wings)
+		Flutter();
 }
 
 void CKoopaTroopa::Living(DWORD dt)
@@ -74,19 +84,6 @@ void CKoopaTroopa::Poping(DWORD dt)
 
 void CKoopaTroopa::OnNoCollisionWithBlocking(DWORD dt)
 {	
-	switch (state)
-	{
-	case STATE_LIVE:
-		if (isOnGround)
-		{
-			Patrol();
-			x = on_ground_x;
-			y = on_ground_y;	
-			vy = 0.0f;
-		}
-		break;
-	}
-
 	isOnGround = false;
 }
 
@@ -116,6 +113,9 @@ void CKoopaTroopa::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 			isOnGround = true;
 			on_ground_x = x;
 			on_ground_y = y;
+
+			if (wings)
+				vy = WINGS_JUMP_VY;
 		}
 	}
 
@@ -139,24 +139,22 @@ void CKoopaTroopa::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 			isOnGround = true;
 			on_ground_x = x;
 			on_ground_y = y;
+
+			if (wings)
+				vy = WINGS_JUMP_VY;
 		}
 	}
 
 	if (e->nx)
 	{
 		Patrol();
-	}
 
-	switch (state)
-	{
-	/*case KOOPA_STATE_POP:
-	case KOOPA_STATE_HIDE:
-		ny = e->ny;
-		Bounce();
-		break;*/
-	case KOOPA_STATE_ROLL:
-		Attack(e);
-		break;
+		switch (state)
+		{		
+		case KOOPA_STATE_ROLL:
+			Destroy(e);
+			break;
+		}
 	}
 }
 
@@ -197,11 +195,33 @@ void CKoopaTroopa::Patrol()
 
 void CKoopaTroopa::Refresh()
 {
-	SetBoundingBox(KOOPA_BBOX_WIDTH_LIVE, KOOPA_BBOX_HEIGHT_FOOT_1);
+	SetBoundingBox(KOOPA_BBOX_WIDTH_LIVE, KOOPA_BBOX_HEIGHT_LIVE);
 	maxVx = KOOPA_VX;
 	vy = KOOPA_VY;
+	if (bornWithWings) GrowWings();
 	SetState(STATE_LIVE);
 	life = KOOPA_LIFE;
+}
+
+void CKoopaTroopa::GrowWings()
+{
+	if (wings == nullptr)
+		wings = new CWing(x, y);
+}
+
+void CKoopaTroopa::LoseWings()
+{
+	if (wings)
+	{
+		delete wings;
+		wings = nullptr;
+	}
+}
+
+void CKoopaTroopa::Flutter()
+{
+	wings->SetPosition(x - nx * WINGS_X_OFFSET, y + WINGS_Y_OFFSET);
+	wings->SetNx(this->nx * -1);
 }
 
 void CKoopaTroopa::Render()
@@ -209,6 +229,9 @@ void CKoopaTroopa::Render()
 	ChangeAnimation();
 
 	CAnimations::GetInstance()->Get(aniID)->Render(x, y);
+
+	if (wings)
+		wings->Render();
 	//RenderBoundingBox();
 }
 
@@ -260,7 +283,12 @@ void CKoopaTroopa::ChangeAnimation()
 			break;
 	}
 
-	aniID = ANI_ID_KOOPA + action + direction;
+	aniID = GetObjectAniID() + action + direction;
+}
+
+int CKoopaTroopa::GetObjectAniID()
+{
+	return ANI_ID_KOOPA;
 }
 
 void CKoopaTroopa::SetState(int state)
@@ -278,18 +306,16 @@ void CKoopaTroopa::SetState(int state)
 	switch (state)
 	{
 		case STATE_LIVE:
-			y += (bbox_height - KOOPA_BBOX_HEIGHT_FOOT_1) / 2.0f - 0.01f;
-			SetBoundingBox(KOOPA_BBOX_WIDTH_LIVE, KOOPA_BBOX_HEIGHT_FOOT_1);
+			y += (bbox_height - KOOPA_BBOX_HEIGHT_LIVE) / 2.0f - 0.01f;
+			SetBoundingBox(KOOPA_BBOX_WIDTH_LIVE, KOOPA_BBOX_HEIGHT_LIVE);
 			LookForMario();
 			vx = nx * KOOPA_VX;
-			AgainstControl();
-			LoseHighPower();
+			if (carrier) AgainstControl();
 			break;
 		case KOOPA_STATE_HIDE:
 			y += (bbox_height - KOOPA_BBOX_HEIGHT_HIDE) / 2.0f - 0.01f;
 			SetBoundingBox(KOOPA_BBOX_WIDTH_HIDE, KOOPA_BBOX_HEIGHT_HIDE);
 			recovering_time = 0;
-			SetHighPower();
 			break;
 		case KOOPA_STATE_POP:
 			vx = KOOPA_POP_VX;
@@ -298,7 +324,7 @@ void CKoopaTroopa::SetState(int state)
 			vx = nx * KOOPA_ROLL_VX;
 			break;
 		case STATE_DIE:
-			AgainstControl();
+			if (carrier) AgainstControl();
 			Delete();
 			break;
 	}
@@ -311,15 +337,14 @@ void CKoopaTroopa::OnReactionToCarrying(LPCOLLISIONEVENT e)
 	case STATE_LIVE:
 		e->Reverse();
 		Attack(e);
-		AgainstControl();
 		break;
 	case KOOPA_STATE_ROLL:
 		e->Reverse();
 		Destroy(e);
-		AgainstControl();
 		break;
 	case KOOPA_STATE_POP:
 	case KOOPA_STATE_HIDE:
+		AcceptControl((CCreature*)e->src_obj);
 		Stop();
 		break;
 	}
@@ -342,7 +367,7 @@ void CKoopaTroopa::OnReactionToTouching(LPCOLLISIONEVENT e)
 		else
 		{
 			nx = -nx;
-			vx = nx * abs(vx);
+			vx = nx * fabs(vx);
 		}
 		break;
 	case KOOPA_STATE_POP:
@@ -366,16 +391,22 @@ void CKoopaTroopa::OnReactionToAttack1(LPCOLLISIONEVENT e)
 	case KOOPA_STATE_HIDE:
 		if (CMario* mario = dynamic_cast<CMario*>(e->src_obj))
 		{
-			e->Reverse();
-			Touch(e);
 			SetNx(this-> x < e->src_obj->GetX() ? DIRECTION_LEFT: DIRECTION_RIGHT);
 			SetState(KOOPA_STATE_ROLL);
 		}
 		break;
 	default:
-		ny = -1 * e->ny;
-		SetState(KOOPA_STATE_HIDE);
-		Stop();
+		e->Reverse();
+		Touch(e);
+
+		if (wings)
+			LoseWings();
+		else
+		{
+			ny = -1 * e->ny;
+			SetState(KOOPA_STATE_HIDE);
+			Stop();
+		}
 		break;
 	}
 
@@ -383,19 +414,28 @@ void CKoopaTroopa::OnReactionToAttack1(LPCOLLISIONEVENT e)
 
 void CKoopaTroopa::OnReactionToAttack2(LPCOLLISIONEVENT e)
 {
-	SetState(KOOPA_STATE_HIDE);
+	if (wings)
+		LoseWings();
+	else
+		SetState(KOOPA_STATE_HIDE);
 }
 
 void CKoopaTroopa::OnReactionToAttack3(LPCOLLISIONEVENT e)
 {
+	if (wings)
+		LoseWings();
 	SetState(KOOPA_STATE_HIDE);
-	CHarmfulObject::OnReactionToAttack3(e);
+	CHarmfulObject::OnReactionToAttack3(e);	
 }
 
 void CKoopaTroopa::UnderAttack(CGameObject* by_another)
 {
 	if (CMario* mario = dynamic_cast<CMario*>(by_another))
 	{
+		/*float mX, mY;
+		mario->GetPosition(mX, mY);
+		mario->InsertFlyingScore(mX, mY - 16);*/
+
 		CCreature::UnderAttack(mario);
 	}
 }

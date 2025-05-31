@@ -76,6 +76,7 @@ public:
 	virtual int IsCollidable() { return 0; };
 	virtual int IsMoving();
 	virtual int IsLinkedTo(CGameObject* obj) { return 0; } //For skip collision with specific object
+	virtual int IsGoingThrough(CGameObject* obj) { return 0; }
 
 	// When no collision has been detected (triggered by CCollision::Process)
 	virtual void OnNoCollision(DWORD dt) {};

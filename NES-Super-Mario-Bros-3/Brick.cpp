@@ -1,12 +1,8 @@
 #include "Brick.h"
 #include "PButton.h"
-#include "PlayScene.h"
 #include "SuperMushroom.h"
 #include "SuperLeaf.h"
 #include "Coin.h"
-#include "KoopaTroopa.h"
-
-#include "debug.h"
 
 void CBrick::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
@@ -26,9 +22,9 @@ void CBrick::InPhase(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	}
 }
 
-void CBrick::OnReactionTo(CGameObject* by_another, int action)
+void CBrick::OnReactionTo(LPCOLLISIONEVENT e, int action)
 {
-	if (state == STATE_DIE || by_another == NULL)
+	if (state == STATE_DIE)
 		return;
 
 	switch (action)
@@ -56,16 +52,24 @@ void CBrick::OnReactionTo(CGameObject* by_another, int action)
 		{
 			case BLOCK_WITHOUT_ITEM_BREAKER:
 			{
-				BlastingBrickParticles();
-				this->Delete();
-				break;
+				if (e->ny > 0) 
+				{
+					BlastingBrickParticles();
+					this->Delete();
+					break;
+				}
+				else return;
 			}
-			default: SetState(BRICK_STATE_TOGGLE); break;
+			default: 
+			{
+				if (e->ny > 0) SetState(BRICK_STATE_TOGGLE);
+				else return;
+			}
 		}
 		break;
 	}
 
-	TriggerItem();
+	TriggerItem(e, action);
 }
 
 void CBrick::SetState(int state)
@@ -87,22 +91,67 @@ void CBrick::SetState(int state)
 	}
 }
 
-void CBrick::TriggerItem()
+void CBrick::TakeItem()
 {
-	/*switch (itemID)
-	{
-		case OBJECT_TYPE_PBUTTON: item = new CPButton(x, y - BRICK_WIDTH); break;
-		case OBJECT_TYPE_SUPER_MUSHROOM: item = new CSuperMushroom(x, y); break;
-		case OBJECT_TYPE_SUPER_LEAF: item = new CSuperLeaf(x, y); break;
-		case OBJECT_TYPE_COIN: item = new CCoin(x, y); break;
-	default: return;
-	}
+	if (item)
+		return;
 
-	item->OnReactionTo(this, ACTION_TOUCH);
-	LPPLAYSCENE ps = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
-	int index = ps->Find(this);
-	if (itemID != OBJECT_TYPE_PBUTTON) ps->Insert(item, index - 1);
-	else ps->Insert(item, -1);*/
+	switch (itemID)
+	{
+	case OBJECT_TYPE_PBUTTON: 
+		item = new CPButton(x, y - BRICK_WIDTH - 1.0f); 
+		break;
+	case OBJECT_TYPE_COIN:
+	{
+		CCoin* coin = new CCoin(x, y);
+		coin->SetContained();
+		item = coin;
+		break;
+	}
+	case OBJECT_TYPE_SUPER_MUSHROOM:
+		item = new CSuperMushroom(x, y);
+		break;
+	case OBJECT_TYPE_SUPER_LEAF:
+		item = new CSuperLeaf(x, y);
+		break;
+	default:
+		item = nullptr;
+	}
+}
+
+void CBrick::DetermineItem(CMario* mario)
+{
+	if (mario->GetLife() < MARIO_LEVEL_BIG)
+		itemID = OBJECT_TYPE_SUPER_MUSHROOM;
+	else
+		itemID = OBJECT_TYPE_SUPER_LEAF;
+}
+
+void CBrick::TriggerItem(LPCOLLISIONEVENT e, int action)
+{
+	if (item == nullptr)
+	{
+		LPPLAYSCENE ps = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+
+		if (itemID == OBJECT_TYPE_AMBIGUOUS_EFFECT)
+		{
+			CMario* mario = dynamic_cast<CMario*>(ps->GetPlayer());
+			DetermineItem(mario);
+		}
+
+		TakeItem();
+
+		if (item == nullptr)
+			return;
+
+		ps->Insert(item, ps->Find(this));
+		
+		if(itemID != OBJECT_TYPE_PBUTTON)
+			item->OnReactionTo(e, action);
+
+		if (itemID == OBJECT_TYPE_COIN)
+			item = nullptr; //Clear to create more coins
+	}
 }
 
 void CBrick::Shaking(DWORD dt)
@@ -120,8 +169,8 @@ void CBrick::Shaking(DWORD dt)
 		opposite = false;
 		if (itemID != BLOCK_WITHOUT_ITEM)
 		{
-			bounceCount--;
-			if (bounceCount > 0) SetState(STATE_LIVE);
+			toggle_number--;
+			if (toggle_number > 0) SetState(STATE_LIVE);
 			else SetState(STATE_DIE);
 		}
 		else SetState(STATE_LIVE);

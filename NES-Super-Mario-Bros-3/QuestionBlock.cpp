@@ -121,6 +121,7 @@ void CQuestionBlock::TriggerItem(LPCOLLISIONEVENT e, int action)
 
 		item->OnReactionTo(e, action);
 
-		item = nullptr;
+		if(itemID == OBJECT_TYPE_COIN)
+			item = nullptr; //To create more coins
 	}
 }

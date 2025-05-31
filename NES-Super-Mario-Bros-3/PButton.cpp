@@ -8,9 +8,6 @@
 #include "debug.h"
 
 #define SWITCH_DELAY 4000
-float timeElapsed = 0;
-bool isSwitched = false;
-vector<LPGAMEOBJECT> coinsArchive;
 
 void CPButton::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
@@ -20,77 +17,64 @@ void CPButton::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 
 		if (timeElapsed >= SWITCH_DELAY)
 		{
-			Reaction_Coin_To_Brick();
+			ReplaceCoinsWithBricks();
 			isSwitched = false;
-
-			coinsArchive.clear();
 		}
 	}
 
 	aniID = ANI_PBUTTON_BASE + state;
 }
 
-void CPButton::OnReactionTo(CGameObject* by_another, int action)
+void CPButton::OnReactionTo(LPCOLLISIONEVENT e, int action)
 {
-	switch (action)
+	if (dynamic_cast<CMario*>(e->src_obj) && state == PBUTTON_CONSTRUCTED)
 	{
-	case ACTION_TOUCH:
-	{
-		if (dynamic_cast<CMario*>(by_another) && state == PBUTTON_CONSTRUCTED)
-		{
-			state = PBUTTON_PRESSED;
-			isSwitched = true;
-			Reaction_Brick_To_Coin();
-		}
-		break;
-	}
+		state = PBUTTON_PRESSED;
+		isSwitched = true;
+		ReplaceBricksWithCoins();
 	}
 }
 
-void CPButton::Reaction_Brick_To_Coin()
+void CPButton::ReplaceBricksWithCoins()
 {
 	LPPLAYSCENE ps = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
-	vector<LPGAMEOBJECT> objArray = ps->GetBrickObjects();
+	vector<LPGAMEOBJECT> objects = ps->GetObjects();
 
-	for (int i = 0; i < objArray.size(); i++)
+	for (auto& obj: objects)
 	{
-		if (objArray[i])
+		if (CBrick* b = dynamic_cast<CBrick*>(obj))
 		{
-			CBrick* b = (CBrick*)objArray[i];
-			if (b->GetItemID() == BLOCK_WITHOUT_ITEM)
+			if (b->IsTransformingBrick())
 			{
-				if (!objArray[i]->IsDeleted())
-				{
-					float bX, bY;
-					objArray[i]->GetPosition(bX, bY);
-					objArray[i]->Delete();
+				float bX, bY;
+				b->GetPosition(bX, bY);
+				b->Delete();
 
-					objArray[i] = new CCoin(bX, bY);
-					ps->Insert(objArray[i], -1);
-
-					coinsArchive.push_back(objArray[i]);
-				}
+				CCoin* coin = new CCoin(bX, bY);
+				coin->SetTransformed();
+				ps->Insert(coin, -1);
 			}
 		}
 	}
 }
 
-void CPButton::Reaction_Coin_To_Brick()
+void CPButton::ReplaceCoinsWithBricks()
 {
 	LPPLAYSCENE ps = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+	vector<LPGAMEOBJECT> objects = ps->GetObjects();
 
-	for (int i = 0; i < coinsArchive.size(); i++)
+	for (auto& obj: objects)
 	{
-		if (!coinsArchive[i]->IsDeleted())
+		if (CCoin* coin = dynamic_cast<CCoin*>(obj))
 		{
-			if (coinsArchive[i]->GetState() == STATE_DIE)
+			if (coin->IsTransformed())
 			{
-				float bX, bY;
-				coinsArchive[i]->GetPosition(bX, bY);
-				coinsArchive[i]->Delete();
+				float cX, cY;
+				obj->GetPosition(cX, cY);
+				obj->Delete();
 
-				coinsArchive[i] = new CBrick(bX, bY, BLOCK_WITHOUT_ITEM);
-				ps->Insert(coinsArchive[i], -1);
+				obj = new CBrick(cX, cY);
+				ps->Insert(obj, -1);
 			}
 		}
 	}
