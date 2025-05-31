@@ -12,32 +12,18 @@ effects.txt
 hud.txt
 #
 mario.txt
-goomba.txt
 venus_fire_trap.txt
-red_koopa_troopa.txt
-paragoomba.txt
+boomerang.txt
 boomerang_brother.txt
 #
-super_mushroom.txt
-super_leaf.txt
-fireball.txt
-wings.txt
-coin.txt
-pbutton.txt
 #
-brick.txt
 cloud.txt
-questionblock.txt
 pipe.txt
 ground.txt
-container.txt
-background.txt
 minibush.txt
 bigbush.txt
-stripedbrick.txt
 mapicon.txt
 levelend.txt
-particle.txt
 other.txt
 #
 [OBJECTS]
@@ -87,7 +73,7 @@ other.txt
 0	24	415
 
 # BOOMERANG BROTHER
-27	40	400
+27	40	411
 
 # PIPE
 #id	x	y	cell_w	cell_h	height	sprite				dir	warpDir	item	scene	des_x	des_y

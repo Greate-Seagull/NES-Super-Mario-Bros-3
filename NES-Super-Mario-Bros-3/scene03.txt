@@ -3,8 +3,7 @@
 1
 [CAMERA]
 #min x	min y	max x	max y	cam vx	cam vy
-#0	0	1792	253	0.03	0
-0	253	1792	253	0	0
+0	0	1792	253	0.03	0
 [BACKGROUND]
 1
 [ASSETS]
@@ -245,7 +244,7 @@ other.txt
 16	1800	431	-0.03	0	16	16	3	1	0	0	0	0	0	0	0	71100	71200	71300
 
 # MARIO
-0	1944	300
+0	40	351
 
 # PIPE
 #id	x	y	cell_w	cell_h	height	sprite				dir	warpDir	item	scene	des_x	des_y
@@ -265,6 +264,5 @@ other.txt
 
 # RED KOOPA TROOPA
 23	1080	346	0
-#23	1880	415	1
 23	1880	314	1
 23	1992	354	0

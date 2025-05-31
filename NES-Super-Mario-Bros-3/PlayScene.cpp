@@ -322,8 +322,10 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	case OBJECT_TYPE_BOOMERANG_BROTHER:
 	{
 		obj = new CBoomerangBrother(x, y);
-		spawner.Add(obj);
-		break;
+		Insert(obj, -1);
+		vector<CBoomerang*> boomerangs = ((CBoomerangBrother*)obj)->GetBoomerangs();
+		for (int i = 0; i < boomerangs.size(); i++) Insert(boomerangs[i], -1);
+		return;
 	}
 	case OBJECT_TYPE_BRICK: 
 	{
@@ -735,6 +737,8 @@ void CPlayScene::Insert(LPGAMEOBJECT newObj, int index)
 		objects.push_back(newObj);
 	else
 		objects.insert(objects.begin() + index, newObj);
+
+	spawner.Add(newObj);
 }
 
 int CPlayScene::Find(LPGAMEOBJECT obj)

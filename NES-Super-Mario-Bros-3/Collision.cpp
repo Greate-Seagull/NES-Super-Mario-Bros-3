@@ -2,6 +2,7 @@
 #include "GameObject.h"
 
 #include "Mario.h"
+#include "BoomerangBrother.h"
 
 #include "debug.h"
 
@@ -437,6 +438,9 @@ void CCollision::SweptAABB(LPGAMEOBJECT objSrc, DWORD dt, LPGAMEOBJECT objDest)
 */
 void CCollision::Scan(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* objDests)
 {
+	if (dynamic_cast<CBoomerangBrother*>(objSrc))
+		int t = 0;
+
 	for (UINT i = 0; i < objDests->size(); i++)
 	{
 		if (objSrc == objDests->at(i))

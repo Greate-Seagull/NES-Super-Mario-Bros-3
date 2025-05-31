@@ -26,7 +26,6 @@ using namespace std;
 #define CAM_WIDTH BACKBUFFER_WIDTH
 #define CAM_FOLLOW_HEIGHT 16.0f * 3.0f
 
-
 /*
 	Our simple game framework
 */

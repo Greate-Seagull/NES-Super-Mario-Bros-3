@@ -3,7 +3,7 @@
 #include "MovableObject.h"
 #include "Platform.h"
 
-#define FALLING_GRAVITY 0.00025f;
+#define FALLING_GRAVITY 0.0002f;
 
 class CFloatingPlatform: public CPlatform
 {
