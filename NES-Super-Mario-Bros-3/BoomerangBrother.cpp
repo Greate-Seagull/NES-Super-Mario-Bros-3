@@ -210,6 +210,8 @@ void CBoomerangBrother::OnCollisionWithEnemy(LPCOLLISIONEVENT e)
 
 void CBoomerangBrother::OnReactionToAttack1(LPCOLLISIONEVENT e)
 {
+	if (CMario* player = dynamic_cast<CMario*>(e->src_obj))
+		player->InsertScoreObject(x, y - 16, 100);
 	e->Reverse();
 	Touch(e);
 	CHarmfulObject::OnReactionToAttack3(e);
@@ -224,6 +226,12 @@ void CBoomerangBrother::OnReactionToAttack2(LPCOLLISIONEVENT e)
 
 void CBoomerangBrother::OnReactionToAttack3(LPCOLLISIONEVENT e)
 {
+	if (CRacoonTail* tail = dynamic_cast<CRacoonTail*>(e->src_obj))
+	{
+		LPPLAYSCENE currScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+		CMario* player = (CMario*)currScene->GetPlayer();
+		player->InsertScoreObject(x, y - 16, 100);
+	}
 	CHarmfulObject::OnReactionToAttack3(e);
 	UnderAttack((CHarmfulObject*)e->obj);
 }

@@ -187,6 +187,9 @@ void CPiranhaPlant::OnReactionToAttack2(LPCOLLISIONEVENT e)
 
 void CPiranhaPlant::OnReactionToAttack3(LPCOLLISIONEVENT e)
 {
+	LPPLAYSCENE currScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+	CMario* player = (CMario*)currScene->GetPlayer();
+	player->InsertScoreObject(x, y, 100);
 	Die();
 }
 

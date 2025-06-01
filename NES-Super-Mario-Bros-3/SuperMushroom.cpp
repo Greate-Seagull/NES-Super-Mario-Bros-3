@@ -145,6 +145,7 @@ void CSuperMushroom::OnCollisionWithMario(LPCOLLISIONEVENT e)
 
 	if (CMario* mario = dynamic_cast<CMario*>(e->obj))
 	{
+		mario->InsertScoreObject(x, y - 16, 1000);
 		CHelpfulObject::LaunchEffect(e);
 		SetState(STATE_DIE);
 	}
