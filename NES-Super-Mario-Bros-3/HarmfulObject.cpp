@@ -53,6 +53,7 @@ void CHarmfulObject::OnReactionToAttack1(LPCOLLISIONEVENT e)
 
 void CHarmfulObject::OnReactionToAttack2(LPCOLLISIONEVENT e)
 {
+	FlyOut(this->x <= e->src_obj->GetX() ? DIRECTION_LEFT : DIRECTION_RIGHT);	
 }
 
 void CHarmfulObject::OnReactionToAttack3(LPCOLLISIONEVENT e)
@@ -75,6 +76,9 @@ void CHarmfulObject::Attack(LPCOLLISIONEVENT e)
 
 void CHarmfulObject::HigherAttack(LPCOLLISIONEVENT e)
 {
+	float effect_x = x + e->dx;
+	float effect_y = y + e->dy;
+	CEffectsManager::GetInstance()->CreateAttackEffect(effect_x, effect_y);
 	e->obj->OnReactionTo(e, ACTION_ATTACK_LEVEL_2);
 }
 

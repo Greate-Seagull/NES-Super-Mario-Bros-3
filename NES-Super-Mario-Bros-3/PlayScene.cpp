@@ -792,9 +792,6 @@ vector<LPGAMEOBJECT> CPlayScene::FilterByCam()
 			process_list.push_back(objects[i]);
 	}
 
-	if (process_list.size() == 1)
-		process_list.clear();
-
 	return process_list;
 }
 

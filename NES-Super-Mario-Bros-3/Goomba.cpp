@@ -10,6 +10,14 @@ CGoomba::CGoomba(float x, float y, bool haveWings) :
 	bornWithWings = haveWings;	
 }
 
+void CGoomba::SetPosition(float x, float y)
+{
+	this->x = x; this->y = y;
+
+	if(wings)
+		wings->SetPosition(x, y + WINGS_Y_OFFSET);
+}
+
 void CGoomba::OnCollisionWith(LPCOLLISIONEVENT e)
 {
 	//if (!e->obj->IsBlocking()) return; 
@@ -88,6 +96,9 @@ void CGoomba::OnReactionToAttack1(LPCOLLISIONEVENT e)
 	}*/
 	e->Reverse();
 	Touch(e);
+
+	if (e->ny)
+		vy = 0.0f;
 	
 	if (wings)
 		LoseWings();		
@@ -99,8 +110,8 @@ void CGoomba::OnReactionToAttack2(LPCOLLISIONEVENT e)
 {
 	if (wings)
 		LoseWings();
-	else
-		Die();
+	CHarmfulObject::OnReactionToAttack2(e);
+	SetLife(life - 1.0f);
 }
 
 //void CGoomba::ReactionToAttack3(CGameObject* by_another)

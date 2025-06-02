@@ -218,7 +218,7 @@ void CBoomerangBrother::OnReactionToAttack1(LPCOLLISIONEVENT e)
 
 void CBoomerangBrother::OnReactionToAttack2(LPCOLLISIONEVENT e)
 {
-	CHarmfulObject::OnReactionToAttack3(e);
+	CHarmfulObject::OnReactionToAttack2(e);
 	UnderAttack((CHarmfulObject*)e->obj);
 }
 

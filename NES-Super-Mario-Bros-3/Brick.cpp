@@ -32,6 +32,7 @@ void CBrick::OnReactionTo(LPCOLLISIONEVENT e, int action)
 
 	switch (action)
 	{
+	case ACTION_ATTACK_LEVEL_2:
 	case ACTION_ATTACK_LEVEL_3:
 		switch (itemID)
 		{

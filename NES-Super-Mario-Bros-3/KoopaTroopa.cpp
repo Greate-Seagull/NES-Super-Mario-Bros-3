@@ -11,6 +11,14 @@ CKoopaTroopa::CKoopaTroopa(float x, float y, bool haveWings):
 	SetBoundingBox(KOOPA_BBOX_WIDTH_LIVE, KOOPA_BBOX_HEIGHT_LIVE);
 }
 
+void CKoopaTroopa::SetPosition(float x, float y)
+{
+	this->x = x; this->y = y;
+
+	if (wings)
+		wings->SetPosition(x - nx * WINGS_X_OFFSET, y + WINGS_Y_OFFSET);
+}
+
 void CKoopaTroopa::Prepare(DWORD dt)
 {
 	switch (state)
@@ -30,8 +38,6 @@ void CKoopaTroopa::Prepare(DWORD dt)
 		if (carrier == nullptr) CMovableObject::Prepare(dt);
 		break;
 	}
-
-	//DebugOutTitle(L"%f, %f", x, y);
 }
 
 void CKoopaTroopa::LivingPrepare(DWORD dt)
@@ -41,7 +47,7 @@ void CKoopaTroopa::LivingPrepare(DWORD dt)
 }
 
 void CKoopaTroopa::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
-{		
+{
 	switch (state)
 	{
 	case STATE_LIVE:
@@ -59,7 +65,7 @@ void CKoopaTroopa::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	}
 
 	if (wings)
-		Flutter();	
+		Flutter();
 }
 
 void CKoopaTroopa::Living(DWORD dt)
@@ -152,7 +158,7 @@ void CKoopaTroopa::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 		switch (state)
 		{		
 		case KOOPA_STATE_ROLL:
-			Destroy(e);
+			HigherAttack(e);
 			break;
 		}
 	}
@@ -166,10 +172,11 @@ void CKoopaTroopa::OnCollisionWithMario(LPCOLLISIONEVENT e)
 		Attack(e);
 		break;
 	case KOOPA_STATE_ROLL:
-		Destroy(e);
+		HigherAttack(e);
 		break;
 	default:
-		Touch(e);
+		e->Reverse();
+		e->obj->OnCollisionWith(e);
 		break;
 	}
 }
@@ -179,10 +186,21 @@ void CKoopaTroopa::OnCollisionWithEnemy(LPCOLLISIONEVENT e)
 	switch (state)
 	{
 	case KOOPA_STATE_ROLL:
+		HigherAttack(e);
 		break;
 	default:
-		Patrol();
-		Touch(e);
+		if (carrier)
+		{
+			HigherAttack(e);
+			e->Reverse();
+			e->src_obj = this;
+			OnReactionToAttack2(e);
+		}
+		else
+		{
+			Patrol();
+			Touch(e);
+		}
 	}
 }
 
@@ -337,7 +355,7 @@ void CKoopaTroopa::OnReactionToCarrying(LPCOLLISIONEVENT e)
 		break;
 	case KOOPA_STATE_ROLL:
 		e->Reverse();
-		Destroy(e);
+		HigherAttack(e);
 		break;
 	case KOOPA_STATE_POP:
 	case KOOPA_STATE_HIDE:
@@ -353,7 +371,7 @@ void CKoopaTroopa::OnReactionToTouching(LPCOLLISIONEVENT e)
 	{
 	case KOOPA_STATE_ROLL:
 		e->Reverse();
-		Destroy(e);
+		HigherAttack(e);
 		break;
 	case STATE_LIVE:
 		if (dynamic_cast<CMario*>(e->src_obj))
@@ -375,6 +393,16 @@ void CKoopaTroopa::OnReactionToTouching(LPCOLLISIONEVENT e)
 			SetNx(this->x < e->src_obj->GetX() ? DIRECTION_LEFT : DIRECTION_RIGHT);
 			SetState(KOOPA_STATE_ROLL);
 		}
+		else if (CEnemy* enemy = dynamic_cast<CEnemy*>(e->src_obj))
+		{
+			if (carrier) 
+			{
+				e->Reverse();
+				HigherAttack(e);
+				e->src_obj = this;
+				OnReactionToAttack2(e);
+			}
+		}
 		break;
 	}
 }
@@ -390,6 +418,16 @@ void CKoopaTroopa::OnReactionToAttack1(LPCOLLISIONEVENT e)
 			SetNx(this-> x < e->src_obj->GetX() ? DIRECTION_LEFT: DIRECTION_RIGHT);
 			SetState(KOOPA_STATE_ROLL);
 		}
+		else if (CEnemy* enemy = dynamic_cast<CEnemy*>(e->src_obj))
+		{
+			if (carrier)
+			{
+				e->Reverse();
+				HigherAttack(e);
+				e->src_obj = this;
+				OnReactionToAttack2(e);
+			}
+		}
 		break;
 	default:
 		e->Reverse();
@@ -404,16 +442,17 @@ void CKoopaTroopa::OnReactionToAttack1(LPCOLLISIONEVENT e)
 			Stop();
 		}
 		break;
-	}
-
+	}	
 }
 
 void CKoopaTroopa::OnReactionToAttack2(LPCOLLISIONEVENT e)
 {
 	if (wings)
 		LoseWings();
-	else
-		SetState(KOOPA_STATE_HIDE);
+	CHarmfulObject::OnReactionToAttack2(e);
+	SetState(KOOPA_STATE_HIDE);
+	SetLife(0.0f); //Be killed
+	if (carrier) AgainstControl();
 }
 
 void CKoopaTroopa::OnReactionToAttack3(LPCOLLISIONEVENT e)
@@ -421,7 +460,8 @@ void CKoopaTroopa::OnReactionToAttack3(LPCOLLISIONEVENT e)
 	if (wings)
 		LoseWings();
 	SetState(KOOPA_STATE_HIDE);
-	CHarmfulObject::OnReactionToAttack3(e);	
+	CHarmfulObject::OnReactionToAttack3(e);
+	isFliedOut = false; //Not be killed
 }
 
 void CKoopaTroopa::UnderAttack(CGameObject* by_another)

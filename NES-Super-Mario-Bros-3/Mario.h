@@ -174,9 +174,6 @@ public:
 
 	float GetLife() { return life; }
 	void SetLife(float l);
-	void ToSmallLevel();
-	void ToBigLevel();
-	void ToRacoonLevel();
 
 	void SetState(int state);
 	void ToGainingPowerState();
@@ -214,6 +211,7 @@ public:
 	bool Grab(LPCOLLISIONEVENT e);
 	void Carrying();
 	bool Tosh();
+	void Drop();
 
 	bool Kick();
 	void Kicking(DWORD dt);
@@ -223,6 +221,8 @@ public:
 
 	void GainingPower(DWORD dt);
 	void LosingPower(DWORD dt);
+	void CancelUniqueAction();
+	void GetBoundingBoxOfAction(float &width, float &height);
 
 	void Dying(DWORD dt);
 

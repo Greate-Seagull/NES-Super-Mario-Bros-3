@@ -1,11 +1,6 @@
 #include "Collision.h"
 #include "GameObject.h"
 
-#include "Mario.h"
-#include "BoomerangBrother.h"
-
-#include "debug.h"
-
 #define BLOCK_PUSH_FACTOR 0.01f
 
 CCollision* CCollision::__instance = NULL;
@@ -438,9 +433,6 @@ void CCollision::SweptAABB(LPGAMEOBJECT objSrc, DWORD dt, LPGAMEOBJECT objDest)
 */
 void CCollision::Scan(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT>* objDests)
 {
-	if (dynamic_cast<CBoomerangBrother*>(objSrc))
-		int t = 0;
-
 	for (UINT i = 0; i < objDests->size(); i++)
 	{
 		if (objSrc == objDests->at(i))
@@ -640,9 +632,6 @@ void CCollision::SolveCollisionWithBlocking(LPGAMEOBJECT objSrc, DWORD dt, vecto
 
 	Scan(objSrc, dt, blockingObjects);
 
-	if (dynamic_cast<CRacoonTail*>(objSrc))
-		int t = 0;
-
 	// No collision detected
 	if (eventPool.Size() == 0)
 	{
@@ -662,7 +651,7 @@ void CCollision::SolveCollisionWithBlocking(LPGAMEOBJECT objSrc, DWORD dt, vecto
 		{
 			if (colY->t < colX->t)	// was collision on Y first ?
 			{
-				if (objSrc->IsSoft() == false())
+				if (objSrc->IsSoft() == false() && colY->obj->IsGoingThrough(objSrc) == false)
 				{
 					y += colY->t * dy + colY->ny * BLOCK_PUSH_FACTOR;
 
@@ -690,7 +679,7 @@ void CCollision::SolveCollisionWithBlocking(LPGAMEOBJECT objSrc, DWORD dt, vecto
 
 				if (colX_other != NULL)
 				{
-					if (objSrc->IsSoft() == false())
+					if (objSrc->IsSoft() == false() && colX_other->obj->IsGoingThrough(objSrc) == false)
 					{
 						x += colX_other->t * dx + colX_other->nx * BLOCK_PUSH_FACTOR;
 
@@ -702,7 +691,7 @@ void CCollision::SolveCollisionWithBlocking(LPGAMEOBJECT objSrc, DWORD dt, vecto
 			}
 			else // collision on X first
 			{
-				if (objSrc->IsSoft() == false())
+				if (objSrc->IsSoft() == false() && colX->obj->IsGoingThrough(objSrc) == false)
 				{
 					x += colX->t * dx + colX->nx * BLOCK_PUSH_FACTOR;
 
@@ -730,7 +719,7 @@ void CCollision::SolveCollisionWithBlocking(LPGAMEOBJECT objSrc, DWORD dt, vecto
 
 				if (colY_other != NULL)
 				{
-					if (objSrc->IsSoft() == false())
+					if (objSrc->IsSoft() == false() && colY_other->obj->IsGoingThrough(objSrc) == false)
 					{
 						y += colY_other->t * dy + colY_other->ny * BLOCK_PUSH_FACTOR;
 
@@ -743,7 +732,7 @@ void CCollision::SolveCollisionWithBlocking(LPGAMEOBJECT objSrc, DWORD dt, vecto
 		}
 		else if (colX != NULL)
 		{
-			if (objSrc->IsSoft() == false())
+			if (objSrc->IsSoft() == false() && colX->obj->IsGoingThrough(objSrc) == false)
 			{
 				x += colX->t * dx + colX->nx * BLOCK_PUSH_FACTOR;
 
@@ -754,7 +743,7 @@ void CCollision::SolveCollisionWithBlocking(LPGAMEOBJECT objSrc, DWORD dt, vecto
 		}
 		else if (colY != NULL)
 		{
-			if (objSrc->IsSoft() == false())
+			if (objSrc->IsSoft() == false() && colY->obj->IsGoingThrough(objSrc) == false)
 			{
 				y += colY->t * dy + colY->ny * BLOCK_PUSH_FACTOR;
 
@@ -765,10 +754,10 @@ void CCollision::SolveCollisionWithBlocking(LPGAMEOBJECT objSrc, DWORD dt, vecto
 		}
 	}
 
-	if(colX)
-		coTracker.MarkAsResolved(objSrc, colX->obj);
+	if (colX)
+		coTracker.MarkAsResolved(colX->src_obj, colX->obj);
 	if (colY)
-		coTracker.MarkAsResolved(objSrc, colY->obj);
+		coTracker.MarkAsResolved(colY->src_obj, colY->obj);
 
 	eventPool.Refresh();
 }
@@ -790,7 +779,7 @@ void CCollision::SolveCollisionWithNonBlocking(LPGAMEOBJECT objSrc, DWORD dt, ve
 
 		objSrc->OnCollisionWith(e);
 
-		coTracker.MarkAsResolved(objSrc, e->obj);
+		coTracker.MarkAsResolved(e->src_obj, e->obj);
 	}
 
 	eventPool.Refresh();

@@ -480,8 +480,8 @@ void CMario::StartSpecialActions()
 
 	if (keyState->IsPressed(VK_UP))
 		SetLife(life + 1.0f);
-	else if (keyState->IsPressed(VK_DOWN))
-		SetLife(life - 1.0f);
+	/*else if (keyState->IsPressed(VK_DOWN))
+		SetLife(life - 1.0f);*/
 	
 	if (keyState->IsHold(VK_A))
 		Run();
@@ -875,6 +875,12 @@ bool CMario::Tosh()
 	return Kick();
 }
 
+void CMario::Drop()
+{
+	if(weapon)
+		weapon->AgainstControl();
+}
+
 bool CMario::Kick()
 {
 	SetSpecialAction(ID_ANI_KICK);
@@ -932,6 +938,51 @@ void CMario::LosingPower(DWORD dt)
 	}
 }
 
+void CMario::CancelUniqueAction()
+{
+	if (life == MARIO_LEVEL_RACOON)
+	{
+		is_flying = false;
+		switch (special_action)
+		{
+		case ID_ANI_ATTACK:
+			SetSpecialAction(ID_ANI_IDLE);
+			break;
+		}
+	}
+	else if (life == MARIO_LEVEL_BIG)
+	{
+		switch (special_action)
+		{
+		case ID_ANI_SIT:
+			SetSpecialAction(ID_ANI_IDLE);
+			break;
+		}
+	}
+}
+
+void CMario::GetBoundingBoxOfAction(float& width, float& height)
+{
+	switch (special_action)
+	{
+	case ID_ANI_SIT:
+		width = MARIO_BIG_BBOX_WIDTH;
+		height = MARIO_BIG_SITTING_BBOX_HEIGHT;
+		break;
+	default:
+		if (life > MARIO_LEVEL_SMALL)
+		{
+			width = MARIO_BIG_BBOX_WIDTH;
+			height = MARIO_BIG_BBOX_HEIGHT;
+		}
+		else
+		{
+			width = MARIO_SMALL_BBOX_WIDTH;
+			height = MARIO_SMALL_BBOX_HEIGHT;
+		}
+	}
+}
+
 void CMario::SetLife(float l)
 {
 	// Adjust position to avoid falling off platform
@@ -940,68 +991,15 @@ void CMario::SetLife(float l)
 
 	life = l;
 
-	if (l == MARIO_LEVEL_RACOON)
-	{
-		ToRacoonLevel();
-	}
-	else if (l == MARIO_LEVEL_BIG)
-	{		
-		ToBigLevel();
-	}
-	else if (l == MARIO_LEVEL_SMALL)
-	{
-		ToSmallLevel();
-	}
-	else
+	float new_bbox_width, new_bbox_height;
+	GetBoundingBoxOfAction(new_bbox_width, new_bbox_height);
+	y += (bbox_height - new_bbox_height) / 2.0f - 1.0f;
+	SetBoundingBox(new_bbox_width, new_bbox_height);
+
+	if(life <= 0.0f)
 	{
 		SetState(STATE_DIE);
 	}
-}
-
-void CMario::ToSmallLevel()
-{
-	//Cancel unexisted action in previous state
-	is_flying = false;
-
-	switch (special_action)
-	{
-	case ID_ANI_ATTACK:
-	case ID_ANI_SIT:
-		SetSpecialAction(ID_ANI_IDLE);
-		break;
-	}
-
-	//Change position and bbox
-	y += (bbox_height - MARIO_SMALL_BBOX_HEIGHT) / 2.0f;
-	bbox_height = MARIO_SMALL_BBOX_HEIGHT;
-	bbox_width = MARIO_SMALL_BBOX_WIDTH;
-}
-
-void CMario::ToBigLevel()
-{
-	//Cancel unexisted action in previous state
-	is_flying = false;
-
-	switch (special_action)
-	{
-	case ID_ANI_ATTACK:
-		SetSpecialAction(ID_ANI_IDLE);
-		break;
-	case ID_ANI_SIT:
-		return;
-	}
-
-	//Change position and bbox
-	y += (bbox_height - MARIO_BIG_BBOX_HEIGHT) / 2.0f - 1.0f;
-	bbox_height = MARIO_BIG_BBOX_HEIGHT;
-	bbox_width = MARIO_BIG_BBOX_WIDTH;
-}
-
-void CMario::ToRacoonLevel()
-{
-	y += (bbox_height - MARIO_BIG_BBOX_HEIGHT) / 2.0f - 1.0f;
-	bbox_height = MARIO_BIG_BBOX_HEIGHT;
-	bbox_width = MARIO_BIG_BBOX_WIDTH;
 }
 
 void CMario::ToGainingPowerState()
@@ -1026,6 +1024,8 @@ void CMario::ToLosingPowerState()
 	this->state = MARIO_STATE_LOSE_POWER;
 
 	changing_state_time = 0;
+
+	CancelUniqueAction();
 
 	if (life == MARIO_LEVEL_RACOON)
 	{

@@ -37,6 +37,7 @@ public:
 	CSuperLeaf(float x, float y);
 
 	int IsCollidable() { return state != LEAF_STATE_SLEEP; }
+	int IsSoft() { return 1; }
 
 	virtual void Prepare(DWORD dt);
 

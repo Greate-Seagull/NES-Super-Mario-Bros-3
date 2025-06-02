@@ -47,6 +47,8 @@ protected:
 public:
 	CGoomba(float x, float y, bool haveWings = false);
 	
+	virtual void SetPosition(float x, float y);
+
 	virtual void Prepare(DWORD dt);
 	virtual void DefaultPrepare(DWORD dt) {};
 

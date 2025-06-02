@@ -57,6 +57,7 @@ public:
 
 	virtual int IsCollidable() { return state != PIRANHA_STATE_HIDE && state != STATE_DIE; };
 	virtual int IsLinkedTo(CGameObject* obj) { return pot == obj || dynamic_cast<CFireball*>(obj); }
+	virtual int IsMoving() { return 1; }
 
 	virtual void Render();
 	virtual void ChangeAnimation();

@@ -32,7 +32,7 @@ void CCreature::Drop()
 
 void CCreature::AgainstControl()
 {	
-	carrier->Drop();
+	carrier->CCreature::Drop();
 	carrier = nullptr;
 }
 
