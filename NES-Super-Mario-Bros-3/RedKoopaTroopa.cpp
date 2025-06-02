@@ -46,4 +46,11 @@ void CRedKoopaTroopa::OnNoCollisionWithBlocking(DWORD dt)
 int CRedKoopaTroopa::GetObjectAniID()
 {
 	return ANI_ID_RED_KOOPA;
-} 
+}
+void CRedKoopaTroopa::Refresh()
+{
+	CKoopaTroopa::Refresh();
+
+	if (wings)
+		oscillate_phase = 0.0f;
+}

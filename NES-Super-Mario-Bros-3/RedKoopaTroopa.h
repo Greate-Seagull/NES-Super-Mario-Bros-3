@@ -18,5 +18,7 @@ public:
 	void OnNoCollisionWithBlocking(DWORD dt);
 
 	int GetObjectAniID();
+
+	void Refresh();
 };
 

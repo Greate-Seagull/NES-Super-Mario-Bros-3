@@ -9,24 +9,26 @@ void CSpawnManager::Add(CGameObject* obj)
 
 void CSpawnManager::Spawn()
 {
-	CGame* game = CGame::GetInstance();
+	CGame* game = CGame::GetInstance();	
 
-	pair<float, float> position;
-	for (auto it : objectPositions)
+	for (const auto& it : objectPositions)
 	{
-		if (game->IsInCam(it.first))
-			continue;		
+		CGameObject* obj = it.first;
+		const auto& position = it.second;		
 
-		position = it.second;
-		if (it.first->GetX() == position.first && it.first->GetY() == position.second)
+		if (game->IsInCam(obj))
 			continue;
 
-		it.first->SetPosition(position.first, position.second);
+		if (obj->GetX() == position.first && obj->GetY() == position.second)
+			continue;
 
-		if (game->IsInCam(it.first))
-			it.first->SetPosition(DEFAULT_X, DEFAULT_Y); //Don't appear immediately
+		obj->SetPosition(position.first, position.second);
+
+
+		if (game->IsInCam(obj))
+			obj->SetPosition(DEFAULT_X, DEFAULT_Y); //Don't appear immediately
 		else
-			it.first->Refresh();
+			obj->Refresh();
 	}
 }
 

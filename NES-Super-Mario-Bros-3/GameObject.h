@@ -13,7 +13,7 @@
 #include "Sprites.h"
 #include "Collision.h"
 
-using namespace std;
+class CPlayScene;
 
 #define ID_TEX_BBOX -100		// special texture to draw object bounding box
 #define BBOX_ALPHA 0.25f		// Bounding box transparency
@@ -43,14 +43,17 @@ protected:
 	void SetBoundingBox(float width, float height);
 
 public: 
-	virtual void SetPosition(float x, float y) { this->x = x, this->y = y; }
+	virtual void SetPosition(float x, float y) { this->x = x; this->y = y; }
 	virtual void GetPosition(float &x, float &y) { x = this->x; y = this->y; }
 	virtual float GetX() { return x; }
 	virtual float GetY() { return y; }
 
 	virtual void GetSpeed(float &vx, float &vy) { vx = 0.0f; vy = 0.0f; }
 
+	virtual void SetState(int state);
 	virtual int GetState() { return this->state; }
+	virtual void ClearState() { state = -100; }
+
 	virtual void Delete() { isDeleted = true;  }
 	bool IsDeleted() { return isDeleted; }
 
@@ -67,8 +70,6 @@ public:
 	virtual void Prepare(DWORD dt) { }
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects = NULL) {};
 	virtual void Render();
-	virtual void SetState(int state);
-	virtual void ClearState() { state = -100; }
 	
 	//
 	// Collision ON or OFF ? This can change depending on object's state. For example: die
@@ -77,6 +78,7 @@ public:
 	virtual int IsMoving();
 	virtual int IsLinkedTo(CGameObject* obj) { return 0; } //For skip collision with specific object
 	virtual int IsGoingThrough(CGameObject* obj) { return 0; }
+	virtual int IsSoft() { return 0; } //For not chnage position when colliding with block
 
 	// When no collision has been detected (triggered by CCollision::Process)
 	virtual void OnNoCollision(DWORD dt) {};
@@ -101,4 +103,6 @@ public:
 	static bool IsDeleted(const LPGAMEOBJECT &o) { return o->isDeleted; }
 
 	virtual void Refresh() {};
+
+	virtual void CreateItem(CPlayScene* ps) {};
 };

@@ -640,6 +640,9 @@ void CCollision::SolveCollisionWithBlocking(LPGAMEOBJECT objSrc, DWORD dt, vecto
 
 	Scan(objSrc, dt, blockingObjects);
 
+	if (dynamic_cast<CRacoonTail*>(objSrc))
+		int t = 0;
+
 	// No collision detected
 	if (eventPool.Size() == 0)
 	{
@@ -659,9 +662,12 @@ void CCollision::SolveCollisionWithBlocking(LPGAMEOBJECT objSrc, DWORD dt, vecto
 		{
 			if (colY->t < colX->t)	// was collision on Y first ?
 			{
-				y += colY->t * dy + colY->ny * BLOCK_PUSH_FACTOR;
+				if (objSrc->IsSoft() == false())
+				{
+					y += colY->t * dy + colY->ny * BLOCK_PUSH_FACTOR;
 
-				objSrc->SetPosition(x, y);
+					objSrc->SetPosition(x, y);
+				}
 
 				objSrc->OnCollisionWith(colY);
 
@@ -684,18 +690,24 @@ void CCollision::SolveCollisionWithBlocking(LPGAMEOBJECT objSrc, DWORD dt, vecto
 
 				if (colX_other != NULL)
 				{
-					x += colX_other->t * dx + colX_other->nx * BLOCK_PUSH_FACTOR;
+					if (objSrc->IsSoft() == false())
+					{
+						x += colX_other->t * dx + colX_other->nx * BLOCK_PUSH_FACTOR;
 
-					objSrc->SetPosition(x, y);
+						objSrc->SetPosition(x, y);
+					}
 
 					objSrc->OnCollisionWith(colX_other);
 				}
 			}
 			else // collision on X first
 			{
-				x += colX->t * dx + colX->nx * BLOCK_PUSH_FACTOR;
+				if (objSrc->IsSoft() == false())
+				{
+					x += colX->t * dx + colX->nx * BLOCK_PUSH_FACTOR;
 
-				objSrc->SetPosition(x, y);
+					objSrc->SetPosition(x, y);
+				}				
 
 				objSrc->OnCollisionWith(colX);
 
@@ -718,9 +730,12 @@ void CCollision::SolveCollisionWithBlocking(LPGAMEOBJECT objSrc, DWORD dt, vecto
 
 				if (colY_other != NULL)
 				{
-					y += colY_other->t * dy + colY_other->ny * BLOCK_PUSH_FACTOR;
+					if (objSrc->IsSoft() == false())
+					{
+						y += colY_other->t * dy + colY_other->ny * BLOCK_PUSH_FACTOR;
 
-					objSrc->SetPosition(x, y);
+						objSrc->SetPosition(x, y);
+					}					
 
 					objSrc->OnCollisionWith(colY_other);
 				}
@@ -728,17 +743,23 @@ void CCollision::SolveCollisionWithBlocking(LPGAMEOBJECT objSrc, DWORD dt, vecto
 		}
 		else if (colX != NULL)
 		{
-			x += colX->t * dx + colX->nx * BLOCK_PUSH_FACTOR;
+			if (objSrc->IsSoft() == false())
+			{
+				x += colX->t * dx + colX->nx * BLOCK_PUSH_FACTOR;
 
-			objSrc->SetPosition(x, y);
+				objSrc->SetPosition(x, y);
+			}			
 
 			objSrc->OnCollisionWith(colX);
 		}
 		else if (colY != NULL)
 		{
-			y += colY->t * dy + colY->ny * BLOCK_PUSH_FACTOR;
+			if (objSrc->IsSoft() == false())
+			{
+				y += colY->t * dy + colY->ny * BLOCK_PUSH_FACTOR;
 
-			objSrc->SetPosition(x, y);
+				objSrc->SetPosition(x, y);
+			}			
 
 			objSrc->OnCollisionWith(colY);
 		}
@@ -790,24 +811,24 @@ void CCollision::SolveOverlap(LPGAMEOBJECT objSrc, DWORD dt, vector<LPGAMEOBJECT
 		{
 			CCollisionEvent* e = eventPool.GetLast();
 
-			if (objSrc->IsGoingThrough(e->obj) == false)
+			if (e->obj->IsSoft() == false)
 			{
-				float obj_x, obj_y;
-				e->obj->GetPosition(obj_x, obj_y);
+				if (objSrc->IsGoingThrough(e->obj) == false)
+				{
+					float obj_x, obj_y;
+					e->obj->GetPosition(obj_x, obj_y);
 
-				if (dynamic_cast<CMario*>(e->obj))
-					int t = 0;
+					//Pushing out
+					if (e->dx <= e->dy)
+						obj_x += -1.0f * e->nx * (e->dx + BLOCK_PUSH_FACTOR);
+					if (e->dy <= e->dx)
+						obj_y += -1.0f * e->ny * (e->dy + BLOCK_PUSH_FACTOR);
 
-				//Pushing out
-				if (e->dx <= e->dy)
-					obj_x += -1 * e->nx * ( e->dx + BLOCK_PUSH_FACTOR);
-				if (e->dy <= e->dx)
-					obj_y += -1 * e->ny * ( e->dy + BLOCK_PUSH_FACTOR);
+					e->obj->SetPosition(obj_x, obj_y);
+				}
 
-				e->obj->SetPosition(obj_x, obj_y);
+				objSrc->OnCollisionWith(e);
 			}
-
-			objSrc->OnCollisionWith(e);
 
 			coTracker.MarkAsResolved(e->src_obj, e->obj);
 			eventPool.VirtualDelete();
@@ -863,7 +884,8 @@ bool CCollision::Overlap(LPGAMEOBJECT objSrc, LPGAMEOBJECT objDst)
 
 	bool isOverlap = dx >= 0 && dy >= 0;
 
-	if(isOverlap) eventPool.Allocate(0, nx, ny, dx, dy, objDst, objSrc);
+	if(isOverlap) 
+		eventPool.Allocate(0, nx, ny, dx, dy, objDst, objSrc);
 
 	return isOverlap;
 }

@@ -192,14 +192,20 @@ void CPipe::UseDefaultItemPosition()
 
 void CPipe::TriggerItem()
 {
+	CCollisionEventPool* pool = CCollision::GetInstance()->GetPool();
+	LPCOLLISIONEVENT e = pool->Allocate(0.0f, nx, ny, 0.0f, 0.0f, item, this);
+	item->OnReactionTo(e, ACTION_CARRY);
+	pool->VirtualDelete();
+}
+
+void CPipe::CreateItem(CPlayScene* ps)
+{
+	TakeItem();
 	if (item)
 	{
-		LPPLAYSCENE ps = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
-		ps->Insert(item, ps->Find(this));
-
-		CCollisionEventPool* pool = CCollision::GetInstance()->GetPool();
-		LPCOLLISIONEVENT e = pool->Allocate(0.0f, nx, ny, 0.0f, 0.0f, item, this);
-		item->OnReactionTo(e, ACTION_CARRY);
-		pool->VirtualDelete();
+		item->Refresh();
+		TriggerItem();
+		item->CreateItem(ps);
+		ps->Insert(item, -1);
 	}
 }

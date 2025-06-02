@@ -8,7 +8,7 @@ CBoomerangBrother::CBoomerangBrother(float x, float y):
 	CEnemy(x, y)
 {	
 	magSize = BOOMERANG_BROTHER_MAGSIZE;
-	TakeBoomerangs();
+
 	Refresh();
 }
 
@@ -230,6 +230,8 @@ void CBoomerangBrother::OnReactionToAttack3(LPCOLLISIONEVENT e)
 
 void CBoomerangBrother::Refresh()
 {
+	CEnemy::Refresh();
+
 	LookForMario();
 	life = BOOMERANG_BROTHER_LIFE;
 	SetBoundingBox(BOOMERANG_BROTHER_BBOX_WIDTH, BOOMERANG_BROTHER_BBOX_HEIGHT);
@@ -246,5 +248,15 @@ void CBoomerangBrother::TakeBoomerangs()
 	for (int i = 0; i < boomerang.size(); i++)
 	{
 		boomerang[i] = new CBoomerang(DEFAULT_X, DEFAULT_Y);
+	}
+}
+
+void CBoomerangBrother::CreateItem(CPlayScene* ps)
+{
+	TakeBoomerangs();
+	for (int i = 0; i < boomerang.size(); i++)
+	{
+		boomerang[i]->CreateItem(ps);
+		ps->Insert(boomerang[i], -1);
 	}
 }

@@ -29,10 +29,16 @@ public:
 
 	virtual void ToStateHide();
 
+	virtual void Refresh();
+
 	//Shoot methods
 	virtual void LookForMario();
 	virtual void Aim();
 	virtual void Shoot();
 	virtual void Reload();
 	virtual void Unload();
+
+	virtual CFireball* GetFireball() { return boomerang; }
+
+	void CreateItem(CPlayScene* ps);
 };

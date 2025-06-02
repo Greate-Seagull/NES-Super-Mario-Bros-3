@@ -4,7 +4,7 @@
 #include "PlayScene.h"
 
 void CCoin::Prepare(DWORD dt)
-{
+{	
 	if (isToggled)
 		CMovableObject::Prepare(dt);
 }
@@ -21,7 +21,7 @@ void CCoin::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 			currScene->InsertScore(x, y - 16, 100);*/
 			Delete();
 		}
-	}
+	}		
 }
 
 int CCoin::IsLinkedTo(CGameObject* obj)

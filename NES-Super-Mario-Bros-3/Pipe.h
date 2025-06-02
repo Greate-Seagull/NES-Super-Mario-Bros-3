@@ -51,10 +51,7 @@ public:
 		this->bbox_width = PIPE_BBOX_WIDTH;
 
 		this->newX = newX;
-		this->newY = newY;
-
-		TakeItem();
-		TriggerItem();
+		this->newY = newY;		
 	}
 	void Render();
 	void RenderBoundingBox();	
@@ -75,4 +72,6 @@ public:
 	int GetDestination() { return scene_destination; }
 	float GetDestinationX() { return newX; }
 	float GetDestinationY() { return newY; }
+
+	void CreateItem(CPlayScene* ps);
 };

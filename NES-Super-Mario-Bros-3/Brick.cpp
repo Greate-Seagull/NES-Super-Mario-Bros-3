@@ -1,4 +1,7 @@
 #include "Brick.h"
+
+#include "PlayScene.h"
+
 #include "PButton.h"
 #include "SuperMushroom.h"
 #include "SuperLeaf.h"
@@ -144,6 +147,7 @@ void CBrick::TriggerItem(LPCOLLISIONEVENT e, int action)
 		if (item == nullptr)
 			return;
 
+		item->Refresh();
 		ps->Insert(item, ps->Find(this));
 		
 		if(itemID != OBJECT_TYPE_PBUTTON)

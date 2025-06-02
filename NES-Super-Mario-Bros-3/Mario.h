@@ -112,6 +112,7 @@ class CMario : public CCreature
 
 	int attacking_time;
 	int attack_phase;
+	int attack_direction;
 	CRacoonTail* tail;
 
 	int momentum;
@@ -202,7 +203,7 @@ public:
 	bool Walk();
 
 	bool Attack();
-	void Attacking(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+	void Attacking(DWORD dt);
 	void ChangeAttackPhase(int phase);
 	void UntriggerTail();
 
@@ -243,5 +244,8 @@ public:
 	bool IsFastTravel() { return isFastTravel; }
 	int GetDestination() { return destination; }
 	void GetDestinationPosition(float &x, float &y) { x = des_x; y = des_y; }
-	void SetTraveled() { isFastTravel = false; }
+
+	void Refresh();
+
+	void CreateItem(CPlayScene* ps);
 };

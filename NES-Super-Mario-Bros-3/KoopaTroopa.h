@@ -66,7 +66,7 @@ public:
 	virtual void Poping(DWORD dt);
 
 	//virtual int IsBlocking() { return state == KOOPA_STATE_HIDE || state == KOOPA_STATE_POP; }
-	virtual int IsCollidable() { return state != STATE_DIE; };	
+	virtual int IsCollidable() { return life; };	
 	virtual int IsLinkedTo(CGameObject* obj) { return obj == carrier; }
 
 	virtual void OnNoCollisionWithBlocking(DWORD dt);

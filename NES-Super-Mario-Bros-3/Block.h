@@ -3,7 +3,6 @@
 #include "MovableObject.h"
 
 #include "AssetIDs.h"
-#include "Game.h"
 
 #define BLOCK_WITHOUT_ITEM -1
 #define BLOCK_WITHOUT_ITEM_BREAKER -2
@@ -30,5 +29,4 @@ public:
 	virtual void TakeItem() {};
 	virtual void UseDefaultItemPosition();
 	virtual void PutItem(float x, float y) { item->SetPosition(x, y); }	
-	virtual void TriggerItem();
 };

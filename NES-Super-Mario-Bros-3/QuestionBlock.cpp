@@ -116,6 +116,7 @@ void CQuestionBlock::TriggerItem(LPCOLLISIONEVENT e, int action)
 		}
 
 		TakeItem();
+		item->Refresh();
 
 		ps->Insert(item, ps->Find(this));
 

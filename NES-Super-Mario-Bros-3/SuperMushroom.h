@@ -50,4 +50,6 @@ public:
 	virtual void Render();
 
 	void WakeUp(DWORD dt);
+
+	virtual void Refresh();
 };

@@ -8,7 +8,7 @@ CKoopaTroopa::CKoopaTroopa(float x, float y, bool haveWings):
 {	
 	this->bornWithWings = haveWings;
 
-	Refresh();
+	SetBoundingBox(KOOPA_BBOX_WIDTH_LIVE, KOOPA_BBOX_HEIGHT_LIVE);
 }
 
 void CKoopaTroopa::Prepare(DWORD dt)
@@ -59,7 +59,7 @@ void CKoopaTroopa::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	}
 
 	if (wings)
-		Flutter();
+		Flutter();	
 }
 
 void CKoopaTroopa::Living(DWORD dt)
@@ -181,8 +181,7 @@ void CKoopaTroopa::OnCollisionWithEnemy(LPCOLLISIONEVENT e)
 	case KOOPA_STATE_ROLL:
 		break;
 	default:
-		nx = -nx;
-		vx = nx * abs(vx);		
+		Patrol();
 		Touch(e);
 	}
 }
@@ -195,7 +194,8 @@ void CKoopaTroopa::Patrol()
 
 void CKoopaTroopa::Refresh()
 {
-	SetBoundingBox(KOOPA_BBOX_WIDTH_LIVE, KOOPA_BBOX_HEIGHT_LIVE);
+	CEnemy::Refresh();
+
 	maxVx = KOOPA_VX;
 	vy = KOOPA_VY;
 	if (bornWithWings) GrowWings();
@@ -298,9 +298,6 @@ void CKoopaTroopa::SetState(int state)
 		return;
 	}*/
 
-	if (state == STATE_FLYINGOUT)
-		return;
-
 	this->state = state;
 
 	switch (state)
@@ -366,8 +363,7 @@ void CKoopaTroopa::OnReactionToTouching(LPCOLLISIONEVENT e)
 		}
 		else
 		{
-			nx = -nx;
-			vx = nx * fabs(vx);
+			Patrol();
 		}
 		break;
 	case KOOPA_STATE_POP:

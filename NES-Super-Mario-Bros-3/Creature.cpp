@@ -58,3 +58,8 @@ void CCreature::SetLife(float life)
 {
 	this->life = life;
 }
+
+void CCreature::Refresh()
+{
+	CHarmfulObject::Refresh();
+}

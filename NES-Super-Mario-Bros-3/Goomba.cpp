@@ -8,8 +8,6 @@ CGoomba::CGoomba(float x, float y, bool haveWings) :
 	CEnemy(x, y)
 {
 	bornWithWings = haveWings;	
-
-	Refresh();
 }
 
 void CGoomba::OnCollisionWith(LPCOLLISIONEVENT e)
@@ -120,7 +118,8 @@ void CGoomba::OnReactionToAttack3(LPCOLLISIONEVENT e)
 {	
 	if (wings)
 		LoseWings();
-	CHarmfulObject::OnReactionToAttack3(e);	
+	CHarmfulObject::OnReactionToAttack3(e);
+	SetLife(life - 1.0f);
 }
 
 void CGoomba::SetState(int state)
@@ -139,8 +138,6 @@ void CGoomba::SetState(int state)
 		break;
 	case STATE_DIE:
 		ToStateDying();
-		break;
-	case STATE_FLYINGOUT:
 		break;
 	}
 }
@@ -180,6 +177,8 @@ void CGoomba::Dying(DWORD dt)
 
 void CGoomba::Refresh()
 {
+	CEnemy::Refresh();
+
 	maxVx = GOOMBA_VX;
 	LookForMario();
 	life = GOOMBA_LIFE;	
@@ -281,7 +280,6 @@ void CGoomba::Prepare(DWORD dt)
 {
 	switch (state)
 	{
-	case STATE_FLYINGOUT:
 	case STATE_LIVE:
 		if(wings) ChaseMario(dt);
 		CMovableObject::Prepare(dt);
@@ -296,7 +294,6 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
 	switch (state)
 	{
-	case STATE_FLYINGOUT:
 	case STATE_LIVE:
 		Living(dt);
 		break;
@@ -315,16 +312,16 @@ void CGoomba::ChangeAnimation()
 
 	switch (state)
 	{
-	case STATE_FLYINGOUT:
-		action = ANI_ID_GOOMBA_WALK + ID_ANI_DIRECTION_UP;
-		break;
 	case STATE_DIE:
 		action = ANI_ID_GOOMBA_DIE;
 		break;
 	default:
 		action = ANI_ID_GOOMBA_WALK;
 		break;
-	}	
+	}
+
+	if (isFliedOut) 
+		action += ID_ANI_DIRECTION_UP;
 
 	aniID = object + action;
 }

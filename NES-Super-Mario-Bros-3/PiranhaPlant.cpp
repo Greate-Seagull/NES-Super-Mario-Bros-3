@@ -2,10 +2,12 @@
 #include "Game.h"
 #include "PlayScene.h"
 
+#include "Pipe.h"
+
 CPiranhaPlant::CPiranhaPlant(float x, float y):
 	CEnemy(x, y)
 {
-	Refresh();
+	SetBoundingBox(PIRANHA_BBOX_WIDTH, PIRANHA_BBOX_HEIGHT);
 }
 
 void CPiranhaPlant::SetPosition(float x, float y)
@@ -93,10 +95,10 @@ void CPiranhaPlant::Dying(DWORD dt)
 
 void CPiranhaPlant::SetState(int state) //Start state
 {
-	if (this->state == state)
+	/*if (this->state == state)
 	{
 		return;
-	}
+	}*/
 
 	this->state = state;
 
@@ -149,19 +151,14 @@ void CPiranhaPlant::ToStateDie()
 
 void CPiranhaPlant::OnReactionToCarrying(LPCOLLISIONEVENT e)
 {
-	if(pot)
-	{
-		AgainstControl();
-
-		if (dynamic_cast<CMario*>(e->src_obj))
-		{
-			e->Reverse();
-			Attack(e);
-		}
-	}
-	else
+	if (pot == nullptr && dynamic_cast<CPipe*>(e->src_obj))
 	{
 		pot = e->src_obj;
+	}
+	else if (dynamic_cast<CMario*>(e->src_obj))
+	{
+		e->Reverse();
+		Attack(e);
 	}
 }
 
@@ -203,13 +200,12 @@ void CPiranhaPlant::LookForMario()
 
 void CPiranhaPlant::Refresh()
 {
-	start_y = y;
+	CEnemy::Refresh();
 
-	SetBoundingBox(PIRANHA_BBOX_WIDTH, PIRANHA_BBOX_HEIGHT);
+	start_y = y;
 
 	maxVx = PIRANHA_VX;
 	vx = PIRANHA_VX;
-	vy = PIRANHA_VY;
 
 	SetState(PIRANHA_STATE_EMERGE);
 	life = PIRANHA_LIFE;

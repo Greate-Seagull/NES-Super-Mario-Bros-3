@@ -3,7 +3,8 @@
 1
 [CAMERA]
 #min x	min y	max x	max y	cam vx	cam vy
-0	0	1792	253	0.03	0
+#0	0	1792	253	0.03	0
+0	0	1792	253	0	0
 [BACKGROUND]
 1
 [ASSETS]

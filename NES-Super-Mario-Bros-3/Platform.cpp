@@ -35,6 +35,7 @@ void CPlatform::RenderBoundingBox()
 int CPlatform::IsLinkedTo(CGameObject* obj)
 {
 	return dynamic_cast<CPiranhaPlant*>(obj) || 
+		dynamic_cast<CFireball*>(obj) ||
 		dynamic_cast<CPlatform*>(obj) ||
 		dynamic_cast<CBlock*>(obj);
 }
@@ -115,6 +116,6 @@ int CPlatform::IsDirectionColliable(float nx, float ny)
 
 void CPlatform::OnCollisionWith(LPCOLLISIONEVENT e)
 {
-	/*if(type == PLATFORM_TYPE_BLOCK_ANYWAY)
-		e->obj->OnReactionTo(e, ACTION_ATTACK_LEVEL_3);*/
+	e->Reverse();
+	e->src_obj->OnCollisionWith(e);
 }

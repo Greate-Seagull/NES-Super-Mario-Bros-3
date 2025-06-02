@@ -20,4 +20,6 @@ public:
 	virtual void ReactionToRacoonize(CGameObject* by_another);*/
 
 	virtual void LaunchEffect(LPCOLLISIONEVENT e);
+
+	virtual void Refresh();
 };

@@ -34,21 +34,12 @@ int flyingPoint = 100;
 CMario::CMario(float x, float y):
 	CCreature(x, y)
 {
-	is_invulnerable = false;
-	is_jumping = false;
-	is_flying = false;
-
-	fly_cooldown = INT_MAX;
-
-	decrease_momentum_time = 0;
-	momentum = 0;
+	SetState(STATE_LIVE);
+	SetLife(MARIO_LEVEL_SMALL);
 
 	coins = 0;
 	scores = 0;
 	cardIndex = 0;
-
-	SetState(STATE_LIVE);
-	SetLife(MARIO_LEVEL_SMALL);
 }
 
 void CMario::Prepare(DWORD dt)
@@ -94,12 +85,12 @@ void CMario::Living(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	DoSpecialActions(dt, coObjects);
 
 	UpdateMomentum(dt);
-	Invulnerable(dt);
+	Invulnerable(dt);	
 }
 
 int CMario::IsLinkedTo(CGameObject* obj)
 {
-	return obj == weapon;
+	return obj == weapon || obj == tail;
 }
 
 void CMario::OnNoCollisionWithBlocking(DWORD dt)
@@ -462,7 +453,7 @@ bool CMario::SetSpecialAction(int actionID)
 		Drop();
 		break;
 	case ID_ANI_INTO_THE_PIPE:
-		nx = 0; ny = 0; nz = 0;
+		ny = 0; nz = 0;
 		vx = nx * vx; vy = ny * vy;
 		break;
 	}
@@ -509,7 +500,7 @@ void CMario::DoSpecialActions(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		Kicking(dt);
 		break;
 	case ID_ANI_ATTACK:
-		Attacking(dt, coObjects);
+		Attacking(dt);
 		break;
 	case ID_ANI_CARRY:
 		Carrying();
@@ -747,24 +738,29 @@ bool CMario::Attack()
 
 	attacking_time = 0;
 	attack_phase = -1;
-	tail = new CRacoonTail(x, y);
+	attack_direction = -nx;
+	tail->SetPosition(x, y + MARIO_RACOON_TAIL_Y_OFFSET);
+	tail->Refresh();
 
 	return true;
 }
 
-void CMario::Attacking(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
+void CMario::Attacking(DWORD dt)
 {
 	//Switching phase
 	attacking_time += dt;
 	ChangeAttackPhase(attacking_time / MARIO_ATTACK_PHASE_TIME);
+	nx = -attack_direction;
 	
 	//Tail's position should be calculated after processing attacking phase to synchronize with the animation
 	if (special_action == ID_ANI_ATTACK) // if attack hasn't ended
 	{
-		float tail_x = x - nx * (bbox_width + tail->GetBBoxWidth()) / 2.0f; //attack the opposite
-		float tail_y = y + MARIO_RACOON_TAIL_Y_OFFSET;
-		tail->SetPosition(tail_x, tail_y);
-		tail->Update(dt, coObjects);
+		float tail_x, tail_y;
+		tail->GetPosition(tail_x, tail_y);
+		float newTail_x = x + attack_direction * (bbox_width + tail->GetBBoxWidth()) / 2.0f;
+		float newTail_y = y + MARIO_RACOON_TAIL_Y_OFFSET;
+
+		tail->SetMoveDistance(newTail_x - tail_x, newTail_y - tail_y);
 	}
 }
 
@@ -775,7 +771,7 @@ void CMario::ChangeAttackPhase(int phase)
 		return;
 	}
 
-	this->attack_phase = phase;
+	this->attack_phase = phase;	
 
 	if (phase == 0)
 	{
@@ -788,7 +784,7 @@ void CMario::ChangeAttackPhase(int phase)
 	else if (phase == 2)
 	{
 		nz = 0;
-		nx = -nx;
+		attack_direction *= -1;
 	}
 	else if (phase == 3)
 	{
@@ -797,18 +793,17 @@ void CMario::ChangeAttackPhase(int phase)
 	else if (phase == 4)
 	{
 		nz = 0;
-		nx = -nx;
+		attack_direction *= -1;
 	}
 	else
 	{
 		SetSpecialAction(ID_ANI_IDLE);
-	}
+	}	
 }
 
 void CMario::UntriggerTail()
 {
-	delete tail;
-	tail = nullptr;
+	tail->SetPosition(DEFAULT_X, DEFAULT_Y);
 	nz = 0;
 }
 
@@ -1089,11 +1084,10 @@ bool CMario::IntoThePipe(int direction)
 
 	SetSpecialAction(ID_ANI_INTO_THE_PIPE);
 
-	nx = 0;
 	ny = direction ? direction : ny;
 	nz = DIRECTION_FRONT;
 
-	vx = nx * vx;
+	vx = 0.0f;
 	vy = ny * MARIO_PIPE_ENTRY_SPEED;
 
 	return true;
@@ -1117,6 +1111,33 @@ void CMario::Digging()
 		SetSpecialAction(ID_ANI_IDLE);
 		isInGround = false;
 	}
+}
+
+void CMario::Refresh()
+{
+	CCreature::Refresh();
+
+	isFastTravel = false;
+
+	is_invulnerable = false;
+	is_jumping = false;
+	is_flying = false;
+
+	fly_cooldown = INT_MAX;
+
+	decrease_momentum_time = 0;
+	momentum = 0;
+
+	SetSpecialAction(ID_ANI_IDLE);
+}
+
+void CMario::CreateItem(CPlayScene* ps)
+{
+	tail = new CRacoonTail(DEFAULT_X, DEFAULT_Y);
+	tail->Refresh();
+	tail->AcceptOwner(this);
+	tail->CreateItem(ps);
+	ps->Insert(tail, -1);
 }
 
 void CMario::SetState(int state)
