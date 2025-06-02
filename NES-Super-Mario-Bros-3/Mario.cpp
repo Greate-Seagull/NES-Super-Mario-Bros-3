@@ -73,7 +73,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	case STATE_DIE:
 		Dying(dt);
 		break;
-	}
+	}	
 
 	//if (this->isOnGround) flyingPoint = 100;
 }
@@ -165,7 +165,8 @@ void CMario::OnReactionToBigger(LPCOLLISIONEVENT e)
 
 void CMario::OnReactionToRacoonize(LPCOLLISIONEVENT e)
 {
-	SetState(MARIO_STATE_GAIN_POWER);
+	if(life < MARIO_LEVEL_RACOON)
+		SetState(MARIO_STATE_GAIN_POWER);
 }
 
 void CMario::OnCollisionWithHarmfulObject(LPCOLLISIONEVENT e)
@@ -204,6 +205,7 @@ void CMario::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 
 		if (e->ny < 0)
 		{
+			fly_cooldown = INT_MAX;
 			isOnGround = true;
 			is_flying = false;
 			on_ground_y = y;
@@ -246,6 +248,7 @@ void CMario::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 		}
 		else
 		{
+			fly_cooldown = INT_MAX;
 			isOnGround = true;
 			is_flying = false;
 			on_ground_y = y;
@@ -358,8 +361,10 @@ void CMario::ChangeAnimationInLivingState(int &actionID, DWORD &timePerFrame)
 {
 	//for normal actions	
 	if (vy > 0 && life > MARIO_LEVEL_SMALL) //Falling
-	{
-		if (is_boosting && !weapon)
+	{		
+		if (life >= MARIO_LEVEL_RACOON && fly_cooldown < MARIO_FLY_COOLDOWN && !weapon)
+			actionID = ID_ANI_PARACHUTE;
+		else if (is_boosting && !weapon)
 			actionID = ID_ANI_SUPER_FALL;
 		else
 			actionID = ID_ANI_FALL;
@@ -571,7 +576,7 @@ void CMario::StartNormalActions(DWORD& t)
 		fly_cooldown = 0;
 
 		is_jumping = false;
-	}
+	}	
 	else if (isOnGround && keyState->IsPressed(VK_S)) //Jumping
 	{		
 		ny = DIRECTION_UP;
@@ -590,6 +595,12 @@ void CMario::StartNormalActions(DWORD& t)
 	}
 	else //Falling
 	{
+		if (life == MARIO_LEVEL_RACOON && keyState->IsPressed(VK_S))
+		{
+			vy = 0.05f;
+			fly_cooldown = 0;
+		}
+
 		//calculated_ay = GAME_GRAVITY;
 
 		ny = DIRECTION_DOWN;
@@ -597,15 +608,17 @@ void CMario::StartNormalActions(DWORD& t)
 		is_jumping = false;
 	}
 
-	if (is_flying) //Remove ay when flying
+	if (is_flying) 
 	{
-		total_fly_time += t;
-		fly_cooldown += t;
+		total_fly_time += t;	
 		if (total_fly_time >= MARIO_FLY_TIME)
-			is_flying = false;
-		if (fly_cooldown < MARIO_FLY_COOLDOWN)
-			calculated_ay = 0.0f;
+			is_flying = false;		
 	}
+
+	//Remove ay when flying
+	fly_cooldown += t;
+	if (fly_cooldown < MARIO_FLY_COOLDOWN)
+		calculated_ay = 0.0f;
 
 	//decelerate
 	if(new_nx)
@@ -809,6 +822,9 @@ void CMario::UntriggerTail()
 
 void CMario::BackJump()
 {
+	fly_cooldown = INT_MAX;
+	is_jumping = true;
+
 	vy = MARIO_JUMP_DEFLECT_VY;
 	ny = DIRECTION_UP;
 }

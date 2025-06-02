@@ -102,7 +102,7 @@ void CBrick::TakeItem()
 	switch (itemID)
 	{
 	case OBJECT_TYPE_PBUTTON: 
-		item = new CPButton(x, y - BRICK_WIDTH - 1.0f); 
+		item = new CPButton(x, y - BRICK_WIDTH); 
 		break;
 	case OBJECT_TYPE_COIN:
 	{
@@ -192,6 +192,7 @@ void CBrick::BlastingBrickParticles()
 	LPPLAYSCENE currentScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
 	for (int i = 0; i < 4; i++)
 	{
+		brickParticles[i]->Refresh();
 		currentScene->Insert(brickParticles[i], -1);
 	}
 }

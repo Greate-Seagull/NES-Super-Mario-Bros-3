@@ -4,9 +4,6 @@
 #include "Brick.h"
 #include "PlayScene.h"
 
-#include "Game.h"
-#include "debug.h"
-
 #define SWITCH_DELAY 4000
 
 void CPButton::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
@@ -18,7 +15,6 @@ void CPButton::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		if (timeElapsed >= SWITCH_DELAY)
 		{
 			ReplaceCoinsWithBricks();
-			isSwitched = false;
 		}
 	}
 
@@ -29,9 +25,12 @@ void CPButton::OnReactionTo(LPCOLLISIONEVENT e, int action)
 {
 	if (dynamic_cast<CMario*>(e->src_obj) && state == PBUTTON_CONSTRUCTED)
 	{
-		state = PBUTTON_PRESSED;
-		isSwitched = true;
-		ReplaceBricksWithCoins();
+		if (e->ny < 0)
+		{
+			state = PBUTTON_PRESSED;
+			isSwitched = true;
+			ReplaceBricksWithCoins();
+		}
 	}
 }
 
@@ -51,6 +50,7 @@ void CPButton::ReplaceBricksWithCoins()
 				b->Delete();
 
 				CCoin* coin = new CCoin(bX, bY);
+				coin->Refresh();
 				coin->SetTransformed();
 				ps->Insert(coin, -1);
 			}
@@ -73,7 +73,8 @@ void CPButton::ReplaceCoinsWithBricks()
 				obj->GetPosition(cX, cY);
 				obj->Delete();
 
-				obj = new CBrick(cX, cY);
+				obj = new CBrick(cX, cY, BLOCK_WITHOUT_ITEM_BREAKER);
+				obj->Refresh();
 				ps->Insert(obj, -1);
 			}
 		}

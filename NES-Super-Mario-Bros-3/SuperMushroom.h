@@ -6,7 +6,7 @@
 #define MUSHROOM_VY -0.025f
 
 #define MUSHROOM_BBOX_HEIGHT 16.0f
-#define MUSHROOM_BBOX_WIDTH 16.0f
+#define MUSHROOM_BBOX_WIDTH 14.0f
 
 #define MUSHROOM_WAKEUP_TIME 1000 //the origin's is 250
 

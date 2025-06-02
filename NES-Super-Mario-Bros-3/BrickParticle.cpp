@@ -29,3 +29,16 @@ void CBrickParticle::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	x += vx;
 	y += vy;
 }
+
+void CBrickParticle::Refresh()
+{
+	if (vy)
+	{
+		this->Delete();
+		return;
+	}
+
+	CMovableObject::Refresh();
+
+	vy = -5.0f;
+}
