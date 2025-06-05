@@ -29,7 +29,8 @@ protected:
 
 	float timer; //scene time
 	bool isPaused;
-	CHud* hud;	
+	CHud* hud;
+	CReward* reward;
 
 	vector<LPGAMEOBJECT> objects;
 	CSpawnManager spawner;
@@ -97,6 +98,8 @@ public:
 	void SwitchScene(int next_level);
 
 	void FastTravel(DWORD dt);
+	void PushFinishWall();
+	void CollectingScore();
 	/*void InsertScore(int score_value);
 	void InsertScore(float x, float y, int score_value);*/
 };

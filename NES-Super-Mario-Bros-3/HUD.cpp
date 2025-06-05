@@ -164,6 +164,7 @@ void CHud::Render()
 	}
 }
 
+
 CHud::~CHud()
 {
 	for (int i = 0; i < DIGIT_COUNT_SCORE; i++)

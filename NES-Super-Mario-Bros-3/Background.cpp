@@ -1,4 +1,5 @@
 #include "Background.h"
+#include "debug.h"
 
 #define REWARD_OFFSET_MAXIMUM_TIME 4
 
@@ -120,5 +121,6 @@ void CReward::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 
 void CReward::OnReactionTo(LPCOLLISIONEVENT e, int action)
 {
-	SetState(STATE_DIE);
+	//SetState(STATE_DIE);
+	run = false;
 }

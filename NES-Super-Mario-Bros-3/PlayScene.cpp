@@ -39,6 +39,7 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 	background = DEFAULT_BACKGROUND_COLOR;
 	hud = NULL;
 	timer = TIMER_VALUE;
+	reward = NULL;
 
 	youGotACard = NULL;
 	courseClear = NULL;
@@ -209,6 +210,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	}
 	case NON_OBJECT_TYPE_REWARD:
 		obj = new CReward(x, y);
+		reward = (CReward*)obj;
 		break;
 	case DEAD_STATE_TRIGGER:
 	{
@@ -280,6 +282,8 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		else
 		{
 			player->SetTraveled();
+			if (player->GetLife() == MARIO_LEVEL_BIG ||
+				player->GetLife() == MARIO_LEVEL_RACOON) y -= MARIO_BIG_BBOX_HEIGHT / 4;
 			if(player->IsInGround()) player->GetDestinationPosition(x, y);
 			obj = player;
 			DebugOut(L"[INFO] Player object has been created!\n");
@@ -357,16 +361,29 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		int sprite_middle_end = atoi(tokens[15].c_str());
 		int sprite_end_end = atoi(tokens[16].c_str());
 
-		obj = new CPlatform(
+		if (tokens.size() > 17)
+		{
+			int isWall = atoi(tokens[17].c_str());
+			obj = new CPlatform(
+				x, y,
+				cell_width, cell_height,
+				width, height,
+				type,
+				sprite_begin_begin, sprite_middle_begin, sprite_end_begin,
+				sprite_begin_middle, sprite_middle_middle, sprite_end_middle,
+				sprite_begin_end, sprite_middle_end, sprite_end_end, isWall
+			);
+		}
+		else obj = new CPlatform(
 			x, y,
 			cell_width, cell_height,
 			width, height,
 			type,
 			sprite_begin_begin, sprite_middle_begin, sprite_end_begin,
 			sprite_begin_middle, sprite_middle_middle, sprite_end_middle,
-			sprite_begin_end, sprite_middle_end, sprite_end_end			
+			sprite_begin_end, sprite_middle_end, sprite_end_end
 		);
-
+		
 		break;
 	}
 	case OBJECT_TYPE_FLOATING_PLATFORM:
@@ -583,21 +600,15 @@ void CPlayScene::Load()
 
 void CPlayScene::Update(DWORD dt)
 {
+	float cX, cY;
+	CGame::GetInstance()->GetCamPos(cX, cY);
+	DebugOutTitle(L"%f, %f", cX, cY);
 	// skip the rest if scene was already unloaded (Mario::Update might trigger PlayScene::Unload)
-
 	if (isPaused)
 		return;
 
-	if (player->IsFastTravel())
-	{
-		FastTravel(dt);
-		return;
-	}
-
 	if (player == NULL) 
 		return;
-
-	timer -= dt;		
 
 	CCollision* collisionProcessor = CCollision::GetInstance();
 	CCollisionTracker* collisionTracker = collisionProcessor->GetTracker();
@@ -648,32 +659,31 @@ void CPlayScene::Update(DWORD dt)
 		collisionProcessor->SolveCollisionWithNonBlocking(obj, dt, &nonBlockingColliders);
 
 	for (auto& obj : nearbyObjects)
-		obj->Update(dt, &nearbyObjects);
+	{
+		if (player->IsFastTravel())
+		{
+			if (dynamic_cast<CMario*>(obj) ||
+				dynamic_cast<CReward*>(obj))
+				obj->Update(dt, &nearbyObjects);
+		}
+		else obj->Update(dt, &nearbyObjects);
+	}
 
-	UpdateCamera(dt);
+	if (!player->IsFastTravel())
+	{
+		UpdateCamera(dt);
+		timer -= dt;
+	}
+	else
+	{
+		FastTravel(dt);
+		if (!player->IsDigging()) Congratulations();
+	}
 	// UPDATE HUD AFTER MARIO UPDATED
 	UpdateHUD();
 
 	PurgeDeletedObjects();
 }
-
-//void CPlayScene::CollectingScore()
-//{
-//	timerPause = true;
-//	if (timer > 0)
-//	{
-//		if (timer >= 10000)
-//		{
-//			score = score + 10 * SCORE_PER_SECOND;
-//			timer -= 10000;
-//		}
-//		else if (timer >= 1000)
-//		{
-//			score = score + SCORE_PER_SECOND;
-//			timer -= 1000;
-//		}
-//	}
-//}
 
 void CPlayScene::Render()
 {
@@ -862,6 +872,10 @@ void CPlayScene::RenderCongratulations()
 		youGotACard->Render();
 	if (card)
 		card->Render();
+	//if (player)
+	//	player->Render();
+	//if (reward)
+	//	reward->Render();
 }
 
 void CPlayScene::Congratulations()
@@ -870,7 +884,7 @@ void CPlayScene::Congratulations()
 	{
 		if (wait_time >= SCORE_COLLECTING_TIME)
 		{
-			//CollectingScore();
+			CollectingScore();
 		}
 		else if (wait_time >= YOU_GOT_A_CARD_TIME)
 		{
@@ -896,6 +910,28 @@ void CPlayScene::Congratulations()
 		}
 	}
 }
+
+
+void CPlayScene::CollectingScore()
+{
+	int score = player->GetScores();
+	if (timer > 0)
+	{
+		if (timer >= 10000)
+		{
+			score = score + 10 * SCORE_PER_SECOND;
+			timer -= 10000;
+		}
+		else if (timer >= 1000)
+		{
+			score = score + SCORE_PER_SECOND;
+			timer -= 1000;
+		}
+
+		player->SetScores(score);
+	}
+}
+
 
 void CPlayScene::SwitchScene(int next_level)
 {
@@ -925,6 +961,23 @@ void CPlayScene::FastTravel(DWORD dt)
 		else
 		{
 			Congratulations();
+		}
+	}
+}
+
+void CPlayScene::PushFinishWall()
+{
+	for (int i = 0; i < objects.size(); i++)
+	{
+		if (CPlatform* platform = dynamic_cast<CPlatform*>(objects[i]))
+		{
+			if (platform->IsWall())
+			{
+				float pfX, pfY;
+				platform->GetPosition(pfX, pfY);
+				platform->SetPosition(pfX + 32, pfY);
+				return;
+			}
 		}
 	}
 }

@@ -74,6 +74,9 @@
 #define ID_ANI_FLY 200
 #define ID_ANI_INTO_THE_PIPE 210
 #define ID_ANI_DIE 999
+//FINISHED
+#define ID_ANI_FINISHED 300
+#define FINISHED_RUN_SPEED 0.05f
 //DIRECTIONS
 #define ID_ANI_LEFT 0
 #define ID_ANI_RIGHT 1
@@ -229,6 +232,7 @@ public:
 
 	bool IntoThePipe(int direction);
 	void Digging();
+	bool IsDigging() { return isDigging; }
 	bool IsInGround() { return isInGround; }
 
 	/*void IncreaseFlyingPoint();
@@ -237,6 +241,7 @@ public:
 	int GetMomentum() { return momentum; }
 	int GetCoins() { return coins; }
 	int GetScores() { return scores; }
+	void SetScores(int score) { scores = score; }
 	int* GetCards() { return cards; }
 	int GetLatestCard() { return cards[cardIndex - 1]; }
 

@@ -26,12 +26,14 @@ protected:
 
 	int falling;
 
+	int isWall;
+
 public:
 	CPlatform(float x, float y,
 		float cell_width, float cell_height, int width, int height, int type,
 		int sprite_id_begin_begin, int sprite_id_middle_begin, int sprite_id_end_begin,
 		int sprite_id_begin_middle, int sprite_id_middle_middle, int sprite_id_end_middle,
-		int sprite_id_begin_end, int sprite_id_middle_end, int sprite_id_end_end) 
+		int sprite_id_begin_end, int sprite_id_middle_end, int sprite_id_end_end, int isWall = 0)
 		: CGameObject(x, y)
 	{
 		this->height = height;
@@ -51,6 +53,8 @@ public:
 		this->spriteIdBeginEnd = sprite_id_begin_end;
 		this->spriteIdMiddleEnd = sprite_id_middle_end;
 		this->spriteIdEndEnd = sprite_id_end_end;
+
+		this->isWall = isWall;
 	}
 
 	virtual void Render();
@@ -64,6 +68,8 @@ public:
 	virtual int IsDirectionColliable(float nx, float ny);
 
 	virtual void OnCollisionWith(LPCOLLISIONEVENT e);
+
+	int IsWall() { return isWall; }
 };
 
 typedef CPlatform* LPPLATFORM;
