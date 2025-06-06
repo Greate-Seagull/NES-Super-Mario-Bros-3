@@ -11,7 +11,7 @@ using namespace std;
 #include <dinput.h>
 
 #include "debug.h"
-#include "Texture.h"
+#include "Textures.h"
 #include "Scene.h"
 #include "KeyStateManager.h"
 #include "GameObject.h"

@@ -4,18 +4,13 @@
 
 #include "PlayScene.h"
 #include "Utils.h"
-#include "Textures.h"
-#include "Sprites.h"
+
 #include "Portal.h"
 #include "DeadStateTrigger.h"
+
 #include "Coin.h"
+
 #include "FloatingPlatform.h"
-#include "Paragoomba.h"
-#include "VenusFireTrap.h"
-#include "RedKoopaTroopa.h"
-#include "BoomerangBrother.h"
-#include "SuperMushroom.h"
-#include "SuperLeaf.h"
 #include "Brick.h"
 #include "BrickParticle.h"
 #include "QuestionBlock.h"
@@ -27,7 +22,15 @@
 #include "MapIcon.h"
 #include "PButton.h"
 
-#include "SampleKeyEventHandler.h"
+#include "Paragoomba.h"
+#include "VenusFireTrap.h"
+#include "RedKoopaTroopa.h"
+#include "BoomerangBrother.h"
+
+#include "SuperMushroom.h"
+#include "SuperLeaf.h"
+
+//#include "SampleKeyEventHandler.h"
 
 using namespace std;
 
@@ -281,11 +284,8 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		}
 		else
 		{
-			player->SetTraveled();
-			if (player->GetLife() == MARIO_LEVEL_BIG ||
-				player->GetLife() == MARIO_LEVEL_RACOON) y -= MARIO_BIG_BBOX_HEIGHT / 4;
-			if(player->IsInGround()) player->GetDestinationPosition(x, y);
 			obj = player;
+			if(player->IsInGround()) player->GetDestinationPosition(x, y);
 			DebugOut(L"[INFO] Player object has been created!\n");
 		}
 		break;
@@ -326,10 +326,8 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	case OBJECT_TYPE_BOOMERANG_BROTHER:
 	{
 		obj = new CBoomerangBrother(x, y);
-		Insert(obj, -1);
-		vector<CBoomerang*> boomerangs = ((CBoomerangBrother*)obj)->GetBoomerangs();
-		for (int i = 0; i < boomerangs.size(); i++) Insert(boomerangs[i], -1);
-		return;
+		spawner.Add(obj);
+		break;
 	}
 	case OBJECT_TYPE_BRICK: 
 	{
@@ -512,7 +510,9 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 
 	// General object setup
 	obj->SetPosition(x, y);
+	obj->Refresh();
 
+	obj->CreateItem(this);
 	objects.push_back(obj);
 }
 
@@ -600,9 +600,6 @@ void CPlayScene::Load()
 
 void CPlayScene::Update(DWORD dt)
 {
-	float cX, cY;
-	CGame::GetInstance()->GetCamPos(cX, cY);
-	DebugOutTitle(L"%f, %f", cX, cY);
 	// skip the rest if scene was already unloaded (Mario::Update might trigger PlayScene::Unload)
 	if (isPaused)
 		return;
@@ -638,12 +635,15 @@ void CPlayScene::Update(DWORD dt)
 				nonBlockingColliders.push_back(obj);
 
 			//Objects will use collision process
-			if (obj->IsMoving()) //For sweptAABB
-				movingColliders.push_back(obj);
-			else if (obj->IsDirectionalBlocking() == false) //For overlap
-				staticColliders.push_back(obj);
+			if (obj->IsDirectionalBlocking() == false)
+			{
+				if (obj->IsMoving()) //For sweptAABB
+					movingColliders.push_back(obj);
+				else if (obj->IsBlocking()) //For overlap
+					staticColliders.push_back(obj);
 
-			collisionTracker->Allocate(obj);
+				collisionTracker->Allocate(obj);
+			}
 		}
 	}
 
@@ -790,12 +790,12 @@ vector<LPGAMEOBJECT> CPlayScene::FilterByCam()
 	vector<LPGAMEOBJECT> process_list;
 	for (size_t i = 0; i < objects.size(); i++)
 	{
+		if (objects[i]->IsDeleted())
+			continue;
+
 		if (objects[i] == player || game->IsInCam(objects[i]))
 			process_list.push_back(objects[i]);
 	}
-
-	if (process_list.size() == 1)
-		process_list.clear();
 
 	return process_list;
 }
@@ -986,7 +986,7 @@ void CPlayScene::PushFinishWall()
 //{
 //	score += score_value;
 //}
-//
+
 //void CPlayScene::InsertScore(float x, float y, int score_value)
 //{
 //	CScore* scoreUI = new CScore(x, y, score_value);

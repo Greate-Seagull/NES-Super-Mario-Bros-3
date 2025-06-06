@@ -46,4 +46,6 @@ public:
 
 	virtual void ChangeDirection();
 	virtual void Stop();
+
+	virtual void Refresh();
 };

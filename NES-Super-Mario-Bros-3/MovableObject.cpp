@@ -2,18 +2,7 @@
 
 CMovableObject::CMovableObject(float x, float y):
 	CGameObject(x, y)
-{
-	this->vx = 0.0f;
-	this->vy = 0.0f;
-
-	this->ax = 0.0f;
-	this->ay = GAME_GRAVITY;
-
-	this->nx = 0;
-	this->ny = 0;
-	this->nz = 0;
-
-	this->isOnGround = false;
+{	
 }
 
 void CMovableObject::Prepare(DWORD dt)
@@ -52,4 +41,19 @@ void CMovableObject::Stop()
 {
 	vx = STOP_V;
 	vy = STOP_V;
+}
+
+void CMovableObject::Refresh()
+{
+	this->vx = 0.0f;
+	this->vy = 0.0f;
+
+	this->ax = 0.0f;
+	this->ay = GAME_GRAVITY;
+
+	this->nx = 0;
+	this->ny = 0;
+	this->nz = 0;
+
+	this->isOnGround = false;
 }

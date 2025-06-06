@@ -72,6 +72,7 @@
 #define ID_ANI_KICK 90
 #define ID_ANI_CARRY 100
 #define ID_ANI_FLY 200
+#define ID_ANI_PARACHUTE 205
 #define ID_ANI_INTO_THE_PIPE 210
 #define ID_ANI_DIE 999
 //FINISHED
@@ -115,6 +116,7 @@ class CMario : public CCreature
 
 	int attacking_time;
 	int attack_phase;
+	int attack_direction;
 	CRacoonTail* tail;
 
 	int momentum;
@@ -175,9 +177,6 @@ public:
 
 	float GetLife() { return life; }
 	void SetLife(float l);
-	void ToSmallLevel();
-	void ToBigLevel();
-	void ToRacoonLevel();
 
 	void SetState(int state);
 	void ToGainingPowerState();
@@ -205,7 +204,7 @@ public:
 	bool Walk();
 
 	bool Attack();
-	void Attacking(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+	void Attacking(DWORD dt);
 	void ChangeAttackPhase(int phase);
 	void UntriggerTail();
 
@@ -215,6 +214,7 @@ public:
 	bool Grab(LPCOLLISIONEVENT e);
 	void Carrying();
 	bool Tosh();
+	void Drop();
 
 	bool Kick();
 	void Kicking(DWORD dt);
@@ -224,6 +224,8 @@ public:
 
 	void GainingPower(DWORD dt);
 	void LosingPower(DWORD dt);
+	void CancelUniqueAction();
+	void GetBoundingBoxOfAction(float &width, float &height);
 
 	void Dying(DWORD dt);
 
@@ -245,8 +247,16 @@ public:
 	int* GetCards() { return cards; }
 	int GetLatestCard() { return cards[cardIndex - 1]; }
 
+	void InsertScore(int score);
+	void InsertScoreObject(float x, float y, int score);
+	void IncreaseFlyingPoint();
+	void InsertFlyingScore(float x, float y);
+
 	bool IsFastTravel() { return isFastTravel; }
 	int GetDestination() { return destination; }
 	void GetDestinationPosition(float &x, float &y) { x = des_x; y = des_y; }
-	void SetTraveled() { isFastTravel = false; }
+
+	void Refresh();
+
+	void CreateItem(CPlayScene* ps);
 };

@@ -26,6 +26,9 @@
 #define PIRANHA_HIDE_TIME 1500
 #define PIRANHA_DIE_TIME 350
 
+#define PIRANHA_TYPE_GREEN 0
+#define PIRANHA_TYPE_RED 1
+
 #define ANI_ID_PIRANHA 24000
 //Actions
 #define ANI_ID_PIRANHA_BITE 0
@@ -46,8 +49,12 @@ protected:
 
 	//die
 	DWORD die_time;
+
+	//type: 0 = green, 1 = red
+	int type;
+
 public:
-	CPiranhaPlant(float x, float y);
+	CPiranhaPlant(float x, float y, int type = PIRANHA_TYPE_GREEN);
 
 	virtual void SetPosition(float x, float y);
 
@@ -57,8 +64,10 @@ public:
 
 	virtual int IsCollidable() { return state != PIRANHA_STATE_HIDE && state != STATE_DIE; };
 	virtual int IsLinkedTo(CGameObject* obj) { return pot == obj || dynamic_cast<CFireball*>(obj); }
+	virtual int IsMoving() { return 1; }
 
 	virtual void Render();
+	virtual int GetObjectAniID() { return ANI_ID_PIRANHA; }
 	virtual void ChangeAnimation();
 
 	virtual void Emerging(DWORD dt);

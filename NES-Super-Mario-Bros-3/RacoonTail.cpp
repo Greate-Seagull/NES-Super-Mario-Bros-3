@@ -1,4 +1,5 @@
 #include "RacoonTail.h"
+#include "Mario.h"
 
 CRacoonTail::CRacoonTail(float x, float y) :
 	CHarmfulObject(x, y)
@@ -6,14 +7,26 @@ CRacoonTail::CRacoonTail(float x, float y) :
 	SetBoundingBox(RACOON_TAIL_BBOX_WIDTH, RACOON_TAIL_BBOX_HEIGHT);
 }
 
+void CRacoonTail::Prepare(DWORD dt)
+{
+	vx = dx / dt;
+	vy = dy / dt;
+}
+
 void CRacoonTail::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
-	CCollision::GetInstance()->SolveOverlap(this, dt, coObjects);
+	isFliedOut = false; //Never be killed
+	Move(dt);
 }
 
 void CRacoonTail::Render()
 {
-	RenderBoundingBox();
+	//RenderBoundingBox();
+}
+
+int CRacoonTail::IsLinkedTo(CGameObject* obj)
+{
+	return obj == owner;
 }
 
 void CRacoonTail::OnCollisionWith(LPCOLLISIONEVENT e)
@@ -26,10 +39,24 @@ void CRacoonTail::OnCollisionWith(LPCOLLISIONEVENT e)
 
 void CRacoonTail::OnCollisionWithCreature(LPCOLLISIONEVENT e)
 {
-	Destroy(e);
+	if (!dynamic_cast<CMario*>(e->obj)) Destroy(e);
 }
 
 void CRacoonTail::OnCollisionWithBlock(LPCOLLISIONEVENT e)
-{
+{	
 	Destroy(e);
+}
+
+void CRacoonTail::AcceptOwner(CGameObject* owner)
+{
+	if (this->owner == nullptr)
+		this->owner = owner;
+}
+
+void CRacoonTail::Refresh()
+{
+	CHarmfulObject::Refresh();
+
+	dx = 0.0f;
+	dy = 0.0f;
 }

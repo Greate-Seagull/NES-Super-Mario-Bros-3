@@ -4,7 +4,7 @@
 #include "PlayScene.h"
 
 void CCoin::Prepare(DWORD dt)
-{
+{	
 	if (isToggled)
 		CMovableObject::Prepare(dt);
 }
@@ -17,11 +17,12 @@ void CCoin::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 
 		if (y >= originalY)
 		{
-			/*LPPLAYSCENE currScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
-			currScene->InsertScore(x, y - 16, 100);*/
+			LPPLAYSCENE currScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+			CMario* player = (CMario*)currScene->GetPlayer();
+			player->InsertScoreObject(x, y - 16, 100);
 			Delete();
 		}
-	}
+	}		
 }
 
 int CCoin::IsLinkedTo(CGameObject* obj)

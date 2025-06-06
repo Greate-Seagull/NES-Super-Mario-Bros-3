@@ -4,6 +4,7 @@
 CHarmfulObject::CHarmfulObject(float x, float y):
 	CMovableObject(x, y)
 {
+	isFliedOut = false;
 }
 
 void CHarmfulObject::OnReactionTo(LPCOLLISIONEVENT e, int action)
@@ -52,6 +53,7 @@ void CHarmfulObject::OnReactionToAttack1(LPCOLLISIONEVENT e)
 
 void CHarmfulObject::OnReactionToAttack2(LPCOLLISIONEVENT e)
 {
+	FlyOut(this->x <= e->src_obj->GetX() ? DIRECTION_LEFT : DIRECTION_RIGHT);	
 }
 
 void CHarmfulObject::OnReactionToAttack3(LPCOLLISIONEVENT e)
@@ -74,24 +76,38 @@ void CHarmfulObject::Attack(LPCOLLISIONEVENT e)
 
 void CHarmfulObject::HigherAttack(LPCOLLISIONEVENT e)
 {
+	float effect_x = x + e->dx;
+	float effect_y = y + e->dy;
+	CEffectsManager::GetInstance()->CreateAttackEffect(effect_x, effect_y);
 	e->obj->OnReactionTo(e, ACTION_ATTACK_LEVEL_2);
 }
 
 void CHarmfulObject::Destroy(LPCOLLISIONEVENT e)
 {
-	float effect_x = x - e->nx * bbox_width / 2.0f;
-	float effect_y = y - e->ny * bbox_height / 2.0f;
+	float effect_x = x + e->dx;
+	float effect_y = y + e->dy;
 	CEffectsManager::GetInstance()->CreateAttackEffect(effect_x, effect_y);
 	e->obj->OnReactionTo(e, ACTION_ATTACK_LEVEL_3);
 }
 
 void CHarmfulObject::FlyOut(int attack_direction)
 {
-	SetState(STATE_FLYINGOUT);
+	isFliedOut = true;
 
 	nx = attack_direction;
 	vx = nx * fabs(maxVx);
 
 	ny = DIRECTION_UP;
 	vy = ny * ATTACK_BOOM_VY;
+}
+
+void CHarmfulObject::Refresh()
+{
+	if (isFliedOut)
+	{
+		this->Delete();
+		return;
+	}
+
+	CMovableObject::Refresh();
 }

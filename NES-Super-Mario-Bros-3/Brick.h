@@ -3,9 +3,7 @@
 #include "Block.h"
 #include "BrickParticle.h"
 
-#include "PlayScene.h"
-#include "Animation.h"
-#include "Animations.h"
+#include "Mario.h"
 
 #define ID_ANI_BRICK 10000
 #define ID_ANI_BRICK_DIE 12001

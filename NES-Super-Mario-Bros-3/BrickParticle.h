@@ -19,7 +19,8 @@ public:
 	CBrickParticle(float x, float y, int corner) : CMovableObject(x, y)
 	{
 		this->corner = corner;
-		vy = -5.0f;
+
+		this->vy = 0.0f;
 
 		aniID = ID_PARTICLE_ROTATION;
 		SetBoundingBox(BRICK_PARTICLE_SIZE, BRICK_PARTICLE_SIZE);
@@ -28,4 +29,6 @@ public:
 	int IsCollidable() { return 0; }
 
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+
+	void Refresh();
 };

@@ -16,3 +16,9 @@ void CEnemy::LookForMario()
 	nx = (mario->GetX() <= x) ? DIRECTION_LEFT : DIRECTION_RIGHT;
 	ny = (mario->GetY() <= y) ? DIRECTION_UP : DIRECTION_DOWN;
 }
+
+void CEnemy::Refresh()
+{	
+	CCreature::Refresh();
+	LookForMario();
+}

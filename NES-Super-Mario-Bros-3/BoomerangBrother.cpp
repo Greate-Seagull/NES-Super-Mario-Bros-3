@@ -8,7 +8,7 @@ CBoomerangBrother::CBoomerangBrother(float x, float y):
 	CEnemy(x, y)
 {	
 	magSize = BOOMERANG_BROTHER_MAGSIZE;
-	TakeBoomerangs();
+
 	Refresh();
 }
 
@@ -210,6 +210,8 @@ void CBoomerangBrother::OnCollisionWithEnemy(LPCOLLISIONEVENT e)
 
 void CBoomerangBrother::OnReactionToAttack1(LPCOLLISIONEVENT e)
 {
+	if (CMario* player = dynamic_cast<CMario*>(e->src_obj))
+		player->InsertScoreObject(x, y - 16, 100);
 	e->Reverse();
 	Touch(e);
 	CHarmfulObject::OnReactionToAttack3(e);
@@ -218,18 +220,26 @@ void CBoomerangBrother::OnReactionToAttack1(LPCOLLISIONEVENT e)
 
 void CBoomerangBrother::OnReactionToAttack2(LPCOLLISIONEVENT e)
 {
-	CHarmfulObject::OnReactionToAttack3(e);
+	CHarmfulObject::OnReactionToAttack2(e);
 	UnderAttack((CHarmfulObject*)e->obj);
 }
 
 void CBoomerangBrother::OnReactionToAttack3(LPCOLLISIONEVENT e)
 {
+	if (CRacoonTail* tail = dynamic_cast<CRacoonTail*>(e->src_obj))
+	{
+		LPPLAYSCENE currScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+		CMario* player = (CMario*)currScene->GetPlayer();
+		player->InsertScoreObject(x, y - 16, 100);
+	}
 	CHarmfulObject::OnReactionToAttack3(e);
 	UnderAttack((CHarmfulObject*)e->obj);
 }
 
 void CBoomerangBrother::Refresh()
 {
+	CEnemy::Refresh();
+
 	LookForMario();
 	life = BOOMERANG_BROTHER_LIFE;
 	SetBoundingBox(BOOMERANG_BROTHER_BBOX_WIDTH, BOOMERANG_BROTHER_BBOX_HEIGHT);
@@ -246,5 +256,15 @@ void CBoomerangBrother::TakeBoomerangs()
 	for (int i = 0; i < boomerang.size(); i++)
 	{
 		boomerang[i] = new CBoomerang(DEFAULT_X, DEFAULT_Y);
+	}
+}
+
+void CBoomerangBrother::CreateItem(CPlayScene* ps)
+{
+	TakeBoomerangs();
+	for (int i = 0; i < boomerang.size(); i++)
+	{
+		boomerang[i]->CreateItem(ps);
+		ps->Insert(boomerang[i], -1);
 	}
 }

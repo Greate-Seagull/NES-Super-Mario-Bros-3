@@ -14,8 +14,8 @@
 #define GOOMBA_DIE_TIMEOUT 240
 
 //WINGS COMPONENT ----------------------------
-#define WINGS_DISTANCE_BETWEEN 14.0f
-#define WINGS_Y_OFFSET -6.0f
+#define WINGS_DISTANCE_BETWEEN 12.0f
+#define WINGS_Y_OFFSET -9.0f
 
 #define CHASING_VY -0.1f
 #define WINGS_JUMP_VY -0.3f
@@ -47,6 +47,8 @@ protected:
 public:
 	CGoomba(float x, float y, bool haveWings = false);
 	
+	virtual void SetPosition(float x, float y);
+
 	virtual void Prepare(DWORD dt);
 	virtual void DefaultPrepare(DWORD dt) {};
 
@@ -57,7 +59,7 @@ public:
 	virtual void ChangeAnimation();
 	virtual void Render();
 
-	virtual int IsCollidable() { return state == STATE_LIVE; };
+	virtual int IsCollidable() { return life; };
 	virtual void OnCollisionWith(LPCOLLISIONEVENT e);
 	virtual void OnCollisionWithPlatform(LPCOLLISIONEVENT e);
 	virtual void OnCollisionWithBlock(LPCOLLISIONEVENT e);

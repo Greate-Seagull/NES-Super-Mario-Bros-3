@@ -10,6 +10,7 @@ using namespace std;
 class CSpawnManager
 {
 	unordered_map<CGameObject*, pair<float, float>> objectPositions;
+	unordered_map<CGameObject*, bool> objectSpawn;
 
 public:
 	void Add(CGameObject* obj);

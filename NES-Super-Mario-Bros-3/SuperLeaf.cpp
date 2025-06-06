@@ -6,11 +6,7 @@
 CSuperLeaf::CSuperLeaf(float x, float y):
 	CHelpfulObject(x, y)
 {
-	SetBoundingBox(LEAF_BBOX_WIDTH, LEAF_BBOX_HEIGHT);
-
-	effect = EFFECT_RACOONIZE;
-
-	SetState(LEAF_STATE_SLEEP);
+	SetBoundingBox(LEAF_BBOX_WIDTH, LEAF_BBOX_HEIGHT);	
 }
 
 void CSuperLeaf::Prepare(DWORD dt)
@@ -92,10 +88,7 @@ void CSuperLeaf::OnCollisionWith(LPCOLLISIONEVENT e)
 {
 	if (CMario* mario = dynamic_cast<CMario*>(e->obj))
 	{
-		/*LPPLAYSCENE currentScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
-		currentScene->InsertScore(x, y - 16, 1000);
-
-		if (mario->GetLife() != MARIO_LEVEL_RACOON) LaunchEffect(mario);*/
+		mario->InsertScoreObject(x, y - 16, 1000);
 		LaunchEffect(e);
 		SetState(STATE_DIE);
 	}
@@ -169,4 +162,12 @@ void CSuperLeaf::ChangeDirection()
 	{
 		ny = -ny;
 	}
+}
+
+void CSuperLeaf::Refresh()
+{
+	CHelpfulObject::Refresh();
+
+	effect = EFFECT_RACOONIZE;
+	SetState(LEAF_STATE_SLEEP);
 }

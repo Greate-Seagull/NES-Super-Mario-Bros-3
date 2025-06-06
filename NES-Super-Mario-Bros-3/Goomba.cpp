@@ -3,13 +3,20 @@
 #include "Mario.h"
 #include "Block.h"
 #include "Platform.h"
+#include "PlayScene.h"
 
 CGoomba::CGoomba(float x, float y, bool haveWings) :
 	CEnemy(x, y)
 {
 	bornWithWings = haveWings;	
+}
 
-	Refresh();
+void CGoomba::SetPosition(float x, float y)
+{
+	this->x = x; this->y = y;
+
+	if(wings)
+		wings->SetPosition(x, y + WINGS_Y_OFFSET);
 }
 
 void CGoomba::OnCollisionWith(LPCOLLISIONEVENT e)
@@ -88,8 +95,14 @@ void CGoomba::OnReactionToAttack1(LPCOLLISIONEVENT e)
 		m->GetPosition(mX, mY);
 		m->InsertFlyingScore(mX, mY - 16);
 	}*/
+	if (CMario* player = dynamic_cast<CMario*>(e->src_obj))
+		player->InsertFlyingScore(x, y);
+	
 	e->Reverse();
 	Touch(e);
+
+	if (e->ny)
+		vy = 0.0f;
 	
 	if (wings)
 		LoseWings();		
@@ -101,8 +114,8 @@ void CGoomba::OnReactionToAttack2(LPCOLLISIONEVENT e)
 {
 	if (wings)
 		LoseWings();
-	else
-		Die();
+	CHarmfulObject::OnReactionToAttack2(e);
+	SetLife(life - 1.0f);
 }
 
 //void CGoomba::ReactionToAttack3(CGameObject* by_another)
@@ -118,9 +131,14 @@ void CGoomba::OnReactionToAttack2(LPCOLLISIONEVENT e)
 
 void CGoomba::OnReactionToAttack3(LPCOLLISIONEVENT e)
 {	
+	LPPLAYSCENE currScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+	CMario* player = (CMario*)currScene->GetPlayer();
+	player->InsertScoreObject(x, y - 16, 100);
+
 	if (wings)
 		LoseWings();
-	CHarmfulObject::OnReactionToAttack3(e);	
+	CHarmfulObject::OnReactionToAttack3(e);
+	SetLife(life - 1.0f);
 }
 
 void CGoomba::SetState(int state)
@@ -139,8 +157,6 @@ void CGoomba::SetState(int state)
 		break;
 	case STATE_DIE:
 		ToStateDying();
-		break;
-	case STATE_FLYINGOUT:
 		break;
 	}
 }
@@ -180,6 +196,8 @@ void CGoomba::Dying(DWORD dt)
 
 void CGoomba::Refresh()
 {
+	CEnemy::Refresh();
+
 	maxVx = GOOMBA_VX;
 	LookForMario();
 	life = GOOMBA_LIFE;	
@@ -281,7 +299,6 @@ void CGoomba::Prepare(DWORD dt)
 {
 	switch (state)
 	{
-	case STATE_FLYINGOUT:
 	case STATE_LIVE:
 		if(wings) ChaseMario(dt);
 		CMovableObject::Prepare(dt);
@@ -296,7 +313,6 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
 	switch (state)
 	{
-	case STATE_FLYINGOUT:
 	case STATE_LIVE:
 		Living(dt);
 		break;
@@ -315,16 +331,16 @@ void CGoomba::ChangeAnimation()
 
 	switch (state)
 	{
-	case STATE_FLYINGOUT:
-		action = ANI_ID_GOOMBA_WALK + ID_ANI_DIRECTION_UP;
-		break;
 	case STATE_DIE:
 		action = ANI_ID_GOOMBA_DIE;
 		break;
 	default:
 		action = ANI_ID_GOOMBA_WALK;
 		break;
-	}	
+	}
+
+	if (isFliedOut) 
+		action += ID_ANI_DIRECTION_UP;
 
 	aniID = object + action;
 }

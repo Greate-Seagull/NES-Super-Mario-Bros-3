@@ -29,6 +29,8 @@ public:
 
 	void GetSpeed(float& vx, float& vy);
 
+	int IsGoingThrough(CGameObject* obj) { return 1; }
+
 	void Prepare(DWORD dt);
 	void Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
 	void OnReactionTo(LPCOLLISIONEVENT e, int action);

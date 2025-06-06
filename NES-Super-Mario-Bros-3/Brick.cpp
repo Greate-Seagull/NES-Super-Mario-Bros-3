@@ -1,4 +1,7 @@
 #include "Brick.h"
+
+#include "PlayScene.h"
+
 #include "PButton.h"
 #include "SuperMushroom.h"
 #include "SuperLeaf.h"
@@ -29,6 +32,7 @@ void CBrick::OnReactionTo(LPCOLLISIONEVENT e, int action)
 
 	switch (action)
 	{
+	case ACTION_ATTACK_LEVEL_2:
 	case ACTION_ATTACK_LEVEL_3:
 		switch (itemID)
 		{
@@ -82,6 +86,7 @@ void CBrick::SetState(int state)
 	switch (state)
 	{
 	case STATE_LIVE:
+		item = nullptr;
 		break;
 	case BRICK_STATE_TOGGLE:
 		break;
@@ -99,7 +104,7 @@ void CBrick::TakeItem()
 	switch (itemID)
 	{
 	case OBJECT_TYPE_PBUTTON: 
-		item = new CPButton(x, y - BRICK_WIDTH - 1.0f); 
+		item = new CPButton(x, y - BRICK_WIDTH); 
 		break;
 	case OBJECT_TYPE_COIN:
 	{
@@ -144,13 +149,11 @@ void CBrick::TriggerItem(LPCOLLISIONEVENT e, int action)
 		if (item == nullptr)
 			return;
 
+		item->Refresh();
 		ps->Insert(item, ps->Find(this));
 		
 		if(itemID != OBJECT_TYPE_PBUTTON)
 			item->OnReactionTo(e, action);
-
-		if (itemID == OBJECT_TYPE_COIN)
-			item = nullptr; //Clear to create more coins
 	}
 }
 
@@ -188,6 +191,7 @@ void CBrick::BlastingBrickParticles()
 	LPPLAYSCENE currentScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
 	for (int i = 0; i < 4; i++)
 	{
+		brickParticles[i]->Refresh();
 		currentScene->Insert(brickParticles[i], -1);
 	}
 }

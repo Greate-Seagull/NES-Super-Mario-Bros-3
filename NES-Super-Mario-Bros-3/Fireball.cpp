@@ -16,9 +16,6 @@ void CFireball::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	if (vx == 0.0f && vy == 0.0f)
 		return;
 
-	//Only colliding with mario, no other objects
-	//CCollision::GetInstance()->Process(this, dt, coObjects);
-
 	Move(dt);
 }
 

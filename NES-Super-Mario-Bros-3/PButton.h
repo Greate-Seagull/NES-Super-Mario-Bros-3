@@ -1,8 +1,6 @@
 #pragma once
 
 #include "HelpfulObject.h"
-#include "Animation.h"
-#include "Animations.h"
 
 #define PBUTTON_CONSTRUCTED 0
 #define PBUTTON_PRESSED 1
@@ -32,5 +30,5 @@ public:
 	void OnReactionTo(LPCOLLISIONEVENT e, int action);
 
 	int IsCollidable() { return isSwitched == false; }
-	//int IsBlocking() { return 1; }
+	int IsBlocking() { return 1; }
 };
