@@ -1,4 +1,5 @@
 #include "RacoonTail.h"
+#include "Mario.h"
 
 CRacoonTail::CRacoonTail(float x, float y) :
 	CHarmfulObject(x, y)
@@ -38,7 +39,7 @@ void CRacoonTail::OnCollisionWith(LPCOLLISIONEVENT e)
 
 void CRacoonTail::OnCollisionWithCreature(LPCOLLISIONEVENT e)
 {
-	Destroy(e);
+	if (!dynamic_cast<CMario*>(e->obj)) Destroy(e);
 }
 
 void CRacoonTail::OnCollisionWithBlock(LPCOLLISIONEVENT e)

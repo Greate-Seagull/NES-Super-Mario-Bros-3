@@ -4,9 +4,11 @@
 
 #include "Pipe.h"
 
-CPiranhaPlant::CPiranhaPlant(float x, float y):
+CPiranhaPlant::CPiranhaPlant(float x, float y, int type):
 	CEnemy(x, y)
 {
+	this->type = type;
+
 	SetBoundingBox(PIRANHA_BBOX_WIDTH, PIRANHA_BBOX_HEIGHT);
 }
 
@@ -184,6 +186,9 @@ void CPiranhaPlant::OnReactionToAttack2(LPCOLLISIONEVENT e)
 
 void CPiranhaPlant::OnReactionToAttack3(LPCOLLISIONEVENT e)
 {
+	LPPLAYSCENE currScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+	CMario* player = (CMario*)currScene->GetPlayer();
+	player->InsertScoreObject(x, y, 100);
 	Die();
 }
 
@@ -229,7 +234,7 @@ void CPiranhaPlant::Render()
 
 void CPiranhaPlant::ChangeAnimation()
 {
-	int object = ANI_ID_PIRANHA;
+	int object = GetObjectAniID();
 
 	int action;
 	switch (state)

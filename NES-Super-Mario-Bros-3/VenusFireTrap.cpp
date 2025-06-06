@@ -6,14 +6,22 @@
 #include "Mario.h"
 #include "debug.h"
 
-CVenusFireTrap::CVenusFireTrap(float x, float y) :
-	CPiranhaPlant(x, y)
+CVenusFireTrap::CVenusFireTrap(float x, float y, int type) :
+	CPiranhaPlant(x, y, type)
 {	
+}
+
+int CVenusFireTrap::GetObjectAniID()
+{
+	if (type == PIRANHA_TYPE_GREEN)
+		return ANI_ID_GREEN_VENUS;
+	else if (type == PIRANHA_TYPE_RED)
+		return ANI_ID_RED_VENUS;
 }
 
 void CVenusFireTrap::ChangeAnimation()
 {
-	int object = ANI_ID_VENUS;
+	int object = GetObjectAniID();
 
 	int action;
 	switch (state)

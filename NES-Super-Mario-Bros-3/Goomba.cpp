@@ -3,6 +3,7 @@
 #include "Mario.h"
 #include "Block.h"
 #include "Platform.h"
+#include "PlayScene.h"
 
 CGoomba::CGoomba(float x, float y, bool haveWings) :
 	CEnemy(x, y)
@@ -94,6 +95,9 @@ void CGoomba::OnReactionToAttack1(LPCOLLISIONEVENT e)
 		m->GetPosition(mX, mY);
 		m->InsertFlyingScore(mX, mY - 16);
 	}*/
+	if (CMario* player = dynamic_cast<CMario*>(e->src_obj))
+		player->InsertFlyingScore(x, y);
+	
 	e->Reverse();
 	Touch(e);
 
@@ -127,6 +131,10 @@ void CGoomba::OnReactionToAttack2(LPCOLLISIONEVENT e)
 
 void CGoomba::OnReactionToAttack3(LPCOLLISIONEVENT e)
 {	
+	LPPLAYSCENE currScene = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+	CMario* player = (CMario*)currScene->GetPlayer();
+	player->InsertScoreObject(x, y - 16, 100);
+
 	if (wings)
 		LoseWings();
 	CHarmfulObject::OnReactionToAttack3(e);

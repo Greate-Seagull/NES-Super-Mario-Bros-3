@@ -30,6 +30,7 @@ public:
     void Render();
 
     int IsCollidable();
+    int IsSoft() { return 1; }
 
     void OnReactionTo(LPCOLLISIONEVENT e, int action);
 

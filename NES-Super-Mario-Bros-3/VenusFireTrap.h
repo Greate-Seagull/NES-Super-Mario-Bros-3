@@ -9,7 +9,8 @@
 #define VENUS_SHOOT_MIN_DISTANCE 115.0f
 #define VENUS_SHOOT_POSITION_OFFSET PIRANHA_BBOX_HEIGHT / 4.0f
 
-#define ANI_ID_VENUS 25000
+#define ANI_ID_RED_VENUS 25000
+#define ANI_ID_GREEN_VENUS 29000
 //Actions
 #define ANI_ID_VENUS_LOOK 0
 #define ANI_ID_VENUS_SHOOT 100
@@ -21,8 +22,9 @@ class CVenusFireTrap: public CPiranhaPlant
 	CFireball* boomerang;
 	bool assault_mode;
 public:
-	CVenusFireTrap(float x, float y);
+	CVenusFireTrap(float x, float y, int type = PIRANHA_TYPE_GREEN);
 
+	virtual int GetObjectAniID();
 	virtual void ChangeAnimation();
 
 	virtual void Attacking(DWORD dt);

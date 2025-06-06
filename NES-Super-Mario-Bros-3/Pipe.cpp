@@ -166,7 +166,11 @@ void CPipe::TakeItem()
 	switch (itemID)
 	{
 	case OBJECT_TYPE_VENUS_FIRE_TRAP:
-		item = new CVenusFireTrap(x, y);
+		item = new CVenusFireTrap(x, y, PIRANHA_TYPE_RED);
+		UseDefaultItemPosition();
+		break;
+	case OBJECT_TYPE_GREEN_VENUS:
+		item = new CVenusFireTrap(x, y, PIRANHA_TYPE_GREEN);
 		UseDefaultItemPosition();
 		break;
 	case OBJECT_TYPE_PIRANHA_PLANT:

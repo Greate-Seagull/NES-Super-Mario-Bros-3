@@ -938,7 +938,7 @@ void CPlayScene::FastTravel(DWORD dt)
 //{
 //	score += score_value;
 //}
-//
+
 //void CPlayScene::InsertScore(float x, float y, int score_value)
 //{
 //	CScore* scoreUI = new CScore(x, y, score_value);

@@ -28,7 +28,7 @@ protected:
 
 	float timer; //scene time
 	bool isPaused;
-	CHud* hud;	
+	CHud* hud;
 
 	vector<LPGAMEOBJECT> objects;
 	CSpawnManager spawner;
