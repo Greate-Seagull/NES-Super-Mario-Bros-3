@@ -6,11 +6,7 @@
 CSuperLeaf::CSuperLeaf(float x, float y):
 	CHelpfulObject(x, y)
 {
-	SetBoundingBox(LEAF_BBOX_WIDTH, LEAF_BBOX_HEIGHT);
-
-	effect = EFFECT_RACOONIZE;
-
-	SetState(LEAF_STATE_SLEEP);
+	SetBoundingBox(LEAF_BBOX_WIDTH, LEAF_BBOX_HEIGHT);	
 }
 
 void CSuperLeaf::Prepare(DWORD dt)
@@ -166,4 +162,12 @@ void CSuperLeaf::ChangeDirection()
 	{
 		ny = -ny;
 	}
+}
+
+void CSuperLeaf::Refresh()
+{
+	CHelpfulObject::Refresh();
+
+	effect = EFFECT_RACOONIZE;
+	SetState(LEAF_STATE_SLEEP);
 }

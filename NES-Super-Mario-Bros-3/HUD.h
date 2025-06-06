@@ -46,6 +46,8 @@
 #define HUD_CARD_COUNT 3
 #define CARD_NEAR_SPACING 24
 
+#define SCORE_PER_SECOND 10
+
 class CDigit
 {
 protected:
@@ -174,6 +176,8 @@ public:
 	void UpdateCards(int cardType[]);
 
 	void SetPosition(float x, float y);
+
+	void CollectingScore();
 
 	void Render();
 

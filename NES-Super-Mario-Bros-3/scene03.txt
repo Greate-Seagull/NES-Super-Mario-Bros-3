@@ -4,6 +4,7 @@
 [CAMERA]
 #min x	min y	max x	max y	cam vx	cam vy
 0	0	1792	253	0.03	0
+#0	0	1792	253	0	0
 [BACKGROUND]
 1
 [ASSETS]
@@ -136,7 +137,7 @@ other.txt
 
 10	952	351	-2	1	0
 10	952	367	-2	1	0
-10	968	367	31	1	0
+10	968	367	39	1	0
 
 10	1016	367	40	11	0
 10	1032	367	-2	1	0
@@ -245,6 +246,7 @@ other.txt
 
 # MARIO
 0	40	351
+#0	1944	300
 
 # PIPE
 #id	x	y	cell_w	cell_h	height	sprite				dir	warpDir	item	scene	des_x	des_y

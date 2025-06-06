@@ -12,5 +12,6 @@ class CBoomEffect : public CGameObject
 public:
 	CBoomEffect(float x, float y);
 	void Prepare(DWORD dt);
+	void Refresh() { this->Delete(); }
 };
 

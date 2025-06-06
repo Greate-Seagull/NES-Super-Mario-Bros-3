@@ -75,7 +75,7 @@ void CPipe::RenderBoundingBox()
 	//CGame::GetInstance()->Draw(x - cx, y - cy, bbox, &rect, BBOX_ALPHA);
 }
 
-int CPipe::IsGoingThrough(CGameObject* obj)
+int CPipe::IsAllowDigging(CGameObject* obj)
 {
 	if (warp_direction)
 	{
@@ -94,9 +94,39 @@ int CPipe::IsGoingThrough(CGameObject* obj)
 	return false;
 }
 
-void CPipe::OnCollisionWith(LPCOLLISIONEVENT e)
+int CPipe::IsTouching(CGameObject* obj)
 {
 	if (warp_direction)
+	{
+		if (CMario* mario = dynamic_cast<CMario*>(obj))
+		{
+			float mario_left, mario_top, mario_right, mario_bot;
+			mario->GetBoundingBox(mario_left, mario_top, mario_right, mario_bot);
+
+			float pipe_left, pipe_top, pipe_right, pipe_bot;
+			this->GetBoundingBoxInside(pipe_left, pipe_top, pipe_right, pipe_bot);
+
+			bool isInside = false;
+			if (warp_direction < 0)
+				isInside = mario_top <= pipe_bot;
+			else if (warp_direction > 0)
+				isInside = mario_bot >= pipe_top;
+
+			return isInside;
+		}
+	}
+
+	return false;
+}
+
+int CPipe::IsGoingThrough(CGameObject* obj)
+{
+	return IsTouching(obj);
+}
+
+void CPipe::OnCollisionWith(LPCOLLISIONEVENT e)
+{
+	if (IsAllowDigging(e->obj))
 	{
 		e->ny = warp_direction;
 		e->obj->OnReactionTo(e, ACTION_TOUCH);
@@ -140,20 +170,11 @@ void CPipe::OnReactionTo(LPCOLLISIONEVENT e, int action)
 {
 	if (e->ny * warp_direction < 0)
 	{
-		if (CMario* mario = dynamic_cast<CMario*>(e->src_obj))
+		if (IsAllowDigging(e->src_obj))
 		{
-			float mario_left, mario_top, mario_right, mario_bot;
-			mario->GetBoundingBox(mario_left, mario_top, mario_right, mario_bot);
-
-			float pipe_left, pipe_top, pipe_right, pipe_bot;
-			this->GetBoundingBoxInside(pipe_left, pipe_top, pipe_right, pipe_bot);
-
-			if (mario_left > pipe_left && mario_right < pipe_right)
-			{
-				e->Reverse();
-				e->ny = warp_direction;
-				mario->OnReactionTo(e, ACTION_TOUCH);
-			}
+			e->Reverse();
+			e->ny = warp_direction;
+			e->obj->OnReactionTo(e, ACTION_TOUCH);
 		}
 	}
 }
@@ -166,7 +187,11 @@ void CPipe::TakeItem()
 	switch (itemID)
 	{
 	case OBJECT_TYPE_VENUS_FIRE_TRAP:
-		item = new CVenusFireTrap(x, y);
+		item = new CVenusFireTrap(x, y, PIRANHA_TYPE_RED);
+		UseDefaultItemPosition();
+		break;
+	case OBJECT_TYPE_GREEN_VENUS:
+		item = new CVenusFireTrap(x, y, PIRANHA_TYPE_GREEN);
 		UseDefaultItemPosition();
 		break;
 	case OBJECT_TYPE_PIRANHA_PLANT:
@@ -192,14 +217,20 @@ void CPipe::UseDefaultItemPosition()
 
 void CPipe::TriggerItem()
 {
+	CCollisionEventPool* pool = CCollision::GetInstance()->GetPool();
+	LPCOLLISIONEVENT e = pool->Allocate(0.0f, nx, ny, 0.0f, 0.0f, item, this);
+	item->OnReactionTo(e, ACTION_CARRY);
+	pool->VirtualDelete();
+}
+
+void CPipe::CreateItem(CPlayScene* ps)
+{
+	TakeItem();
 	if (item)
 	{
-		LPPLAYSCENE ps = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
-		ps->Insert(item, ps->Find(this));
-
-		CCollisionEventPool* pool = CCollision::GetInstance()->GetPool();
-		LPCOLLISIONEVENT e = pool->Allocate(0.0f, nx, ny, 0.0f, 0.0f, item, this);
-		item->OnReactionTo(e, ACTION_CARRY);
-		pool->VirtualDelete();
+		item->Refresh();
+		TriggerItem();
+		item->CreateItem(ps);
+		ps->Insert(item, -1);
 	}
 }

@@ -1,12 +1,11 @@
 #pragma once
 #include "Game.h"
-#include "Textures.h"
-#include "Scene.h"
 
 #include "SpawnManager.h"
-#include "Background.h"
+
 #include "Mario.h"
 #include "HUD.h"
+#include "Background.h"
 
 #define NORMAL_BACKGROUND_COLOR D3DXCOLOR(156.0f/255, 252.0f/255, 240.0f/255, 0.0f)
 #define DEFAULT_BACKGROUND_COLOR D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.0f)
@@ -30,6 +29,7 @@ protected:
 	float timer; //scene time
 	bool isPaused;
 	CHud* hud;
+	CReward* reward;
 
 	vector<LPGAMEOBJECT> objects;
 	CSpawnManager spawner;
@@ -97,6 +97,8 @@ public:
 	void SwitchScene(int next_level);
 
 	void FastTravel(DWORD dt);
+	void PushFinishWall();
+	void CollectingScore();
 	/*void InsertScore(int score_value);
 	void InsertScore(float x, float y, int score_value);*/
 };

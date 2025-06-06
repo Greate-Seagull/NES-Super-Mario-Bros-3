@@ -56,6 +56,8 @@ protected:
 public:
 	CKoopaTroopa(float x, float y, bool haveWings = false);
 
+	virtual void SetPosition(float x, float y);
+
 	virtual void Prepare(DWORD dt);
 	virtual void LivingPrepare(DWORD dt);
 
@@ -65,9 +67,10 @@ public:
 	virtual void Rolling(DWORD dt);
 	virtual void Poping(DWORD dt);
 
-	//virtual int IsBlocking() { return state == KOOPA_STATE_HIDE || state == KOOPA_STATE_POP; }
-	virtual int IsCollidable() { return state != STATE_DIE; };	
+	virtual int IsBlocking() { return state == KOOPA_STATE_HIDE || state == KOOPA_STATE_POP; }
+	virtual int IsCollidable() { return life; };	
 	virtual int IsLinkedTo(CGameObject* obj) { return obj == carrier; }
+	virtual int IsGoingThrough(CGameObject* obj) { return 1; }
 
 	virtual void OnNoCollisionWithBlocking(DWORD dt);
 

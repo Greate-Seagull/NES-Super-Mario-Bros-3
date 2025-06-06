@@ -7,13 +7,9 @@
 CSuperMushroom::CSuperMushroom(float x, float y):
 	CHelpfulObject(x, y)
 {
-	SetBoundingBox(MUSHROOM_BBOX_WIDTH, MUSHROOM_BBOX_HEIGHT);
-
-	effect = EFFECT_BIGGER;
+	SetBoundingBox(MUSHROOM_BBOX_WIDTH, MUSHROOM_BBOX_HEIGHT);	
 	
-	aniID = ANI_ID_MUSHROOM;
-
-	SetState(MUSHROOM_STATE_SLEEP);
+	aniID = ANI_ID_MUSHROOM;	
 }
 
 void CSuperMushroom::Prepare(DWORD dt)
@@ -195,4 +191,12 @@ void CSuperMushroom::WakeUp(DWORD dt)
 	{
 		SetState(MUSHROOM_STATE_EMERGE);
 	}
+}
+
+void CSuperMushroom::Refresh()
+{
+	CHelpfulObject::Refresh();
+
+	effect = EFFECT_BIGGER;
+	SetState(MUSHROOM_STATE_SLEEP);
 }

@@ -51,14 +51,13 @@ public:
 		this->bbox_width = PIPE_BBOX_WIDTH;
 
 		this->newX = newX;
-		this->newY = newY;
-
-		TakeItem();
-		TriggerItem();
+		this->newY = newY;		
 	}
 	void Render();
 	void RenderBoundingBox();	
 
+	int IsAllowDigging(CGameObject* obj);
+	int IsTouching(CGameObject* obj);
 	int IsGoingThrough(CGameObject* obj);
 
 	void OnCollisionWith(LPCOLLISIONEVENT e);
@@ -75,4 +74,6 @@ public:
 	int GetDestination() { return scene_destination; }
 	float GetDestinationX() { return newX; }
 	float GetDestinationY() { return newY; }
+
+	void CreateItem(CPlayScene* ps);
 };

@@ -72,6 +72,7 @@ public:
 	virtual void Refresh();
 
 	virtual void TakeBoomerangs();
-	virtual vector<CBoomerang*> GetBoomerangs() { return boomerang; }
+
+	virtual void CreateItem(CPlayScene* ps);
 };
 

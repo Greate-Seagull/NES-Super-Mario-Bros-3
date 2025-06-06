@@ -32,7 +32,7 @@ void CCreature::Drop()
 
 void CCreature::AgainstControl()
 {	
-	carrier->Drop();
+	carrier->CCreature::Drop();
 	carrier = nullptr;
 }
 
@@ -57,4 +57,9 @@ void CCreature::Die()
 void CCreature::SetLife(float life)
 {
 	this->life = life;
+}
+
+void CCreature::Refresh()
+{
+	CHarmfulObject::Refresh();
 }

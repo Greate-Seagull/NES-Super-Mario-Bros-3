@@ -72,8 +72,12 @@
 #define ID_ANI_KICK 90
 #define ID_ANI_CARRY 100
 #define ID_ANI_FLY 200
+#define ID_ANI_PARACHUTE 205
 #define ID_ANI_INTO_THE_PIPE 210
 #define ID_ANI_DIE 999
+//FINISHED
+#define ID_ANI_FINISHED 300
+#define FINISHED_RUN_SPEED 0.05f
 //DIRECTIONS
 #define ID_ANI_LEFT 0
 #define ID_ANI_RIGHT 1
@@ -112,6 +116,7 @@ class CMario : public CCreature
 
 	int attacking_time;
 	int attack_phase;
+	int attack_direction;
 	CRacoonTail* tail;
 
 	int momentum;
@@ -172,9 +177,6 @@ public:
 
 	float GetLife() { return life; }
 	void SetLife(float l);
-	void ToSmallLevel();
-	void ToBigLevel();
-	void ToRacoonLevel();
 
 	void SetState(int state);
 	void ToGainingPowerState();
@@ -202,7 +204,7 @@ public:
 	bool Walk();
 
 	bool Attack();
-	void Attacking(DWORD dt, vector<LPGAMEOBJECT>* coObjects);
+	void Attacking(DWORD dt);
 	void ChangeAttackPhase(int phase);
 	void UntriggerTail();
 
@@ -212,6 +214,7 @@ public:
 	bool Grab(LPCOLLISIONEVENT e);
 	void Carrying();
 	bool Tosh();
+	void Drop();
 
 	bool Kick();
 	void Kicking(DWORD dt);
@@ -221,6 +224,8 @@ public:
 
 	void GainingPower(DWORD dt);
 	void LosingPower(DWORD dt);
+	void CancelUniqueAction();
+	void GetBoundingBoxOfAction(float &width, float &height);
 
 	void Dying(DWORD dt);
 
@@ -229,6 +234,7 @@ public:
 
 	bool IntoThePipe(int direction);
 	void Digging();
+	bool IsDigging() { return isDigging; }
 	bool IsInGround() { return isInGround; }
 
 	/*void IncreaseFlyingPoint();
@@ -237,6 +243,7 @@ public:
 	int GetMomentum() { return momentum; }
 	int GetCoins() { return coins; }
 	int GetScores() { return scores; }
+	void SetScores(int score) { scores = score; }
 	int* GetCards() { return cards; }
 	int GetLatestCard() { return cards[cardIndex - 1]; }
 
@@ -248,5 +255,8 @@ public:
 	bool IsFastTravel() { return isFastTravel; }
 	int GetDestination() { return destination; }
 	void GetDestinationPosition(float &x, float &y) { x = des_x; y = des_y; }
-	void SetTraveled() { isFastTravel = false; }
+
+	void Refresh();
+
+	void CreateItem(CPlayScene* ps);
 };

@@ -15,8 +15,6 @@
 #define ATTACK_BOOM_VX 0.08f
 #define ATTACK_BOOM_VY 0.3f
 
-#define STATE_FLYINGOUT -10
-
 class CHarmfulObject : public CMovableObject
 {
 protected:	
@@ -38,4 +36,6 @@ public:
 	virtual void HigherAttack(LPCOLLISIONEVENT e);
 	virtual void Destroy(LPCOLLISIONEVENT e);
 	virtual void FlyOut(int attack_direction);
+
+	virtual void Refresh();
 };
