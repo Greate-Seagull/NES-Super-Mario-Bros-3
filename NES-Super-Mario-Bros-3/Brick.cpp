@@ -86,6 +86,7 @@ void CBrick::SetState(int state)
 	switch (state)
 	{
 	case STATE_LIVE:
+		item = nullptr;
 		break;
 	case BRICK_STATE_TOGGLE:
 		break;
@@ -153,9 +154,6 @@ void CBrick::TriggerItem(LPCOLLISIONEVENT e, int action)
 		
 		if(itemID != OBJECT_TYPE_PBUTTON)
 			item->OnReactionTo(e, action);
-
-		if (itemID == OBJECT_TYPE_COIN)
-			item = nullptr; //Clear to create more coins
 	}
 }
 

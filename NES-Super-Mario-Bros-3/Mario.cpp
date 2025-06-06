@@ -213,7 +213,7 @@ void CMario::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 
 		float vx;
 		e->obj->GetSpeed(vx, this->vy);
-		this->vy *= 1.0f - e->t;
+		//this->vy *= 1.0f - e->t;
 
 		Touch(e);
 	}
@@ -224,7 +224,7 @@ void CMario::OnCollisionWithPlatform(LPCOLLISIONEVENT e)
 
 		float vy;
 		e->obj->GetSpeed(this->vx, vy);
-		this->vx *= 1.0f - e->t;
+		//this->vx *= 1.0f - e->t;
 	}	
 }
 
@@ -256,7 +256,7 @@ void CMario::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 
 		float vx;
 		e->obj->GetSpeed(vx, this->vy);
-		this->vy *= 1.0f - e->t;
+		//this->vy *= 1.0f - e->t;
 
 		Touch(e);
 	}
@@ -267,7 +267,7 @@ void CMario::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 
 		float vy;
 		e->obj->GetSpeed(this->vx, vy);
-		this->vx *= 1.0f - e->t;
+		//this->vx *= 1.0f - e->t;
 	}
 }
 
