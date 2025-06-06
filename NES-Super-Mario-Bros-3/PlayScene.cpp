@@ -982,21 +982,6 @@ void CPlayScene::PushFinishWall()
 	}
 }
 
-//void CPlayScene::InsertScore(int score_value)
-//{
-//	score += score_value;
-//}
-
-//void CPlayScene::InsertScore(float x, float y, int score_value)
-//{
-//	CScore* scoreUI = new CScore(x, y, score_value);
-//	int playerIndex = Find(player);
-//	Insert(scoreUI, playerIndex - 1);
-//
-//	if (score_value == 10000) InsertScore(0);
-//	else InsertScore(score_value);
-//}
-
 void CPlayScene::PurgeDeletedObjects()
 {
 	vector<LPGAMEOBJECT>::iterator it;
