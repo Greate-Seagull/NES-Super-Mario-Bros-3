@@ -240,6 +240,11 @@ public:
 	int* GetCards() { return cards; }
 	int GetLatestCard() { return cards[cardIndex - 1]; }
 
+	void InsertScore(int score);
+	void InsertScoreObject(float x, float y, int score);
+	void IncreaseFlyingPoint();
+	void InsertFlyingScore(float x, float y);
+
 	bool IsFastTravel() { return isFastTravel; }
 	int GetDestination() { return destination; }
 	void GetDestinationPosition(float &x, float &y) { x = des_x; y = des_y; }

@@ -84,7 +84,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		break;
 	}
 
-	//if (this->isOnGround) flyingPoint = 100;
+	if (this->isOnGround) flyingPoint = 100;
 }
 
 void CMario::Living(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
@@ -195,6 +195,7 @@ void CMario::OnCollisionWithCoin(LPCOLLISIONEVENT e)
 	currentScene->InsertScore(50);*/
 	Touch(e);
 	coins++;
+	InsertScore(50);
 }
 
 void CMario::OnCollisionWithPortal(LPCOLLISIONEVENT e)
@@ -1144,25 +1145,38 @@ void CMario::SetState(int state)
 	}
 }
 
-//void CMario::IncreaseFlyingPoint()
-//{
-//	switch (flyingPoint)
-//	{
-//		case 100: flyingPoint = 200; break;
-//		case 200: flyingPoint = 400; break;
-//		case 400: flyingPoint = 800; break;
-//		case 800: flyingPoint = 1000; break;
-//		case 1000: flyingPoint = 2000; break;
-//		case 2000: flyingPoint = 4000; break;
-//		case 4000: flyingPoint = 8000; break;
-//		case 8000: flyingPoint = 10000; break;
-//	}
-//}
+void CMario::InsertScore(int score)
+{
+	scores += score;
+}
 
-//void CMario::InsertFlyingScore(float x, float y)
-//{
-//	LPPLAYSCENE curr = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
-//	curr->InsertScore(x, y, flyingPoint);
-//
-//	IncreaseFlyingPoint();
-//}
+void CMario::InsertScoreObject(float x, float y, int score)
+{
+	InsertScore(score);
+
+	CScore* scoreObj = new CScore(x, y, score);
+	LPPLAYSCENE curr = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
+	curr->Insert(scoreObj, curr->Find(this) - 1);
+}
+
+void CMario::IncreaseFlyingPoint()
+{
+	switch (flyingPoint)
+	{
+		case 100: flyingPoint = 200; break;
+		case 200: flyingPoint = 400; break;
+		case 400: flyingPoint = 800; break;
+		case 800: flyingPoint = 1000; break;
+		case 1000: flyingPoint = 2000; break;
+		case 2000: flyingPoint = 4000; break;
+		case 4000: flyingPoint = 8000; break;
+		case 8000: flyingPoint = 10000; break;
+		default: break;
+	}
+}
+
+void CMario::InsertFlyingScore(float x, float y)
+{
+	InsertScoreObject(x, y, flyingPoint);
+	IncreaseFlyingPoint();
+}

@@ -1,4 +1,5 @@
 #include "KoopaTroopa.h"
+#include "Goomba.h"
 #include "Platform.h"
 
 #include "PlayScene.h"
@@ -396,6 +397,8 @@ void CKoopaTroopa::OnReactionToAttack1(LPCOLLISIONEVENT e)
 		}
 		break;
 	default:
+		if (CMario* player = dynamic_cast<CMario*>(e->src_obj))
+			player->InsertScoreObject(x, y - 16, 100);
 		e->Reverse();
 		Touch(e);
 
