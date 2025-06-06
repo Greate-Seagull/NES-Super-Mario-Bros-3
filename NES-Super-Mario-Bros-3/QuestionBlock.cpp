@@ -121,5 +121,7 @@ void CQuestionBlock::TriggerItem(LPCOLLISIONEVENT e, int action)
 		ps->Insert(item, ps->Find(this));
 
 		item->OnReactionTo(e, action);
+
+		item = nullptr;
 	}
 }

@@ -129,16 +129,6 @@ void CSuperMushroom::OnCollisionWithBlock(LPCOLLISIONEVENT e)
 
 void CSuperMushroom::OnCollisionWithMario(LPCOLLISIONEVENT e)
 {
-	/*CMario* mario = dynamic_cast<CMario*>(e->obj);
-	if (mario->GetLife() != MARIO_LEVEL_RACOON) CHelpfulObject::LaunchEffect(mario);
-
-	float pX, pY;
-	mario->GetPosition(pX, pY);
-	LPPLAYSCENE curr = (LPPLAYSCENE)CGame::GetInstance()->GetCurrentScene();
-	curr->InsertScore(pX, pY - 16, 1000);
-
-	SetState(STATE_DIE);*/
-
 	if (CMario* mario = dynamic_cast<CMario*>(e->obj))
 	{
 		mario->InsertScoreObject(x, y - 16, 1000);
@@ -163,7 +153,7 @@ void CSuperMushroom::OnReactionTo(LPCOLLISIONEVENT e, int action)
 
 void CSuperMushroom::ReactionInSleepingState(LPCOLLISIONEVENT e, int action)
 {	
-	nx = (e->src_obj->GetX() <= this->x) ? DIRECTION_RIGHT : DIRECTION_LEFT;
+	nx = (x <= e->src_obj->GetX()) ? DIRECTION_LEFT : DIRECTION_RIGHT;
 	SetState(MUSHROOM_STATE_WAKEUP);
 }
 

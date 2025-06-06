@@ -26,7 +26,7 @@ class CSuperMushroom : public CHelpfulObject
 public:
 	CSuperMushroom(float x, float y);
 
-	int IsCollidable() { return state > MUSHROOM_STATE_WAKEUP; }
+	int IsCollidable() { return state > MUSHROOM_STATE_EMERGE; }
 
 	virtual void Prepare(DWORD dt);
 
