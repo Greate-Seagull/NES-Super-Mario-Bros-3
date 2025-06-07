@@ -89,7 +89,7 @@ void CSuperLeaf::OnCollisionWith(LPCOLLISIONEVENT e)
 	if (CMario* mario = dynamic_cast<CMario*>(e->obj))
 	{
 		mario->InsertScoreObject(x, y - 16, 1000);
-		LaunchEffect(e);
+		if (mario->GetLife() != MARIO_LEVEL_RACOON) LaunchEffect(e);
 		SetState(STATE_DIE);
 	}
 }
