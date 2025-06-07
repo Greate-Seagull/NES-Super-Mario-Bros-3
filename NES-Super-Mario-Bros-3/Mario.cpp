@@ -161,7 +161,8 @@ void CMario::OnReactionToAttack3(LPCOLLISIONEVENT e)
 
 void CMario::OnReactionToBigger(LPCOLLISIONEVENT e)
 {
-	SetState(MARIO_STATE_GAIN_POWER);
+	if (life < MARIO_LEVEL_RACOON)
+		SetState(MARIO_STATE_GAIN_POWER);
 }
 
 void CMario::OnReactionToRacoonize(LPCOLLISIONEVENT e)
