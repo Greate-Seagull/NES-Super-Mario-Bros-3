@@ -154,6 +154,9 @@ void CBrick::TriggerItem(LPCOLLISIONEVENT e, int action)
 		
 		if(itemID != OBJECT_TYPE_PBUTTON)
 			item->OnReactionTo(e, action);
+
+		if (itemID != OBJECT_TYPE_COIN)
+			item = nullptr;
 	}
 }
 
